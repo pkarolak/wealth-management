@@ -1,4 +1,4 @@
-import { ArrowRight, Plus, Search, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Plus, Search, Sparkles } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import {
@@ -37,8 +37,12 @@ import { PatternsGallery } from './PatternsGallery'
 export function GallerySection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section id={id} className="scroll-mt-8">
-      <h2 className="mb-4 text-[13px] font-medium tracking-wide text-ink-3 uppercase">{title}</h2>
-      <div className="flex flex-col gap-4">{children}</div>
+      <h2 className="mb-3 flex items-center gap-3 font-mono text-[12px] tracking-wide text-white/45 uppercase">
+        {title}
+        <span className="h-px flex-1 bg-white/10" />
+      </h2>
+      {/* Product canvas inside the meta frame, so components render on their real background. */}
+      <div className="flex flex-col gap-4 rounded-[34px] bg-canvas p-2 text-ink">{children}</div>
     </section>
   )
 }
@@ -97,17 +101,21 @@ export function Gallery() {
   ]
 
   return (
+    <div className="min-h-screen bg-[#141414] text-white [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]">
     <div className="mx-auto flex max-w-6xl gap-10 px-6 py-10">
-      <aside className="sticky top-10 hidden h-fit w-44 shrink-0 flex-col gap-1 md:flex">
-        <Link to="/" className="mb-6 text-[13px] text-ink-3 hover:text-ink">
-          ← Demo home
+      <aside className="sticky top-10 hidden h-fit w-48 shrink-0 flex-col gap-1 md:flex">
+        <Link to="/" className="mb-8 inline-flex h-9 w-fit items-center gap-2 rounded-[8px] border border-white/15 px-3 font-mono text-[12px] tracking-wide text-white/70 transition-colors hover:border-white/35 hover:text-white">
+          <ArrowLeft className="size-3.5" /> Demo home
         </Link>
-        <div className="display mb-4 text-3xl">Components</div>
-        {nav.map(([id, label]) => (
-          <a key={id} href={`#${id}`} className="rounded-lg px-2 py-1.5 text-[14px] text-ink-3 hover:bg-muted hover:text-ink">
+        <span className="mb-2 w-fit rounded-[6px] bg-white/10 px-2 py-1 font-mono text-[12px] tracking-wide text-white/70 uppercase">Prototype</span>
+        <h1 className="mb-6 text-[28px] leading-tight font-medium tracking-tight">Components</h1>
+        {nav.map(([id, label], i) => (
+          <a key={id} href={`#${id}`} className="flex items-baseline gap-3 rounded-[8px] px-2 py-1.5 text-[14px] text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white">
+            <span className="font-mono text-[11px] text-white/30">{String(i + 1).padStart(2, '0')}</span>
             {label}
           </a>
         ))}
+        <p className="mt-8 px-2 font-mono text-[11px] leading-relaxed text-white/30">Light panels show components on the real product canvas.</p>
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col gap-12">
@@ -341,6 +349,7 @@ export function Gallery() {
 
         <PatternsGallery />
       </main>
+    </div>
     </div>
   )
 }
