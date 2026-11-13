@@ -294,7 +294,7 @@ export const useStore = create<Store>()(
               for (const fid of fieldIds) if (fields[fid]?.value !== undefined && !fields[fid]?.suggestion) fields[fid] = { ...fields[fid], status: 'confirmed' }
               return { ...x, fields, advisorReviewed: { ...x.advisorReviewed, [sectionId]: true } }
             },
-            { actorId: advisorId, kind: 'confirmed', text: `Reviewed “${sectionById[sectionId].title}”` },
+            { actorId: advisorId, kind: 'confirmed', text: `Reviewed “${sectionById[sectionId].wmTitle}”` },
           )
         },
 
@@ -401,7 +401,7 @@ export const useStore = create<Store>()(
         setSectionProgress: (caseId, sectionId, progress, actorId) => {
           const c = get().cases[caseId]
           if (!c || c.sectionProgress[sectionId] === progress) return
-          patchCase(caseId, (x) => ({ ...x, sectionProgress: { ...x.sectionProgress, [sectionId]: progress } }), progress === 'done' ? { actorId, kind: 'section', text: `${c.firstName} finished “${sectionById[sectionId].title}”` } : undefined)
+          patchCase(caseId, (x) => ({ ...x, sectionProgress: { ...x.sectionProgress, [sectionId]: progress } }), progress === 'done' ? { actorId, kind: 'section', text: `${c.firstName} finished “${sectionById[sectionId].wmTitle}”` } : undefined)
         },
 
         markSectionReviewed: (caseId, sectionId, reviewed) => patchCase(caseId, (x) => ({ ...x, advisorReviewed: { ...x.advisorReviewed, [sectionId]: reviewed } })),

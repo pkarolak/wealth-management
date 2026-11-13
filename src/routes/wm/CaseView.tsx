@@ -119,11 +119,11 @@ function SectionReview({ c, s, onHover }: { c: ClientCase; s: SectionDef; onHove
     <Card id={`review-${s.id}`} padding="sm" inner={10} className="scroll-mt-6">
       <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-3 px-3 pt-2 pb-2 text-left">
         <StatusIcon status={reviewed ? 'done' : state === 'idle' ? 'idle' : state === 'progress' ? 'progress' : 'waiting'} />
-        <span className="flex-1 text-[16px] font-medium text-ink">{s.title}</span>
+        <span className="flex-1 text-[16px] font-medium text-ink">{s.wmTitle}</span>
         {stats.needsReview > 0 && <Badge tone="progress">{stats.needsReview} changed</Badge>}
         {stats.suggestions > 0 && (
           <Badge tone="ai" icon={<Sparkles className="size-3" />}>
-            {stats.suggestions} drafts pending
+            {stats.suggestions} {stats.suggestions === 1 ? 'draft' : 'drafts'} pending
           </Badge>
         )}
         <span className="tabular text-[13px] text-ink-4">

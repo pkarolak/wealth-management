@@ -54,7 +54,7 @@ export function NeedsYou({ c, onOpenThread }: { c: ClientCase; onOpenThread: (id
         tone: 'progress',
         text: (
           <>
-            {c.firstName} changed {st.needsReview === 1 ? 'an answer' : `${st.needsReview} answers`} in <span className="font-medium">{s.title}</span> after you confirmed
+            {c.firstName} changed {st.needsReview === 1 ? 'an answer' : `${st.needsReview} answers`} in <span className="font-medium">{s.wmTitle}</span> after you confirmed
           </>
         ),
         action: 'Recheck',
@@ -68,7 +68,7 @@ export function NeedsYou({ c, onOpenThread }: { c: ClientCase; onOpenThread: (id
       tone: 'ink',
       text: (
         <>
-          <span className="font-medium">{s.title}</span> is ready for your review
+          <span className="font-medium">{s.wmTitle}</span> is ready for your review
         </>
       ),
       action: 'Review',
@@ -88,7 +88,7 @@ export function NeedsYou({ c, onOpenThread }: { c: ClientCase; onOpenThread: (id
       onClick: () => navigate(`/wm/c/${c.id}/brief`),
     })
 
-  const waiting = secs.filter((s) => sectionState(c, s.id) !== 'done').map((s) => s.short)
+  const waiting = secs.filter((s) => sectionState(c, s.id) !== 'done').map((s) => s.wmShort)
 
   return (
     <section className="flex flex-col gap-1 rounded-[26px] bg-surface p-2">
@@ -134,7 +134,7 @@ export function NeedsYou({ c, onOpenThread }: { c: ClientCase; onOpenThread: (id
               className="inline-flex h-8 items-center gap-1.5 rounded-[14px] px-2.5 text-[13px] text-ink-2 transition-colors hover:bg-surface"
             >
               <StatusIcon status={reviewed ? 'done' : st === 'done' ? 'waiting' : st === 'progress' ? 'progress' : 'idle'} size={14} />
-              {s.short}
+              {s.wmShort}
               {drafts > 0 && <Sparkles className="size-3 text-ai" />}
             </button>
           )

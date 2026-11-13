@@ -45,6 +45,9 @@ export type SectionDef = {
   id: SectionId
   title: string
   short: string
+  /** Titles on the Wealth Manager side, where the subject is the client, not the reader. */
+  wmTitle: string
+  wmShort: string
   description: string
   minutes: number
   kind: 'form' | 'goals' | 'networth' | 'risk' | 'review'
@@ -52,14 +55,14 @@ export type SectionDef = {
 }
 
 export const sections: SectionDef[] = [
-  { id: 'about', title: 'About you', short: 'About you', description: 'The basics we need to open your accounts.', minutes: 3, kind: 'form' },
-  { id: 'work', title: 'Work & income', short: 'Work & income', description: 'What you do and roughly what comes in.', minutes: 2, kind: 'form' },
-  { id: 'goals', title: 'Your goals', short: 'Goals', description: 'What you want to achieve, by when, and what it might cost.', minutes: 3, kind: 'goals' },
-  { id: 'networth', title: 'What you own and owe', short: 'Net worth', description: 'Add your accounts, property and debts. We do the math.', minutes: 6, kind: 'networth' },
-  { id: 'risk', title: 'How you feel about risk', short: 'Risk', description: 'A few scenarios. There are no wrong answers.', minutes: 2, kind: 'risk' },
-  { id: 'estate', title: 'Family & protection', short: 'Estate', description: 'Wills, insurance and the people who help you.', minutes: 2, kind: 'form', optional: true },
-  { id: 'required', title: 'A few required questions', short: 'Required', description: 'Regulators ask every client these. Most people answer “no” and move on.', minutes: 2, kind: 'form' },
-  { id: 'review', title: 'Review & sign', short: 'Review', description: 'Check everything once, then sign.', minutes: 2, kind: 'review' },
+  { id: 'about', title: 'About you', short: 'About you', wmTitle: 'About', wmShort: 'About', description: 'The basics we need to open your accounts.', minutes: 3, kind: 'form' },
+  { id: 'work', title: 'Work & income', short: 'Work & income', wmTitle: 'Work & income', wmShort: 'Work & income', description: 'What you do and roughly what comes in.', minutes: 2, kind: 'form' },
+  { id: 'goals', title: 'Your goals', short: 'Goals', wmTitle: 'Goals', wmShort: 'Goals', description: 'What you want to achieve, by when, and what it might cost.', minutes: 3, kind: 'goals' },
+  { id: 'networth', title: 'What you own and owe', short: 'Net worth', wmTitle: 'Net worth', wmShort: 'Net worth', description: 'Add your accounts, property and debts. We do the math.', minutes: 6, kind: 'networth' },
+  { id: 'risk', title: 'How you feel about risk', short: 'Risk', wmTitle: 'Risk profile', wmShort: 'Risk', description: 'A few scenarios. There are no wrong answers.', minutes: 2, kind: 'risk' },
+  { id: 'estate', title: 'Family & protection', short: 'Estate', wmTitle: 'Family & protection', wmShort: 'Estate', description: 'Wills, insurance and the people who help you.', minutes: 2, kind: 'form', optional: true },
+  { id: 'required', title: 'A few required questions', short: 'Required', wmTitle: 'Regulatory questions', wmShort: 'Required', description: 'Regulators ask every client these. Most people answer “no” and move on.', minutes: 2, kind: 'form' },
+  { id: 'review', title: 'Review & sign', short: 'Review', wmTitle: 'Review & sign', wmShort: 'Review', description: 'Check everything once, then sign.', minutes: 2, kind: 'review' },
 ]
 
 export const sectionById = Object.fromEntries(sections.map((s) => [s.id, s])) as Record<SectionId, SectionDef>
