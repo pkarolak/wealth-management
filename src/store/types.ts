@@ -117,6 +117,7 @@ export type ActivityKind =
   | 'linked'
   | 'deferred'
   | 'submitted'
+  | 'meeting'
   | 'email'
 
 export type Activity = { id: string; ts: number; actorId: string; kind: ActivityKind; text: string; email?: EmailPayload }
@@ -146,6 +147,7 @@ export type ClientCase = {
   openedAt?: number
   submittedAt?: number
   signature?: string
+  meeting?: { at: number; mode: 'video' | 'office' }
   introDone?: boolean
   idScanned?: boolean
   fields: Record<string, FieldState>

@@ -71,6 +71,7 @@ type Actions = {
   setSectionProgress: (caseId: string, sectionId: SectionId, progress: SectionProgress, actorId: string) => void
   markSectionReviewed: (caseId: string, sectionId: SectionId, reviewed: boolean) => void
   submit: (caseId: string, signature: string) => void
+  scheduleMeeting: (caseId: string, at: number, mode: 'video' | 'office') => void
 
   setPresence: (p: Presence) => void
   clearPresence: (personId: string) => void
@@ -411,6 +412,19 @@ export const useStore = create<Store>()(
             kind: 'submitted',
             text: `${c.firstName} signed and submitted`,
             email: { fromId: c.clientId, to: [advisor?.name ?? 'Wealth Manager'], subject: `${c.firstName} ${c.lastName} completed onboarding`, body: `${c.firstName} signed and submitted the onboarding form. Your meeting brief is ready.` },
+          })
+        },
+
+        scheduleMeeting: (caseId, at, mode) => {
+          const c = get().cases[caseId]
+          if (!c) return
+          const when = new Date(at).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+          const where = mode === 'video' ? 'video call' : 'at the office'
+          patchCase(caseId, (x) => ({ ...x, meeting: { at, mode } }), {
+            actorId: c.clientId,
+            kind: 'meeting',
+            text: `${c.firstName} ${c.meeting ? 'moved' : 'booked'} the planning meeting: ${when}, ${where}`,
+            email: { fromId: c.clientId, to: [get().people[c.advisorId]?.name ?? 'Wealth Manager'], subject: `Planning meeting with ${c.firstName} ${c.lastName}`, body: `${c.firstName} booked ${when} (${where}, 45 minutes).` },
           })
         },
 
