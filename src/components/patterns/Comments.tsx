@@ -167,7 +167,7 @@ export function CommentThread({ thread, showTitle = true, compact }: { thread: T
 }
 
 /** Inline "Ask Emily" affordance anchored to a field, item or section. Shows existing threads first. */
-export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string }) {
+export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean }) {
   const { c, caseId, viewerId, mode } = useCurrentCase()
   const peopleMap = useStore((s) => s.people)
   const startThread = useStore((s) => s.startThread)
@@ -186,8 +186,10 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
   const people = [peopleMap[c.advisorId], peopleMap[c.clientId], peopleMap.mike].filter((p) => p && p.id !== viewerId)
   const has = threads.length > 0
   const firstName = counterpart?.name.split(' ')[0] ?? 'your Wealth Manager'
+  const askLabel = mode === 'client' ? `Ask ${firstName}` : 'Comment'
+  const count = threads.reduce((a, t) => a + t.messages.length, 0)
 
-  return (
+  const popover = (
     <Popover
       open={isOpen}
       onOpenChange={setOpen}
@@ -198,14 +200,16 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
       trigger={
         <button
           type="button"
+          aria-label={askLabel}
           className={cn(
-            'inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[13px] transition-colors',
+            'inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-control text-[13px] whitespace-nowrap transition-colors',
+            compact && !has ? 'w-7' : 'px-2',
             has ? 'bg-muted text-ink-2 hover:bg-sunken' : 'text-ink-3 hover:bg-muted hover:text-ink',
             className,
           )}
         >
           <MessageCircle className="size-3.5" />
-          {label ?? (has ? `${threads.reduce((a, t) => a + t.messages.length, 0)}` : mode === 'client' ? `Ask ${firstName}` : 'Comment')}
+          {label ?? (has ? `${count}` : compact ? null : askLabel)}
           {unread > 0 && <CountDot count={unread} className="-mr-1" />}
         </button>
       }
@@ -234,5 +238,11 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
         )}
       </div>
     </Popover>
+  )
+  if (!compact) return popover
+  return (
+    <Tooltip content={has ? `${askLabel} · ${count} ${count === 1 ? 'message' : 'messages'}` : askLabel}>
+      <span className="inline-flex">{popover}</span>
+    </Tooltip>
   )
 }

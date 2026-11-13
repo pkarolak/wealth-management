@@ -60,9 +60,9 @@ export function FieldRow({ def }: { def: FieldDef }) {
   }
 
   const actions = (
-    <span className="flex items-center gap-0.5">
+    <span className="flex shrink-0 items-center gap-0.5">
       {def.canDefer && !filled && !pendingFill && (
-        <button type="button" onClick={() => defer(caseId, def.id, true, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[13px] text-ink-3 transition-colors hover:bg-muted hover:text-ink">
+        <button type="button" onClick={() => defer(caseId, def.id, true, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[13px] whitespace-nowrap text-ink-3 transition-colors hover:bg-muted hover:text-ink">
           <CalendarClock className="size-3.5" />
           Do it in the meeting
         </button>
@@ -70,6 +70,7 @@ export function FieldRow({ def }: { def: FieldDef }) {
       <AskAdvisorButton
         anchor={{ sectionId: def.sectionId, fieldId: def.id }}
         title={def.label}
+        compact
         className={cn(!hasThreads && 'opacity-0 group-focus-within/field:opacity-100 group-hover/field:opacity-100 data-[state=open]:opacity-100')}
       />
     </span>
