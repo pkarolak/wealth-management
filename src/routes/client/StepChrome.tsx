@@ -10,13 +10,13 @@ export function StepHeader({ c, sectionId, title, description, eyebrow, aside }:
   const secs = c ? visibleSections(c) : []
   const n = s ? secs.findIndex((x) => x.id === s.id) + 1 : 0
   return (
-    <div className="mb-8 flex items-start justify-between gap-6">
-      <div className="flex flex-col gap-3">
-        <span className="text-[13px] text-ink-3">{eyebrow ?? (s ? `Step ${n} of ${secs.length} · about ${s.minutes} min${s.optional ? ' · optional' : ''}` : null)}</span>
+    <div className="mb-8 flex flex-col gap-3">
+      <span className="text-[13px] text-ink-3">{eyebrow ?? (s ? `Step ${n} of ${secs.length} · about ${s.minutes} min${s.optional ? ' · optional' : ''}` : null)}</span>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <h1 className="display text-[40px] text-ink sm:text-[48px]">{title ?? s?.title}</h1>
-        {(description ?? s?.description) && <p className="max-w-xl text-[16px] leading-relaxed text-ink-3">{description ?? s?.description}</p>}
+        {aside}
       </div>
-      {aside}
+      {(description ?? s?.description) && <p className="max-w-xl text-[16px] leading-relaxed text-ink-3">{description ?? s?.description}</p>}
     </div>
   )
 }

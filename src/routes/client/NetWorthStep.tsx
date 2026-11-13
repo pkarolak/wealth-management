@@ -64,7 +64,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
   return (
     <div>
-      <StepHeader c={c} sectionId="networth" aside={<AskAdvisorButton anchor={{ sectionId: 'networth' }} title="What you own and owe" />} />
+      <StepHeader c={c} sectionId="networth" aside={<AskAdvisorButton anchor={{ sectionId: 'networth' }} title="What you own and owe" floating />} />
 
       <div className="grid items-start gap-8 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-8">

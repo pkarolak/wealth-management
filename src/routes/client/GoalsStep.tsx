@@ -26,7 +26,7 @@ export function GoalsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
   return (
     <div>
-      <StepHeader c={c} sectionId="goals" aside={<AskAdvisorButton anchor={{ sectionId: 'goals' }} title="Your goals" />} />
+      <StepHeader c={c} sectionId="goals" aside={<AskAdvisorButton anchor={{ sectionId: 'goals' }} title="Your goals" floating />} />
 
       {drafts > 0 && (
         <div className="mb-6 inline-flex items-center gap-2 text-[14px] text-ai">

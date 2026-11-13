@@ -129,12 +129,22 @@ export function FieldRow({ def }: { def: FieldDef }) {
           value={value}
           onChange={(v) => setField(caseId, def.id, v, viewerId)}
           tone={tone}
-          labelAside={outerLabel && def.explain ? <ExplainPopover term={def.explain} advisorFirst={advisorFirst} /> : undefined}
+          labelAside={
+            borderless ? (
+              <span className="-my-1 ml-0.5 inline-flex items-center gap-1.5">
+                {outerLabel && def.explain && <ExplainPopover term={def.explain} advisorFirst={advisorFirst} />}
+                {ask}
+                <AnimatePresence>{watching && advisor && <PresenceLabel person={advisor} tone="pink" />}</AnimatePresence>
+              </span>
+            ) : undefined
+          }
         />
-        <div className={cn('absolute z-10 flex items-center gap-1.5', borderless ? 'top-0 right-0' : '-top-3 right-3')}>
-          <AnimatePresence>{watching && advisor && <PresenceLabel person={advisor} tone="pink" className="-my-0.5" />}</AnimatePresence>
-          {ask}
-        </div>
+        {!borderless && (
+          <div className="absolute -top-3 right-3 z-10 flex items-center gap-1.5">
+            <AnimatePresence>{watching && advisor && <PresenceLabel person={advisor} tone="pink" className="-my-0.5" />}</AnimatePresence>
+            {ask}
+          </div>
+        )}
       </div>
       {inline && (
         <div className="flex min-h-7 items-center justify-between gap-3 pl-1">

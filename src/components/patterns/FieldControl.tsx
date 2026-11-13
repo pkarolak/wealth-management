@@ -40,7 +40,22 @@ export function FieldControl({ def, value, onChange, tone = 'default', labelAsid
     case 'textarea':
       return <Textarea id={id} label={def.label} placeholder={def.placeholder} value={str} onChange={(e) => onChange(e.target.value)} tone={tone} />
     case 'checkbox':
-      return <Checkbox checked={value === true} onChange={onChange} label={def.label} />
+      return (
+        <Checkbox
+          checked={value === true}
+          onChange={onChange}
+          label={
+            labelAside ? (
+              <span className="inline-flex flex-wrap items-center gap-x-2">
+                {def.label}
+                {labelAside}
+              </span>
+            ) : (
+              def.label
+            )
+          }
+        />
+      )
     case 'yesno':
       return outer(<YesNo value={str} onChange={onChange} />)
     case 'segmented':
