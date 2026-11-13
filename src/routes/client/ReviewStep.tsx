@@ -2,7 +2,7 @@ import { AlertCircle, CalendarClock, PenLine } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Checkbox, Input, StatusIcon } from '../../components/primitives'
 import { money } from '../../lib/format'
-import { displayValue, fieldsFor, isFilled, isVisible, type SectionDef } from '../../schema/onboarding'
+import { displayValue, fieldsFor, isFilled, isVisible, summaryLabel, type SectionDef } from '../../schema/onboarding'
 import { scoreRisk } from '../../schema/risk'
 import { useStore } from '../../store/caseStore'
 import { caseValues, deferredLabels, netWorth, sectionState, sectionStats, visibleSections } from '../../store/selectors'
@@ -10,27 +10,50 @@ import type { ClientCase } from '../../store/types'
 import type { Step, StepNav } from './ClientApp'
 import { StepHeader } from './StepChrome'
 
-function Summary({ c, s }: { c: ClientCase; s: SectionDef }) {
-  const values = caseValues(c)
-  if (s.kind === 'goals') return <span>{c.goals.map((g) => g.title).join(' · ') || 'No goals yet'}</span>
-  if (s.kind === 'networth') {
-    const t = netWorth(c)
-    return <span>Net worth {money(t.total)} · {c.items.length} items</span>
-  }
-  if (s.kind === 'risk') return <span>{scoreRisk(c.risk)?.label ?? 'Not answered'}</span>
-  const rows = fieldsFor(s.id)
-    .filter((f) => isVisible(f, values) && isFilled(values[f.id]) && f.type !== 'checkbox')
-    .slice(0, 6)
-  if (!rows.length) return <span className="text-ink-4">Nothing answered yet</span>
+const MAX_ROWS = 6
+
+function Rows({ rows, more }: { rows: [string, string][]; more?: number }) {
   return (
-    <dl className="grid grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
-      {rows.map((f) => (
-        <div key={f.id} className="flex min-w-0 gap-2">
-          <dt className="shrink-0 text-ink-4">{f.label}</dt>
-          <dd className="truncate text-ink-2">{displayValue(f, values[f.id])}</dd>
+    <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+      {rows.map(([label, value]) => (
+        <div key={label} className="flex min-w-0 flex-col gap-0.5">
+          <dt className="truncate text-[12px] text-ink-4">{label}</dt>
+          <dd className="truncate text-[14px] text-ink-2">{value}</dd>
         </div>
       ))}
+      {more !== undefined && more > 0 && (
+        <div className="flex flex-col justify-end">
+          <span className="text-[13px] text-ink-4">+{more} more</span>
+        </div>
+      )}
     </dl>
+  )
+}
+
+function Summary({ c, s }: { c: ClientCase; s: SectionDef }) {
+  const values = caseValues(c)
+  const empty = (text: string) => <span className="text-[14px] text-ink-4">{text}</span>
+  if (s.kind === 'goals') {
+    const goals = c.goals.filter((g) => !g.draft)
+    if (!goals.length) return empty('No goals yet')
+    return <Rows rows={goals.slice(0, MAX_ROWS).map((g) => [g.title, [g.amount ? money(g.amount) : null, g.targetYear].filter(Boolean).join(' · ') || '—'] as [string, string])} more={goals.length - MAX_ROWS} />
+  }
+  if (s.kind === 'networth') {
+    const t = netWorth(c)
+    if (!c.items.length) return empty('Nothing added yet')
+    return <Rows rows={[['Net worth', money(t.total)], ['Assets', money(t.assets)], ['Debts', money(t.liabilities)]]} />
+  }
+  if (s.kind === 'risk') {
+    const r = scoreRisk(c.risk)
+    return r ? <Rows rows={[['Your profile', r.label]]} /> : empty('Not answered yet')
+  }
+  const filled = fieldsFor(s.id).filter((f) => isVisible(f, values) && isFilled(values[f.id]) && f.type !== 'checkbox')
+  if (!filled.length) return empty(s.optional ? 'Skipped — optional' : 'Nothing answered yet')
+  return (
+    <Rows
+      rows={filled.slice(0, MAX_ROWS).map((f) => [summaryLabel(f), displayValue(f, values[f.id])] as [string, string])}
+      more={filled.length - MAX_ROWS}
+    />
   )
 }
 
@@ -57,26 +80,39 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <div className="mb-6 flex items-start gap-3 rounded-[18px] bg-progress-soft p-4 text-[14px] text-ink-2">
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-progress-ink" />
           <span>
-            {pending > 0 && `${pending} drafted answers still need your OK. `}
-            {missing > 0 && `${missing} required answers are empty. `}
-            You can still sign; {first} will go through them with you.
+            {[pending > 0 && `${pending} ${pending === 1 ? 'answer' : 'answers'} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. You can still sign — {first} will go through them with you.
           </span>
         </div>
       )}
 
       <div className="flex flex-col gap-2">
-        {secs.map((s) => (
-          <div key={s.id} className="flex gap-4 rounded-[22px] bg-surface p-5">
-            <StatusIcon status={sectionState(c, s.id) === 'done' ? 'done' : sectionState(c, s.id) === 'progress' ? 'progress' : 'idle'} />
-            <div className="flex min-w-0 flex-1 flex-col gap-2 text-[14px]">
-              <span className="text-[15px] font-medium text-ink">{s.title}</span>
-              <Summary c={c} s={s} />
+        {secs.map((s) => {
+          const st = sectionStats(c, s.id)
+          const state = sectionState(c, s.id)
+          const open = [
+            st.suggestions > 0 && `${st.suggestions} to check`,
+            st.required - st.requiredFilled > 0 && `${st.required - st.requiredFilled} missing`,
+          ].filter(Boolean)
+          return (
+            <div key={s.id} className="flex flex-col gap-4 rounded-[22px] bg-surface p-2 pb-5">
+              <div className="flex h-10 items-center gap-3 pl-3">
+                <StatusIcon status={state === 'done' ? 'done' : state === 'progress' ? 'progress' : 'idle'} />
+                <span className="min-w-0 truncate text-[15px] font-medium text-ink">{s.title}</span>
+                {open.length > 0 && <span className="text-[13px] whitespace-nowrap text-progress-ink">{open.join(' · ')}</span>}
+                <button
+                  type="button"
+                  onClick={() => nav.go(s.id as Step)}
+                  className="ml-auto inline-flex h-10 items-center gap-1.5 rounded-[14px] px-3 text-[13px] text-ink-3 transition-colors hover:bg-muted hover:text-ink"
+                >
+                  <PenLine className="size-3.5" /> Edit
+                </button>
+              </div>
+              <div className="pr-3 pl-11">
+                <Summary c={c} s={s} />
+              </div>
             </div>
-            <button type="button" onClick={() => nav.go(s.id as Step)} className="inline-flex h-8 items-center gap-1.5 self-start rounded-control px-2.5 text-[13px] text-ink-3 hover:bg-muted hover:text-ink">
-              <PenLine className="size-3.5" /> Edit
-            </button>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {deferred.length > 0 && (

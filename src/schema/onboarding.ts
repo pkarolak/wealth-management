@@ -228,6 +228,29 @@ export const fields: FieldDef[] = [
   { id: 'backupWithholding', sectionId: 'required', group: 'Tax certification', label: 'The IRS has told me I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
 ]
 
+const summaryLabels: Record<string, string> = {
+  preferredName: 'Goes by',
+  mailingDifferent: 'Separate mailing address',
+  dependents: 'Dependents',
+  incomeChange: 'Income outlook',
+  annualSpending: 'Yearly spending',
+  incomeSources: 'Income from',
+  experience: 'Experience',
+  liquidityNeeds: 'Cash needs, 2 years',
+  hasTrust: 'Living trust',
+  hasPoa: 'Power of attorney',
+  hasLifeInsurance: 'Life insurance',
+  professionals: 'Other advisors',
+  finraAffiliated: 'Works in finance',
+  insider: 'Public company insider',
+  pep: 'Political role abroad',
+  sourceOfFunds: 'Source of funds',
+  trustedName: 'Emergency contact',
+}
+
+/** Short label for summaries, where the full question would be too long. */
+export const summaryLabel = (f: FieldDef) => summaryLabels[f.id] ?? f.label
+
 export const fieldById = Object.fromEntries(fields.map((f) => [f.id, f])) as Record<string, FieldDef>
 
 export const fieldsFor = (sectionId: SectionId) => fields.filter((f) => f.sectionId === sectionId)
