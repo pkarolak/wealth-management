@@ -1,6 +1,6 @@
 import { Check, FileUp, Link2, Loader2, PenLine, Sparkles } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { AskAdvisorButton, AssetLiabilityList, DocumentDropzone, NetWorthSummary } from '../../components/patterns'
+import { AskAdvisorButton, AssetLiabilityList, DocumentDropzone, InstitutionLogo, NetWorthSummary } from '../../components/patterns'
 import { Button, Checkbox, Dialog, Input, Label, MoneyInput, PercentInput, Segmented, Select, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { money } from '../../lib/format'
@@ -42,6 +42,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const [estimating, setEstimating] = useState(false)
   const totals = netWorth(c)
   const drafts = c.items.filter((i) => i.draft).length
+  const advisorFirst = useStore((s) => s.people[c.advisorId]?.name.split(' ')[0] ?? 'your Wealth Manager')
 
   const openItem = (i: ItemDraft) => {
     setEst(undefined)
@@ -116,9 +117,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
                 }}
                 className="flex items-center gap-3 rounded-[22px] border border-line p-3 text-left transition-colors hover:border-line-strong disabled:cursor-default"
               >
-                <span className="flex size-10 items-center justify-center rounded-control text-[15px] font-semibold text-white" style={{ background: inst.color }}>
-                  {inst.name[0]}
-                </span>
+                <InstitutionLogo inst={inst} />
                 <span className="flex flex-1 flex-col">
                   <span className="text-[14px] text-ink">{inst.name}</span>
                   <span className="text-[12px] text-ink-4">{inst.kind}</span>
@@ -128,6 +127,10 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
               </button>
             )
           })}
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-line pt-4 pl-1">
+          <span className="text-[13px] text-ink-4">Don’t see yours?</span>
+          <AskAdvisorButton anchor={{ sectionId: 'networth' }} title="Connecting other accounts" label={`Ask ${advisorFirst} if you need to connect different accounts`} />
         </div>
       </Dialog>
 

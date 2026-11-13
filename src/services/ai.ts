@@ -146,12 +146,12 @@ export async function extractDocument(kind: DocKind): Promise<ExtractResult> {
 }
 
 export const institutions = [
-  { id: 'chase', name: 'Chase', kind: 'Bank', color: '#117ACA' },
-  { id: 'vanguard', name: 'Vanguard', kind: 'Brokerage', color: '#96151D' },
-  { id: 'fidelity', name: 'Fidelity NetBenefits', kind: '401(k)', color: '#368727' },
-  { id: 'coinbase', name: 'Coinbase', kind: 'Crypto', color: '#0052FF' },
-  { id: 'schwab', name: 'Charles Schwab', kind: 'Brokerage', color: '#00A0DF' },
-  { id: 'amex', name: 'American Express', kind: 'Credit card', color: '#2E77BB' },
+  { id: 'chase', name: 'Chase', kind: 'Bank', color: '#117ACA', logo: '/logos/chase.jpg' },
+  { id: 'vanguard', name: 'Vanguard', kind: 'Brokerage', color: '#96151D', logo: '/logos/vanguard.svg' },
+  { id: 'fidelity', name: 'Fidelity NetBenefits', kind: '401(k)', color: '#368727', logo: '/logos/fidelity.png' },
+  { id: 'coinbase', name: 'Coinbase', kind: 'Crypto', color: '#0052FF', logo: '/logos/coinbase.png' },
+  { id: 'schwab', name: 'Charles Schwab', kind: 'Brokerage', color: '#00A0DF', logo: '/logos/schwab.png' },
+  { id: 'amex', name: 'American Express', kind: 'Credit card', color: '#2E77BB', logo: '/logos/amex.png' },
 ]
 
 export async function linkInstitution(id: string): Promise<{ match?: NWCategory; item: Omit<NWItem, 'id' | 'updatedAt'> }[]> {

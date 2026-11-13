@@ -27,12 +27,19 @@ export const categoryIcon: Record<NWCategory, ReactNode> = {
 const confidenceLabel = { exact: undefined, estimate: 'Estimate', rough: 'Rough guess' } as const
 
 /** Institution monogram when we know the brand, category icon otherwise. */
+export function InstitutionLogo({ inst, className }: { inst: (typeof institutions)[number]; className?: string }) {
+  return (
+    <span className={cn('relative flex size-10 shrink-0 overflow-hidden rounded-control bg-surface', className)}>
+      <img src={inst.logo} alt="" className="size-full object-cover" />
+      <span className="absolute inset-0 rounded-control ring-1 ring-black/[0.06] ring-inset" />
+    </span>
+  )
+}
+
 function ItemMark({ item }: { item: NWItem }) {
   const inst = institutions.find((i) => item.institution && i.name.toLowerCase().startsWith(item.institution.toLowerCase().split(' ')[0]))
   const mark = inst ? (
-    <span className="flex size-10 items-center justify-center rounded-control text-[15px] font-semibold text-white" style={{ background: inst.color }}>
-      {inst.name[0]}
-    </span>
+    <InstitutionLogo inst={inst} />
   ) : (
     <span className={cn('flex size-10 items-center justify-center rounded-control', item.side === 'asset' ? 'bg-muted text-ink-2' : 'bg-danger-soft/70 text-danger')}>{categoryIcon[item.category]}</span>
   )
