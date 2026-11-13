@@ -2,8 +2,9 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
-import { CaseProvider, PresenceChip, ProgressRail, type RailItem } from '../../components/patterns'
-import { toast } from '../../components/primitives'
+import { CaseProvider, ProgressRail, type RailItem } from '../../components/patterns'
+import { Avatar, toast } from '../../components/primitives'
+import { AdvisorCard } from './AdvisorCard'
 import { Wordmark } from '../../components/shell/Brand'
 import type { SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
@@ -129,7 +130,10 @@ export function ClientApp() {
             <span className="ml-auto hidden items-center gap-1.5 text-[13px] text-ink-4 sm:inline-flex">
               <Check className="size-3.5" /> Saved
             </span>
-            <PresenceChip person={advisor} caseId={c.id} />
+            <span className="inline-flex items-center gap-2 rounded-full p-0.5 pr-3 text-[13px] text-ink-2">
+              <Avatar name={`${c.firstName} ${c.lastName}`} src={people[c.clientId]?.avatar} size="sm" />
+              {c.firstName}
+            </span>
           </div>
         </header>
 
@@ -143,6 +147,7 @@ export function ClientApp() {
                   items={railItems}
                 />
                 {unreadCount(c, c.clientId) > 0 && <p className="px-3 text-[12px] text-advisor">{advisor.name.split(' ')[0]} replied to you</p>}
+                <AdvisorCard c={c} sectionId={sectionId} />
               </div>
             </aside>
           )}
