@@ -15,6 +15,12 @@ import { PresenceLabel } from './Presence'
 import { SourceTag, type SourceKind } from './SourceTag'
 import { SuggestionDiff } from './SuggestionDiff'
 
+const open = 'group-focus-within/field:opacity-100 group-has-[[data-state=open]]/field:opacity-100'
+const reveal = {
+  fade: `opacity-0 transition-opacity duration-200 ${open}`,
+  collapse: `grid-rows-[0fr] opacity-0 ${open} group-focus-within/field:grid-rows-[1fr] group-has-[[data-state=open]]/field:grid-rows-[1fr]`,
+}
+
 const sourceKind = (s?: FieldSource): SourceKind | undefined => (s === 'client' || !s ? undefined : s)
 
 /**
@@ -59,59 +65,80 @@ export function FieldRow({ def }: { def: FieldDef }) {
     )
   }
 
+  const outerLabel = hasOuterLabel(def)
+  const ask = <AskAdvisorButton anchor={{ sectionId: def.sectionId, fieldId: def.id }} title={def.label} compact />
+
+  // Always visible: only what the client needs to act on or be reassured by.
+  const status = pendingFill ? (
+    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <SourceTag kind={s.by === 'advisor' ? 'advisor' : 'ai'} label={s.sourceLabel} />
+      {s.confidence === 'low' && <span className="text-[12px] whitespace-nowrap text-progress-ink">Please double-check</span>}
+    </span>
+  ) : st.status === 'needs_review' ? (
+    <span className="text-[12px] text-progress-ink">Changed · {advisorFirst} will recheck it</span>
+  ) : st.status === 'confirmed' ? (
+    <SourceTag kind="confirmed" label={`Confirmed by ${advisorFirst}`} />
+  ) : null
+
+  // Revealed on focus, or while one of the field's popovers is open.
+  const provenance = !status && filled ? sourceKind(st.source) : undefined
+  const why = def.why && !(filled && !status && provenance) ? def.why : undefined
+  const help = (provenance || why || (def.explain && !outerLabel)) && (
+    <span className="min-w-0 text-[12px] leading-[18px] text-ink-4">
+      {provenance && <SourceTag kind={provenance} className="mr-2 align-[-1px]" />}
+      {why && <span className="mr-2">{why}</span>}
+      {def.explain && !outerLabel && <ExplainPopover term={def.explain} advisorFirst={advisorFirst} inline />}
+    </span>
+  )
   const actions = (
     <span className="flex shrink-0 items-center gap-0.5">
+      {pendingFill && (
+        <button type="button" onClick={() => accept(caseId, def.id, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[12px] whitespace-nowrap text-ink-2 transition-colors hover:bg-muted hover:text-ink">
+          <Check className="size-3.5" />
+          Looks right
+        </button>
+      )}
       {def.canDefer && !filled && !pendingFill && (
-        <button type="button" onClick={() => defer(caseId, def.id, true, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[13px] whitespace-nowrap text-ink-3 transition-colors hover:bg-muted hover:text-ink">
+        <button type="button" onClick={() => defer(caseId, def.id, true, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[12px] whitespace-nowrap text-ink-3 transition-colors hover:bg-muted hover:text-ink">
           <CalendarClock className="size-3.5" />
           Do it in the meeting
         </button>
       )}
-      <AskAdvisorButton
-        anchor={{ sectionId: def.sectionId, fieldId: def.id }}
-        title={def.label}
-        compact
-        className={cn(!hasThreads && 'opacity-0 group-focus-within/field:opacity-100 group-hover/field:opacity-100 data-[state=open]:opacity-100')}
-      />
+      {!hasThreads && ask}
     </span>
   )
-
-  const outerLabel = hasOuterLabel(def)
-  const explain = def.explain ? <ExplainPopover term={def.explain} advisorFirst={advisorFirst} label={outerLabel ? undefined : 'Why we ask'} /> : null
-
-  const meta = (() => {
-    if (pendingFill)
-      return (
-        <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <SourceTag kind={s.by === 'advisor' ? 'advisor' : 'ai'} label={s.sourceLabel} />
-          {s.confidence === 'low' && <span className="text-[12px] whitespace-nowrap text-progress-ink">Please double-check</span>}
-          <button type="button" onClick={() => accept(caseId, def.id, viewerId)} className="inline-flex items-center gap-1 text-[12px] font-medium whitespace-nowrap text-ink hover:underline">
-            <Check className="size-3.5" />
-            Looks right
-          </button>
-        </span>
-      )
-    if (st.status === 'needs_review') return <span className="text-[12px] text-progress-ink">Changed · {advisorFirst} will recheck it</span>
-    if (st.status === 'confirmed') return <SourceTag kind="confirmed" label={`Confirmed by ${advisorFirst}`} />
-    const kind = filled ? sourceKind(st.source) : undefined
-    if (kind) return <SourceTag kind={kind} />
-    if (def.why) return <span className="text-[12px] leading-snug text-ink-4">{def.why}</span>
-    return null
-  })()
+  const alwaysOpen = def.type === 'sensitive'
+  const inline = !!status || hasThreads
 
   return (
-    <div className="group/field relative flex flex-col gap-1.5" onFocusCapture={() => onFocus?.({ sectionId: def.sectionId, fieldId: def.id })}>
+    <div className="group/field relative flex flex-col gap-1" onFocusCapture={() => onFocus?.({ sectionId: def.sectionId, fieldId: def.id })}>
       <div className={cn('relative rounded-control transition-shadow', watching && 'ring-2 ring-advisor/30 ring-offset-2 ring-offset-canvas')}>
-        <FieldControl def={def} value={value} onChange={(v) => setField(caseId, def.id, v, viewerId)} tone={tone} labelAside={hasOuterLabel(def) ? explain : undefined} />
+        <FieldControl
+          def={def}
+          value={value}
+          onChange={(v) => setField(caseId, def.id, v, viewerId)}
+          tone={tone}
+          labelAside={outerLabel && def.explain ? <ExplainPopover term={def.explain} advisorFirst={advisorFirst} /> : undefined}
+        />
         <AnimatePresence>{watching && advisor && <PresenceLabel person={advisor} tone="pink" className="absolute -top-3.5 right-3 z-10" />}</AnimatePresence>
       </div>
-      <div className="flex min-h-7 items-center justify-between gap-3 pl-1">
-        <div className="flex min-w-0 items-center gap-2">
-          {meta}
-          {!hasOuterLabel(def) && explain}
+      {inline && (
+        <div className="flex min-h-7 items-center justify-between gap-3 pl-1">
+          {status ?? <span />}
+          <span className="flex items-center gap-0.5">
+            <span className={cn(!alwaysOpen && reveal.fade)}>{actions}</span>
+            {hasThreads && ask}
+          </span>
         </div>
-        {actions}
-      </div>
+      )}
+      {(help || !inline) && (
+        <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', alwaysOpen ? 'grid-rows-[1fr]' : reveal.collapse)}>
+          <div className="flex min-h-0 items-start justify-between gap-3 overflow-hidden pl-1">
+            <div className="py-1">{help}</div>
+            {!inline && actions}
+          </div>
+        </div>
+      )}
       <AnimatePresence initial={false}>
         {pendingChange && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">

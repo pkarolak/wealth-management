@@ -70,8 +70,10 @@ await page.waitForTimeout(300)
 await shot('client-about-accepted', true)
 
 // Ask Emily on citizenship
-await page.locator('#f-citizenship').hover()
-await page.getByRole('button', { name: /Ask Emily/ }).first().click()
+const citizenship = page.locator('.group\\/field', { has: page.locator('#f-citizenship') })
+await page.locator('#f-citizenship').focus()
+await page.waitForTimeout(300)
+await citizenship.getByRole('button', { name: /Ask Emily/ }).click()
 await page.getByPlaceholder('What would you like to ask?').fill('I have a green card, which option is that?')
 await page.keyboard.press('Enter')
 await page.waitForTimeout(300)

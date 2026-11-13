@@ -61,7 +61,7 @@ export async function extractIntro(_text: string): Promise<IntroResult> {
 
 export async function scanId(): Promise<Record<string, FieldDraft>> {
   await wait(1600)
-  const s = 'From your driver’s license'
+  const s = 'From your license'
   return {
     firstName: { value: 'Daniel', sourceLabel: s, confidence: 'high' },
     middleName: { value: 'Wei', sourceLabel: s, confidence: 'high' },

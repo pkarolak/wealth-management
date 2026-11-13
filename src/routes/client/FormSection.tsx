@@ -67,7 +67,7 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
           return (
             <section key={g.group} className="flex flex-col gap-4">
               <h2 className="text-[15px] font-medium text-ink">{g.group}</h2>
-              <div className="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-6">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-6">
                 {visible.map((f) => (
                   <div key={f.id} className={cn(span[f.width ?? 'full'])}>
                     <FieldRow def={f} />
