@@ -3,7 +3,7 @@ import { cn } from '../../lib/cn'
 import { fieldById, sectionById } from '../../schema/onboarding'
 import { usePresenceOf } from '../../store/hooks'
 import type { Person } from '../../store/types'
-import { Avatar } from '../primitives'
+import { Avatar, Tooltip } from '../primitives'
 
 export type PresenceTone = 'blue' | 'pink'
 
@@ -36,6 +36,22 @@ export function PresenceLabel({ person, tone = 'blue', detail, className }: { pe
 }
 
 /** "Emily is here" status for headers: live dot plus where they are. */
+/** Lightweight header chip: avatar with a live dot and a first name; details in the tooltip. */
+export function PresenceChip({ person, caseId, className }: { person?: Person; caseId: string; className?: string }) {
+  const p = usePresenceOf(person?.id, caseId)
+  if (!person) return null
+  const first = person.name.split(' ')[0]
+  const where = p?.fieldId ? fieldById[p.fieldId]?.label : p?.sectionId ? sectionById[p.sectionId]?.title : undefined
+  return (
+    <Tooltip content={`${person.name}${person.title ? ` · ${person.title}` : ''} — ${p ? `here now${where ? `, on ${where}` : ''}` : 'away'}`} side="bottom">
+      <span className={cn('inline-flex items-center gap-2 rounded-full p-0.5 pr-3 text-[13px] text-ink-2', className)}>
+        <Avatar name={person.name} src={person.avatar} size="sm" online={p ? true : undefined} />
+        {first}
+      </span>
+    </Tooltip>
+  )
+}
+
 export function PresenceStatus({ person, caseId, className }: { person?: Person; caseId: string; className?: string }) {
   const p = usePresenceOf(person?.id, caseId)
   if (!person) return null

@@ -2,9 +2,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
-import { CaseProvider, PresenceStatus, ProgressRail } from '../../components/patterns'
+import { CaseProvider, PresenceChip, ProgressRail } from '../../components/patterns'
 import { Wordmark } from '../../components/shell/Brand'
-import { Avatar } from '../../components/primitives'
 import type { SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
 import { useCaseByToken, usePublishPresence } from '../../store/hooks'
@@ -97,13 +96,7 @@ export function ClientApp() {
             <span className="ml-auto hidden items-center gap-1.5 text-[13px] text-ink-4 sm:inline-flex">
               <Check className="size-3.5" /> Saved
             </span>
-            <span className="flex items-center gap-2.5 rounded-full bg-surface py-1 pr-3.5 pl-1 shadow-soft">
-              <Avatar name={advisor.name} src={advisor.avatar} size="md" />
-              <span className="flex flex-col leading-tight">
-                <span className="text-[13px] text-ink">{advisor.name}</span>
-                <PresenceStatus person={advisor} caseId={c.id} className="text-[12px]" />
-              </span>
-            </span>
+            <PresenceChip person={advisor} caseId={c.id} />
           </div>
         </header>
 
