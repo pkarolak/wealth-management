@@ -84,7 +84,7 @@ export function Scheduler({ c, advisorName, advisorAvatar, onBooked, onCancel, b
           </span>
         </div>
 
-        <div ref={strip} className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+        <div ref={strip} className="-m-1 flex snap-x scroll-px-1 gap-1.5 overflow-x-auto p-1 [scrollbar-width:none]">
           {days.map((d, i) => {
             const free = d.slots.filter((s) => s.free).length
             const on = i === dayIdx
@@ -95,9 +95,8 @@ export function Scheduler({ c, advisorName, advisorAvatar, onBooked, onCancel, b
                 disabled={!free}
                 onClick={() => setDayIdx(i)}
                 className={cn(
-                  'flex w-[68px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-[16px] py-3 transition-colors',
-                  on ? 'bg-ink text-white' : 'bg-surface text-ink hover:ring-1 hover:ring-line-strong',
-                  !free && 'cursor-not-allowed bg-transparent text-ink-4 hover:ring-0',
+                  'flex w-[68px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-[16px] py-3 ring-1 transition-[background-color,box-shadow] ring-inset',
+                  on ? 'bg-ink text-white ring-ink' : free ? 'bg-surface text-ink ring-transparent hover:ring-line-strong' : 'cursor-not-allowed text-ink-4 ring-transparent',
                 )}
               >
                 <span className={cn('text-[12px]', on ? 'text-white/70' : 'text-ink-3', !free && 'text-ink-4')}>{d.date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
@@ -116,9 +115,8 @@ export function Scheduler({ c, advisorName, advisorAvatar, onBooked, onCancel, b
               disabled={!s.free}
               onClick={() => setAt(s.at)}
               className={cn(
-                'tabular h-11 rounded-[14px] text-[14px] transition-colors',
-                at === s.at ? 'bg-ink text-white' : 'bg-surface text-ink ring-1 ring-line ring-inset hover:ring-line-strong',
-                !s.free && 'cursor-not-allowed bg-transparent text-ink-4 line-through decoration-ink-4/50 ring-0 hover:ring-0',
+                'tabular h-11 rounded-[14px] text-[14px] ring-1 transition-[background-color,box-shadow] ring-inset',
+                !s.free ? 'cursor-not-allowed text-ink-4 line-through decoration-ink-4/50 ring-transparent' : at === s.at ? 'bg-ink text-white ring-ink' : 'bg-surface text-ink ring-line hover:ring-line-strong',
               )}
             >
               {s.label}
