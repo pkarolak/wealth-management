@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
-import { CaseProvider, PresenceChip, ProgressRail } from '../../components/patterns'
+import { CaseProvider, PresenceChip, ProgressRail, type RailItem } from '../../components/patterns'
+import { toast } from '../../components/primitives'
 import { Wordmark } from '../../components/shell/Brand'
 import type { SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
@@ -16,13 +17,21 @@ import { IdScan } from './IdScan'
 import { Intro } from './Intro'
 import { NetWorthStep } from './NetWorthStep'
 import { Inbox } from './Inbox'
+import { RequestsStep } from './RequestsStep'
 import { ReviewStep } from './ReviewStep'
 import { RiskStep } from './RiskStep'
 import { Welcome } from './Welcome'
 
-export type Step = 'welcome' | 'intro' | 'id' | SectionId | 'done'
+export type Step = 'welcome' | 'intro' | 'id' | SectionId | 'requests' | 'done'
 
-export const stepOrder = (c: ClientCase): Step[] => ['welcome', 'intro', 'id', ...visibleSections(c).map((s) => s.id), 'done']
+/** Additional requests only exist once the Wealth Manager has asked for something; they sit right before Review. */
+export const stepOrder = (c: ClientCase): Step[] => {
+  const secs: Step[] = visibleSections(c).map((s) => s.id)
+  if (c.requests.length) secs.splice(secs.indexOf('review'), 0, 'requests')
+  return ['welcome', 'intro', 'id', ...secs, 'done']
+}
+
+const nonSection: Step[] = ['welcome', 'intro', 'id', 'requests', 'done']
 
 /** Navigation helpers handed to each step. */
 export type StepNav = { next: () => void; back: () => void; go: (s: Step) => void }
@@ -36,7 +45,9 @@ export function ClientApp() {
   const [focus, setFocus] = useState<{ sectionId?: SectionId; fieldId?: string }>({})
 
   const step = (params.get('step') as Step) || (c?.stage === 'submitted' ? 'done' : 'welcome')
-  const sectionId = (['welcome', 'intro', 'id', 'done'].includes(step) ? undefined : step) as SectionId | undefined
+  const sectionId = (nonSection.includes(step) ? undefined : step) as SectionId | undefined
+  const openRequests = c?.requests.filter((r) => r.status === 'open').length ?? 0
+  const [seenOpen, setSeenOpen] = useState(openRequests)
 
   usePublishPresence(c ? { personId: c.clientId, view: 'client', caseId: c.id, sectionId: focus.sectionId ?? sectionId, fieldId: focus.fieldId } : undefined)
   useEffect(() => {
@@ -46,6 +57,13 @@ export function ClientApp() {
     setFocus({})
     window.scrollTo({ top: 0 })
   }, [step])
+  useEffect(() => {
+    if (openRequests > seenOpen && step !== 'requests' && c) {
+      const first = useStore.getState().people[c.advisorId]?.name.split(' ')[0]
+      toast(`${first} added a request`, { description: 'Find it under Additional requests.' })
+    }
+    setSeenOpen(openRequests)
+  }, [openRequests]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!c) {
     return (
@@ -62,7 +80,20 @@ export function ClientApp() {
   const go = (s: Step) => setParams({ step: s })
   const nav: StepNav = { go, next: () => go(order[Math.min(order.length - 1, idx + 1)]), back: () => go(order[Math.max(0, idx - 1)]) }
   const advisor = people[c.advisorId]
-  const inSections = !!sectionId
+  const inSections = !!sectionId || step === 'requests'
+  const railItems: RailItem[] = visibleSections(c).map((s) => {
+    const st = sectionState(c, s.id)
+    const stats = sectionStats(c, s.id)
+    return { id: s.id, title: s.short, state: st === 'done' ? 'done' : st === 'progress' ? 'progress' : 'idle', meta: st === 'done' ? undefined : `${s.minutes} min`, count: stats.suggestions || undefined, optional: s.optional }
+  })
+  if (c.requests.length) {
+    railItems.splice(railItems.findIndex((r) => r.id === 'review'), 0, {
+      id: 'requests',
+      title: 'Additional requests',
+      state: openRequests ? 'progress' : 'done',
+      count: openRequests || undefined,
+    })
+  }
 
   const view = (() => {
     switch (step) {
@@ -78,6 +109,8 @@ export function ClientApp() {
         return <NetWorthStep c={c} nav={nav} />
       case 'risk':
         return <RiskStep c={c} nav={nav} />
+      case 'requests':
+        return <RequestsStep c={c} nav={nav} />
       case 'review':
         return <ReviewStep c={c} nav={nav} />
       case 'done':
@@ -105,13 +138,9 @@ export function ClientApp() {
             <aside className="hidden lg:block">
               <div className="sticky top-24 flex flex-col gap-4">
                 <ProgressRail
-                  active={sectionId}
+                  active={sectionId ?? (step === 'requests' ? 'requests' : undefined)}
                   onSelect={(id) => go(id as Step)}
-                  items={visibleSections(c).map((s) => {
-                    const st = sectionState(c, s.id)
-                    const stats = sectionStats(c, s.id)
-                    return { id: s.id, title: s.short, state: st === 'done' ? 'done' : st === 'progress' ? 'progress' : 'idle', meta: st === 'done' ? undefined : `${s.minutes} min`, count: stats.suggestions || undefined, optional: s.optional }
-                  })}
+                  items={railItems}
                 />
                 {unreadCount(c, c.clientId) > 0 && <p className="px-3 text-[12px] text-advisor">{advisor.name.split(' ')[0]} replied to you</p>}
               </div>

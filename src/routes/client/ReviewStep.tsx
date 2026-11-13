@@ -1,4 +1,4 @@
-import { AlertCircle, CalendarClock, PenLine } from 'lucide-react'
+import { AlertCircle, CalendarClock, FileUp, PenLine } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Checkbox, Input, StatusIcon } from '../../components/primitives'
 import { money } from '../../lib/format'
@@ -72,10 +72,25 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
     return a + (st.required - st.requiredFilled)
   }, 0)
   const first = advisor.name.split(' ')[0]
+  const openRequests = c.requests.filter((r) => r.status === 'open').length
 
   return (
     <div>
       <StepHeader c={c} sectionId="review" />
+
+      {openRequests > 0 && (
+        <button
+          type="button"
+          onClick={() => nav.go('requests')}
+          className="mb-2 flex w-full items-center gap-3 rounded-[18px] bg-advisor-soft/70 p-4 text-left text-[14px] text-ink-2 transition-colors hover:bg-advisor-soft"
+        >
+          <FileUp className="size-4 shrink-0 text-advisor" />
+          <span className="flex-1">
+            {first} is waiting on {openRequests} {openRequests === 1 ? 'request' : 'requests'}.
+          </span>
+          <span className="text-[13px] text-advisor">Open</span>
+        </button>
+      )}
 
       {(pending > 0 || missing > 0) && (
         <div className="mb-6 flex items-start gap-3 rounded-[18px] bg-progress-soft p-4 text-[14px] text-ink-2">
