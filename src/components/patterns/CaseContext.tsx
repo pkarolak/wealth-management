@@ -24,6 +24,13 @@ export function useCaseCtx() {
   return ctx
 }
 
+/** Viewer info when inside a case, without requiring one (for leaf components used everywhere). */
+export function useOptionalViewer() {
+  const ctx = useContext(CaseCtx)
+  const c = useCase(ctx?.caseId)
+  return ctx ? { mode: ctx.mode, clientFirst: c?.firstName } : undefined
+}
+
 /** The current case plus viewer info. Patterns use this instead of prop-drilling the case. */
 export function useCurrentCase() {
   const ctx = useCaseCtx()
