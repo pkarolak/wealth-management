@@ -103,13 +103,11 @@ type CheckboxProps = {
 export function Checkbox({ checked, onChange, label, description, className }: CheckboxProps) {
   return (
     <label className={cn('group flex cursor-pointer items-start gap-3', className)}>
-      <span className="mt-0.5">
-        <CheckboxBox checked={checked} />
-      </span>
+      <CheckboxBox checked={checked} />
       <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span className="flex flex-col gap-0.5">
-        <span className="text-[14px] leading-snug text-ink">{label}</span>
-        {description && <span className="text-[13px] leading-snug text-ink-3">{description}</span>}
+        <span className="text-[14px] leading-5 text-ink">{label}</span>
+        {description && <span className="text-[13px] leading-[18px] text-ink-3">{description}</span>}
       </span>
     </label>
   )
