@@ -52,7 +52,7 @@ function nextStep(c: ClientCase): Next {
   if (ready) return { who: 'you', text: `Review ${ready} ${ready === 1 ? 'section' : 'sections'}` }
   if (c.meeting && c.meeting.at > Date.now()) return { who: 'meeting', text: meetingLabel(c.meeting.at) }
   if (!c.openedAt) return { who: 'client', text: 'Hasn’t opened the link' }
-  if (c.stage === 'submitted') return { who: 'client', text: 'Signed · no meeting booked' }
+  if (c.stage === 'submitted') return { who: 'client', text: 'Submitted · no meeting booked' }
   const left = visibleSections(c).filter((s) => sectionState(c, s.id) !== 'done').length
   return { who: 'client', text: `${left} ${left === 1 ? 'section' : 'sections'} left` }
 }
@@ -186,7 +186,7 @@ function collectTodos(cases: ClientCase[]) {
     if (ready.length)
       mine.push({ id: `rv-${c.id}`, c, icon: <Check className="size-4" />, tone: 'ink', title: <>Review {c.firstName}’s {ready.length === 1 ? 'section' : `${ready.length} sections`}</>, detail: ready.map((s) => s.wmShort).join(', '), action: 'Review', to: `${base}?section=${ready[0].id}` })
     if (c.stage === 'submitted' && !c.agenda?.sharedAt)
-      mine.unshift({ id: `b-${c.id}`, c, icon: <FileText className="size-4" />, tone: 'ai', title: <>{c.firstName} signed — <span className="font-medium">share the agenda</span></>, detail: c.meeting ? `Meeting ${meetingLabel(c.meeting.at)}` : 'No meeting booked yet', action: 'Open brief', to: `${base}/brief` })
+      mine.unshift({ id: `b-${c.id}`, c, icon: <FileText className="size-4" />, tone: 'ai', title: <>{c.firstName} submitted — <span className="font-medium">share the agenda</span></>, detail: c.meeting ? `Meeting ${meetingLabel(c.meeting.at)}` : 'No meeting booked yet', action: 'Open brief', to: `${base}/brief` })
     else if (c.meeting && c.meeting.at > Date.now())
       mine.push({ id: `m-${c.id}`, c, icon: <CalendarClock className="size-4" />, tone: 'ink', title: <>Meeting with {c.firstName}</>, detail: `${meetingLabel(c.meeting.at)} · ${c.meeting.mode === 'video' ? 'Video call' : 'At the office'}`, action: 'Brief', to: `${base}/brief` })
 

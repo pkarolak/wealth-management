@@ -25,7 +25,7 @@ export function Done({ c }: { c: ClientCase }) {
           <span className="flex size-6 items-center justify-center rounded-full bg-success text-white">
             <Check className="size-3.5" />
           </span>
-          Signed and sent to {first}
+          Sent to {first}
           {submitted && <span className="text-ink-4">· {submitted}</span>}
         </motion.span>
         <h1 className="display text-[44px] leading-[1.05] text-ink">Thank you, {c.firstName}.</h1>

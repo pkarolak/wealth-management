@@ -11,6 +11,7 @@ export async function seedHalfway() {
   const draft = inviteDraft(c.firstName, 'Emily')
   s().sendInvite(id, { subject: 'Before we meet — a few questions', body: draft.polished })
   s().markOpened(id)
+  s().giveConsent(id)
 
   const [intro, idScan, brokerage, mortgage] = await Promise.all([extractIntro(''), scanId(), extractDocument('brokerage'), extractDocument('mortgage')])
 

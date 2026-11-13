@@ -81,7 +81,7 @@ export function NeedsYou({ c, onOpenThread }: { c: ClientCase; onOpenThread: (id
       tone: 'ai',
       text: (
         <>
-          {c.firstName} signed. <span className="font-medium">Prepare and share the agenda</span>
+          {c.firstName} submitted. <span className="font-medium">Prepare and share the agenda</span>
         </>
       ),
       action: 'Open brief',

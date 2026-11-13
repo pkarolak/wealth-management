@@ -102,6 +102,7 @@ export type EmailPayload = { fromId: string; to: string[]; subject: string; body
 
 export type ActivityKind =
   | 'created'
+  | 'consent'
   | 'invited'
   | 'opened'
   | 'intro'
@@ -153,6 +154,8 @@ export type ClientCase = {
   meeting?: { at: number; mode: 'video' | 'office' }
   agenda?: { items: AgendaItem[]; sharedAt?: number; updatedAt: number }
   introDone?: boolean
+  /** Client agreed to share their information and acknowledged the privacy notice, Form CRS and Form ADV. */
+  consentAt?: number
   idScanned?: boolean
   fields: Record<string, FieldState>
   goals: Goal[]

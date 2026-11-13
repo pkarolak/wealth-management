@@ -43,6 +43,7 @@ type Actions = {
   sendInvite: (caseId: string, email: { subject: string; body: string }) => void
   markOpened: (caseId: string) => void
   setIntroDone: (caseId: string) => void
+  giveConsent: (caseId: string) => void
   setIdScanned: (caseId: string) => void
 
   setField: (caseId: string, fieldId: string, value: unknown, actorId: string, source?: FieldSource) => void
@@ -205,6 +206,12 @@ export const useStore = create<Store>()(
           const c = get().cases[caseId]
           if (!c) return
           patchCase(caseId, (x) => ({ ...x, introDone: true }), { actorId: c.clientId, kind: 'intro', text: `${c.firstName} told us about themselves — AI drafted answers to confirm` })
+        },
+
+        giveConsent: (caseId) => {
+          const c = get().cases[caseId]
+          if (!c || c.consentAt) return
+          patchCase(caseId, (x) => ({ ...x, consentAt: now() }), { actorId: c.clientId, kind: 'consent', text: `${c.firstName} agreed to share their information and acknowledged the privacy notice, Form CRS and Form ADV` })
         },
 
         setIdScanned: (caseId) => {
@@ -439,8 +446,8 @@ export const useStore = create<Store>()(
           patchCase(caseId, (x) => ({ ...x, stage: 'submitted', submittedAt: now(), signature, sectionProgress: { ...x.sectionProgress, review: 'done' } }), {
             actorId: c.clientId,
             kind: 'submitted',
-            text: `${c.firstName} signed and submitted`,
-            email: { fromId: c.clientId, to: [advisor?.name ?? 'Wealth Manager'], subject: `${c.firstName} ${c.lastName} completed onboarding`, body: `${c.firstName} signed and submitted the onboarding form. Your meeting brief is ready.` },
+            text: `${c.firstName} confirmed and submitted`,
+            email: { fromId: c.clientId, to: [advisor?.name ?? 'Wealth Manager'], subject: `${c.firstName} ${c.lastName} completed onboarding`, body: `${c.firstName} confirmed and submitted the onboarding form. Your meeting brief is ready.` },
           })
           patchCase(caseId, (x) => x, {
             actorId: c.advisorId,

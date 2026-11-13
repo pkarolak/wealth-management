@@ -50,7 +50,7 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <span className="inline-flex items-center gap-2 text-[13px] text-ink-3">
           <IdCard className="size-4" /> Helpful to have nearby: your driver’s license and recent statements
         </span>
-        <Button size="lg" className="ml-auto" trailing={<ArrowRight className="size-4" />} onClick={() => (resuming ? nav.go(c.introDone ? 'about' : 'intro') : nav.next())}>
+        <Button size="lg" className="ml-auto" trailing={<ArrowRight className="size-4" />} onClick={() => (!c.consentAt ? nav.go('consent') : nav.go(c.introDone ? 'about' : 'intro'))}>
           {resuming ? 'Continue where I left off' : 'Let’s begin'}
         </Button>
       </div>

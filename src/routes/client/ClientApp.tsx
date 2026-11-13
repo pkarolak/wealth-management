@@ -14,6 +14,7 @@ import type { ClientCase } from '../../store/types'
 import { Done } from './Done'
 import { FormSection } from './FormSection'
 import { GoalsStep } from './GoalsStep'
+import { Consent } from './Consent'
 import { IdScan } from './IdScan'
 import { Intro } from './Intro'
 import { NetWorthStep } from './NetWorthStep'
@@ -23,16 +24,16 @@ import { ReviewStep } from './ReviewStep'
 import { RiskStep } from './RiskStep'
 import { Welcome } from './Welcome'
 
-export type Step = 'welcome' | 'intro' | 'id' | SectionId | 'requests' | 'done'
+export type Step = 'welcome' | 'consent' | 'intro' | 'id' | SectionId | 'requests' | 'done'
 
 /** Additional requests only exist once the Wealth Manager has asked for something; they sit right before Review. */
 export const stepOrder = (c: ClientCase): Step[] => {
   const secs: Step[] = visibleSections(c).map((s) => s.id)
   if (c.requests.length) secs.splice(secs.indexOf('review'), 0, 'requests')
-  return ['welcome', 'intro', 'id', ...secs, 'done']
+  return ['welcome', 'consent', 'intro', 'id', ...secs, 'done']
 }
 
-const nonSection: Step[] = ['welcome', 'intro', 'id', 'requests', 'done']
+const nonSection: Step[] = ['welcome', 'consent', 'intro', 'id', 'requests', 'done']
 
 /** Navigation helpers handed to each step. */
 export type StepNav = { next: () => void; back: () => void; go: (s: Step) => void }
@@ -101,6 +102,8 @@ export function ClientApp() {
     switch (step) {
       case 'welcome':
         return <Welcome c={c} nav={nav} />
+      case 'consent':
+        return <Consent c={c} nav={nav} />
       case 'intro':
         return <Intro c={c} nav={nav} />
       case 'id':

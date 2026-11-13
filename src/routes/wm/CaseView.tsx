@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, ChevronDown, Copy, FileText, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronDown, Copy, FileText, Shield, ShieldCheck, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import { AccountTile, CaseProvider, GoalCard, NetWorthSummary, PresenceStatus } from '../../components/patterns'
@@ -79,7 +79,8 @@ export function CaseView() {
               <ProgressBar value={p.ratio * 100} />
               <span className="tabular shrink-0">{Math.round(p.ratio * 100)}%</span>
             </span>
-            {c.stage === 'submitted' && <Badge tone="success">Signed {c.submittedAt && relativeTime(c.submittedAt)}</Badge>}
+            {c.stage === 'submitted' && <Badge tone="success">Submitted {c.submittedAt && relativeTime(c.submittedAt)}</Badge>}
+            <Compliance c={c} />
           </div>
         </PageHeader>
 
@@ -211,5 +212,25 @@ function RiskReview({ c }: { c: ClientCase }) {
         Objective: {score.objective}. {score.description}
       </span>
     </div>
+  )
+}
+
+const day = (ts: number) => new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+/** The paper trail compliance asks for: documents delivered and consent given, with dates. */
+function Compliance({ c }: { c: ClientCase }) {
+  const items = [
+    { label: 'Form CRS & ADV sent', at: c.invitedAt, missing: 'Form CRS & ADV not sent' },
+    { label: 'Consent given', at: c.consentAt, missing: 'No consent yet' },
+  ]
+  return (
+    <span className="flex items-center gap-4 text-[13px]">
+      {items.map((i) => (
+        <span key={i.label} title={i.at ? new Date(i.at).toLocaleString('en-US') : undefined} className={cn('inline-flex items-center gap-1.5', i.at ? 'text-ink-3' : 'text-ink-4')}>
+          {i.at ? <ShieldCheck className="size-3.5 text-success" /> : <Shield className="size-3.5" />}
+          {i.at ? `${i.label} · ${day(i.at)}` : i.missing}
+        </span>
+      ))}
+    </span>
   )
 }

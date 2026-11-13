@@ -113,7 +113,7 @@ export function CreateClient() {
           <Card tone="muted" padding="lg" inner={0} className="flex flex-col gap-3 leading-relaxed">
             <span className="font-medium text-ink">What happens next</span>
             <p>We create a private link for the client. They can fill it in on their own time, by voice or by uploading statements.</p>
-            <p>You’ll see their progress live, can answer questions right on a field, and get a meeting brief once they sign.</p>
+            <p>You’ll see their progress live, can answer questions right on a field, and get a meeting brief once they submit.</p>
           </Card>
         </aside>
       </div>

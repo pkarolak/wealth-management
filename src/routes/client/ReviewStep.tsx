@@ -63,7 +63,6 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const advisor = useStore((s) => s.people[c.advisorId])
   const [sig, setSig] = useState(c.signature ?? '')
   const [accurate, setAccurate] = useState(!!c.signature)
-  const [docs, setDocs] = useState(!!c.signature)
   const secs = visibleSections(c).filter((s) => s.kind !== 'review')
   const deferred = deferredLabels(c)
   const pending = secs.reduce((a, s) => a + sectionStats(c, s.id).suggestions, 0)
@@ -96,7 +95,7 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <div className="mb-6 flex items-start gap-3 rounded-[18px] bg-progress-soft p-4 text-[14px] text-ink-2">
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-progress-ink" />
           <span>
-            {[pending > 0 && `${pending} ${pending === 1 ? 'answer' : 'answers'} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. You can still sign — {first} will go through them with you.
+            {[pending > 0 && `${pending} ${pending === 1 ? 'answer' : 'answers'} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. You can still send — {first} will go through them with you.
           </span>
         </div>
       )}
@@ -141,10 +140,12 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
       )}
 
       <section className="mt-10 flex flex-col gap-4 border-t border-line pt-8">
-        <h2 className="text-[17px] text-ink">Sign</h2>
+        <div className="flex flex-col gap-1">
+          <h2 className="text-[17px] text-ink">Confirm and send</h2>
+          <p className="text-[14px] text-ink-3">This isn’t your advisory agreement — {first} will share that after your meeting, once you’ve decided to go ahead.</p>
+        </div>
         <Checkbox checked={accurate} onChange={setAccurate} label="The information I’ve provided is accurate to the best of my knowledge." />
-        <Checkbox checked={docs} onChange={setDocs} label="I’ve received the firm’s Form CRS and Form ADV Part 2." description="Sent with your invite. You can download them again anytime." />
-        <Input label="Type your full legal name" value={sig} onChange={(e) => setSig(e.target.value)} className="max-w-md" />
+        <Input label="Type your full name to confirm" value={sig} onChange={(e) => setSig(e.target.value)} className="max-w-md" />
         {sig && <span className="font-serif text-[30px] text-ink italic">{sig}</span>}
         <div className="mt-4 flex items-center gap-3">
           <Button variant="ghost" size="lg" onClick={nav.back}>
@@ -153,13 +154,13 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
           <Button
             size="lg"
             className="ml-auto"
-            disabled={!sig.trim() || !accurate || !docs}
+            disabled={!sig.trim() || !accurate}
             onClick={() => {
               submit(c.id, sig.trim())
               nav.go('done')
             }}
           >
-            Sign and send to {first}
+            Confirm and send to {first}
           </Button>
         </div>
       </section>
