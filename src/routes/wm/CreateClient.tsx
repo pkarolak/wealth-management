@@ -64,7 +64,7 @@ export function CreateClient() {
               />
             </div>
             <div className="flex flex-col gap-2.5">
-              <Label hint="Decides which custodian questions we ask">Account types</Label>
+              <Label>Account types</Label>
               <ChipGroup value={f.accountTypes} onChange={(v) => set('accountTypes', v)} options={accountTypeOptions} />
             </div>
           </section>
