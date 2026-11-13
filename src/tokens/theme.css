@@ -1,0 +1,53 @@
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Romie", "Instrument Serif", ui-serif, Georgia, serif;
+
+  --color-canvas: #f7f6f0;
+  --color-surface: #ffffff;
+  --color-muted: #f2f0ea;
+  --color-sunken: #ebe7df;
+  --color-line: #e5e0d9;
+  --color-line-strong: #d6cfc5;
+
+  --color-ink: #141413;
+  --color-ink-2: #3d3b37;
+  --color-ink-3: #6b6862;
+  --color-ink-4: #9a958d;
+
+  --color-taupe-900: #4a423c;
+  --color-taupe-700: #8c7f74;
+  --color-taupe-500: #bdafa3;
+  --color-taupe-300: #e5e0d9;
+  --color-taupe-100: #f1ede7;
+
+  /* Accents are desaturated and warmed so they sit inside the taupe palette. */
+  --color-waiting: #2f6f8a;
+  --color-waiting-soft: #e5edef;
+  --color-progress: #d99a3e;
+  --color-progress-ink: #8a6224;
+  --color-progress-soft: #f7eedf;
+  --color-done: #141413;
+  --color-danger: #b0533f;
+  --color-danger-soft: #f5e7e1;
+  --color-success: #4d7a5d;
+  --color-success-soft: #e8eee6;
+
+  --color-ai: #3e5f8c;
+  --color-ai-soft: #e9edf2;
+  --color-advisor: #8f5170;
+  --color-advisor-soft: #f2e7ea;
+  /* Presence tags: soft fills with the accent as text. */
+  --color-presence-blue: #dce3ec;
+  --color-presence-pink: #eddce3;
+
+  /* Concentric radius scale: outer = inner + padding. See tokens.ts `radius`. */
+  --radius-control: 10px;
+  --radius-check: 6px;
+  --radius-menu: 14px;
+  --radius-tooltip: 8px;
+
+  --shadow-float: 0 1px 2px rgb(20 20 19 / 0.04), 0 8px 24px rgb(20 20 19 / 0.08);
+  --shadow-soft: 0 1px 2px rgb(20 20 19 / 0.04);
+
+  --animate-pulse-soft: pulse-soft 1.6s ease-in-out infinite;
+}
