@@ -1,121 +1,156 @@
-import { ArrowUpRight, FastForward, LayoutGrid, RotateCcw } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowUpRight, Columns2, FastForward, LayoutGrid, RotateCcw } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { Avatar, Button, Card, toast } from '../components/primitives'
-import { FIRM, LogoMark } from '../components/shell/Brand'
+import { toast } from '../components/primitives'
+import { cn } from '../lib/cn'
 import { resetDemo, useStore } from '../store/caseStore'
 import { seedHalfway } from '../store/demo'
-import { ADVISOR_ID } from '../store/seed'
-import { latestCase } from '../store/selectors'
+import { latestCase, overallProgress } from '../store/selectors'
+
+/** Prototype tooling, deliberately outside the product's visual language. */
+const mono = 'font-mono text-[12px] tracking-wide'
 
 const steps = [
-  ['Wealth Manager', 'Emily adds Daniel as a new client and AI polishes her invite email.'],
-  ['Wealth Manager', 'She copies the private link and sends it.'],
+  ['WM', 'Emily adds Daniel as a new client and AI polishes her invite email.'],
+  ['WM', 'She copies the private link and sends it.'],
   ['Client', 'Daniel opens the link, talks for 30 seconds and AI drafts half the form.'],
   ['Client', 'He scans his license, links accounts and drops in statements; net worth builds itself.'],
-  ['Both', 'He asks Emily a question on a field; she replies and suggests a fix from her side, live in the other tab.'],
-  ['Wealth Manager', 'Emily reviews section by section, then opens the meeting brief.'],
+  ['Both', 'He asks Emily a question on a field; she replies from her side, live in the other tab.'],
+  ['WM', 'Emily reviews section by section, then opens the meeting brief.'],
 ]
 
-/** Entry point: open each side in its own tab, reset, or jump ahead. */
+function Tool({ children, onClick, disabled, primary, icon }: { children: ReactNode; onClick?: () => void; disabled?: boolean; primary?: boolean; icon?: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'inline-flex h-9 items-center gap-2 rounded-[8px] px-3 transition-colors disabled:cursor-not-allowed disabled:opacity-35',
+        mono,
+        primary ? 'bg-white text-[#141414] hover:bg-white/85' : 'border border-white/15 text-white/80 hover:border-white/35 hover:text-white',
+      )}
+    >
+      {icon}
+      {children}
+    </button>
+  )
+}
+
+function Panel({ label, title, meta, children }: { label: string; title: string; meta: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-6 rounded-[16px] border border-white/10 bg-white/[0.03] p-2">
+      <div className="flex flex-col gap-3 p-4 pb-0">
+        <span className={cn(mono, 'text-white/40 uppercase')}>{label}</span>
+        <span className="text-[20px] text-white">{title}</span>
+        <span className={cn(mono, 'text-white/45')}>{meta}</span>
+      </div>
+      <div className="flex gap-2 p-2 pt-0">{children}</div>
+    </div>
+  )
+}
+
 export function DemoHome() {
   const c = useStore((s) => latestCase(s.cases))
-  const emily = useStore((s) => s.people[ADVISOR_ID])
   const [busy, setBusy] = useState(false)
   const clientUrl = c ? `/c/${c.token}` : undefined
-
-  const openBoth = () => {
-    window.open(c ? `/wm/c/${c.id}` : '/wm', 'wm')
-    if (clientUrl) window.open(clientUrl, 'client')
-  }
+  const wmUrl = c ? `/wm/c/${c.id}` : '/wm'
+  const p = c ? overallProgress(c) : undefined
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-8 py-14">
-      <header className="flex items-center gap-3">
-        <LogoMark size={40} />
-        <div className="flex flex-col">
-          <span className="text-[15px] font-medium text-ink">{FIRM}</span>
-          <span className="text-[13px] text-ink-3">Client onboarding prototype · everything runs in this browser</span>
+    <div className="min-h-screen bg-[#141414] text-white [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]">
+      <div className="mx-auto flex max-w-4xl flex-col gap-12 px-8 py-12">
+        <header className="flex items-center gap-3">
+          <span className={cn(mono, 'rounded-[6px] bg-white/10 px-2 py-1 text-white/70 uppercase')}>Prototype</span>
+          <span className={cn(mono, 'text-white/40')}>CIF onboarding · local only · state lives in this browser</span>
+          <Link to="/gallery" className={cn(mono, 'ml-auto inline-flex items-center gap-1.5 text-white/50 hover:text-white')}>
+            <LayoutGrid className="size-3.5" /> Components
+          </Link>
+        </header>
+
+        <div className="flex flex-col gap-3">
+          <h1 className="max-w-2xl text-[36px] leading-tight font-medium tracking-tight">Demo control panel</h1>
+          <p className="max-w-xl text-[15px] text-white/55">Open the two sides in separate tabs and place them next to each other. Every change syncs between tabs instantly, no server involved.</p>
         </div>
-        <Link to="/gallery" className="ml-auto inline-flex items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink">
-          <LayoutGrid className="size-3.5" /> Components
-        </Link>
-      </header>
 
-      <h1 className="display max-w-3xl text-[64px] text-ink">From a first meeting to a complete client profile, without the 20-page form.</h1>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Panel label="Side A" title="Wealth Manager" meta="Emily Parker · creates, reviews, prepares">
+            <Tool primary icon={<ArrowUpRight className="size-3.5" />} onClick={() => window.open(wmUrl, 'wm')}>
+              Open
+            </Tool>
+          </Panel>
+          <Panel label="Side B" title="Client" meta={c ? `${c.firstName} ${c.lastName} · /c/${c.token}` : 'No client yet. Create one as Emily first.'}>
+            <Tool primary disabled={!clientUrl} icon={<ArrowUpRight className="size-3.5" />} onClick={() => clientUrl && window.open(clientUrl, 'client')}>
+              Open
+            </Tool>
+          </Panel>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card padding="lg" inner={10} className="flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            <Avatar name={emily.name} src={emily.avatar} size="lg" />
-            <div className="flex flex-col">
-              <span className="text-[16px] font-medium text-ink">Wealth Manager</span>
-              <span className="text-[13px] text-ink-3">Emily Parker · creates the client, reviews, prepares</span>
-            </div>
+        <div className="flex flex-col gap-4 rounded-[16px] border border-white/10 p-6">
+          <div className={cn(mono, 'flex flex-wrap items-center gap-x-6 gap-y-2 text-white/45')}>
+            <span>STATE</span>
+            <span>
+              case <span className="text-white/85">{c ? `${c.firstName} ${c.lastName}` : '—'}</span>
+            </span>
+            <span>
+              stage <span className="text-white/85">{c?.stage ?? '—'}</span>
+            </span>
+            <span>
+              progress <span className="text-white/85">{p ? `${Math.round(p.ratio * 100)}%` : '—'}</span>
+            </span>
+            <span>
+              threads <span className="text-white/85">{c?.threads.length ?? 0}</span>
+            </span>
           </div>
-          <Button size="lg" trailing={<ArrowUpRight className="size-4" />} onClick={() => window.open(c ? `/wm/c/${c.id}` : '/wm', 'wm')}>
-            Open Wealth Manager
-          </Button>
-        </Card>
-        <Card padding="lg" inner={10} className="flex flex-col gap-5">
-          <div className="flex items-center gap-3">
-            <Avatar name={c ? `${c.firstName} ${c.lastName}` : 'Daniel Tan'} size="lg" />
-            <div className="flex flex-col">
-              <span className="text-[16px] font-medium text-ink">Client</span>
-              <span className="text-[13px] text-ink-3">{c ? `${c.firstName}’s private link · /c/${c.token}` : 'Available once Emily creates a client'}</span>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Tool
+              disabled={!c}
+              icon={<Columns2 className="size-3.5" />}
+              onClick={() => {
+                window.open(wmUrl, 'wm')
+                if (clientUrl) window.open(clientUrl, 'client')
+              }}
+            >
+              Open both tabs
+            </Tool>
+            <Tool
+              disabled={busy}
+              icon={<FastForward className="size-3.5" />}
+              onClick={async () => {
+                setBusy(true)
+                resetDemo()
+                await seedHalfway()
+                setBusy(false)
+                toast('Jumped to halfway', { description: 'Daniel has finished the first three sections and asked a question.', tone: 'success' })
+              }}
+            >
+              {busy ? 'Preparing…' : 'Jump to halfway'}
+            </Tool>
+            <Tool
+              icon={<RotateCcw className="size-3.5" />}
+              onClick={() => {
+                resetDemo()
+                toast('Demo reset', { description: 'All tabs start fresh.' })
+              }}
+            >
+              Reset
+            </Tool>
           </div>
-          <Button size="lg" variant="secondary" disabled={!clientUrl} trailing={<ArrowUpRight className="size-4" />} onClick={() => clientUrl && window.open(clientUrl, 'client')}>
-            Open client link
-          </Button>
-        </Card>
-      </div>
+        </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="soft" disabled={!c} onClick={openBoth}>
-          Open both tabs
-        </Button>
-        <Button
-          variant="soft"
-          leading={<FastForward className="size-4" />}
-          disabled={busy}
-          onClick={async () => {
-            setBusy(true)
-            resetDemo()
-            await seedHalfway()
-            setBusy(false)
-            toast('Jumped to halfway', { description: 'Daniel has finished the first three sections and asked a question.', tone: 'success' })
-          }}
-        >
-          {busy ? 'Preparing…' : 'Jump to halfway'}
-        </Button>
-        <Button
-          variant="ghost"
-          leading={<RotateCcw className="size-4" />}
-          onClick={() => {
-            resetDemo()
-            toast('Demo reset', { description: 'All tabs start fresh.' })
-          }}
-        >
-          Reset
-        </Button>
-        <span className="ml-2 text-[13px] text-ink-4">Tip: put the two tabs side by side; changes sync live.</span>
+        <section className="flex flex-col gap-4">
+          <span className={cn(mono, 'text-white/40 uppercase')}>Script</span>
+          <ol className="flex flex-col">
+            {steps.map(([who, what], i) => (
+              <li key={i} className="grid grid-cols-[32px_64px_1fr] items-baseline gap-3 border-t border-white/10 py-3.5 last:border-b">
+                <span className={cn(mono, 'text-white/35')}>{String(i + 1).padStart(2, '0')}</span>
+                <span className={cn(mono, 'text-white/50')}>{who}</span>
+                <span className="text-[14px] text-white/80">{what}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
       </div>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-[13px] text-ink-3">Demo script</h2>
-        <ol className="grid gap-2 md:grid-cols-2">
-          {steps.map(([who, what], i) => (
-            <li key={i} className="flex gap-3 rounded-[16px] bg-surface/60 p-4">
-              <span className="tabular text-[13px] text-ink-4">{i + 1}</span>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[12px] text-ink-4">{who}</span>
-                <span className="text-[14px] text-ink-2">{what}</span>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
     </div>
   )
 }
