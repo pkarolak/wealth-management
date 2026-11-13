@@ -118,6 +118,7 @@ export type ActivityKind =
   | 'deferred'
   | 'submitted'
   | 'meeting'
+  | 'agenda'
   | 'email'
 
 export type Activity = { id: string; ts: number; actorId: string; kind: ActivityKind; text: string; email?: EmailPayload }
@@ -127,6 +128,8 @@ export type DocumentItem = { id: string; name: string; kind: string; uploadedAt:
 export type Stage = 'invited' | 'in_progress' | 'submitted' | 'onboarded'
 
 export type SectionProgress = 'idle' | 'progress' | 'done'
+
+export type AgendaItem = { id: string; title: string; minutes: number; topicId?: string }
 
 export type ClientCase = {
   id: string
@@ -148,6 +151,7 @@ export type ClientCase = {
   submittedAt?: number
   signature?: string
   meeting?: { at: number; mode: 'video' | 'office' }
+  agenda?: { items: AgendaItem[]; sharedAt?: number; updatedAt: number }
   introDone?: boolean
   idScanned?: boolean
   fields: Record<string, FieldState>

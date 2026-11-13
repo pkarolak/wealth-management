@@ -50,6 +50,27 @@ export function Done({ c }: { c: ClientCase }) {
         )}
       </AnimatePresence>
 
+      {c.agenda?.sharedAt && (
+        <section className="flex flex-col gap-4 rounded-[28px] bg-surface p-6">
+          <div className="flex items-center gap-3">
+            <Avatar name={advisor.name} src={advisor.avatar} size="md" />
+            <div className="flex flex-col">
+              <h2 className="text-[17px] text-ink">What we’ll cover</h2>
+              <span className="text-[13px] text-ink-3">Agenda from {first} · {c.agenda.items.reduce((a, i) => a + i.minutes, 0)} minutes</span>
+            </div>
+          </div>
+          <ol className="flex flex-col">
+            {c.agenda.items.map((a, i) => (
+              <li key={a.id} className="flex items-baseline gap-4 border-t border-line py-3 text-[15px] first:border-t-0">
+                <span className="tabular w-5 text-[13px] text-ink-4">{i + 1}</span>
+                <span className="flex-1 text-ink">{a.title}</span>
+                <span className="tabular text-[13px] text-ink-4">{a.minutes} min</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <Link to={`/c/${c.token}?step=review`} className="self-start text-[14px] text-ink-3 underline-offset-4 hover:text-ink hover:underline">
         Review my answers
       </Link>

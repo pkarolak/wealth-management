@@ -5,6 +5,7 @@ import { fieldById, sectionById, type SectionId } from '../schema/onboarding'
 import type { FieldDraft } from '../services/ai'
 import { ADVISOR_ID, staff } from './seed'
 import type {
+  AgendaItem,
   Activity,
   ActivityKind,
   Anchor,
@@ -72,6 +73,8 @@ type Actions = {
   markSectionReviewed: (caseId: string, sectionId: SectionId, reviewed: boolean) => void
   submit: (caseId: string, signature: string) => void
   scheduleMeeting: (caseId: string, at: number, mode: 'video' | 'office') => void
+  setAgenda: (caseId: string, items: AgendaItem[]) => void
+  shareAgenda: (caseId: string, actorId: string) => void
 
   setPresence: (p: Presence) => void
   clearPresence: (personId: string) => void
@@ -425,6 +428,21 @@ export const useStore = create<Store>()(
             kind: 'meeting',
             text: `${c.firstName} ${c.meeting ? 'moved' : 'booked'} the planning meeting: ${when}, ${where}`,
             email: { fromId: c.clientId, to: [get().people[c.advisorId]?.name ?? 'Wealth Manager'], subject: `Planning meeting with ${c.firstName} ${c.lastName}`, body: `${c.firstName} booked ${when} (${where}, 45 minutes).` },
+          })
+        },
+
+        setAgenda: (caseId, items) => patchCase(caseId, (x) => ({ ...x, agenda: { ...x.agenda, items, updatedAt: now() } })),
+
+        shareAgenda: (caseId, actorId) => {
+          const c = get().cases[caseId]
+          if (!c?.agenda) return
+          const lines = c.agenda.items.map((a, i) => `${i + 1}. ${a.title} (${a.minutes} min)`).join('\n')
+          const first = personName(actorId).split(' ')[0]
+          patchCase(caseId, (x) => ({ ...x, agenda: x.agenda && { ...x.agenda, sharedAt: now() } }), {
+            actorId,
+            kind: 'agenda',
+            text: `${c.agenda.sharedAt ? 'Sent an updated' : 'Shared the'} meeting agenda with ${c.firstName}`,
+            email: { fromId: actorId, to: [clientEmail(c)], subject: 'Agenda for our planning meeting', body: `Hi ${c.firstName},\n\nHere’s what I’d like us to cover:\n\n${lines}\n\nReply if there’s anything you’d like to add.\n\n${first}` },
           })
         },
 

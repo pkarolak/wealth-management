@@ -234,26 +234,109 @@ export async function polishReply(text: string) {
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
-export type Brief = { headline: string; known: string[]; missing: string[]; discuss: string[]; suggestedAgenda: string[] }
+export type TopicTag = 'Planning' | 'Open question' | 'To collect' | 'To verify'
 
-export function meetingBrief(c: ClientCase, netWorth: { total: number; liquid: number; exHome: number }, openThreads: number, deferred: string[], lowConfidence: string[]): Brief {
+/** A conversation worth having: what we noticed, why it matters, and how to open it. */
+export type Topic = { id: string; tag: TopicTag; priority: 'high' | 'medium'; title: string; why: string; ask: string; minutes: number }
+
+export type Brief = { headline: string; topics: Topic[]; suggestedAgenda: { title: string; minutes: number; topicId?: string }[] }
+
+export function meetingBrief(
+  c: ClientCase,
+  netWorth: { total: number; liquid: number; exHome: number },
+  deferred: string[],
+  lowConfidence: string[],
+  risk?: { label: string },
+): Brief {
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n)
-  const equity = c.items.find((i) => i.category === 'equityComp')?.value ?? 0
+  const equityItem = c.items.find((i) => i.category === 'equityComp' && i.value)
+  const equity = equityItem?.value ?? 0
   const assets = c.items.filter((i) => i.side === 'asset').reduce((a, i) => a + (i.value ?? 0), 0)
   const conc = assets ? Math.round((equity / assets) * 100) : 0
+  const oldPlan = c.items.find((i) => i.category === 'retirement' && /previous|old/i.test(i.name))
+  const year = new Date().getFullYear()
+  const nearGoal = [...c.goals].filter((g) => g.targetYear).sort((a, b) => (a.targetYear ?? 0) - (b.targetYear ?? 0))[0]
+  const topics: Topic[] = []
+
+  if (conc >= 15)
+    topics.push({
+      id: 'concentration',
+      tag: 'Planning',
+      priority: 'high',
+      title: 'Concentration in employer stock',
+      why: `${equityItem?.name ?? 'Employer stock'} is ${conc}% of assets (${fmt(equity)}).${equityItem?.detail ? ` ${equityItem.detail}.` : ''}`,
+      ask: 'How do you feel about holding this much in one company? Any plans for the next vest?',
+      minutes: 15,
+    })
+  if (oldPlan)
+    topics.push({
+      id: 'rollover',
+      tag: 'Planning',
+      priority: 'high',
+      title: 'Roll over the old 401(k)',
+      why: oldPlan.value ? `${fmt(oldPlan.value)}${oldPlan.institution ? ` at ${oldPlan.institution}` : ''}, still with a previous employer.` : 'Still with a previous employer. Balance not known yet.',
+      ask: 'Would you like us to consolidate it into an IRA we manage together?',
+      minutes: 10,
+    })
+  if (nearGoal && nearGoal.targetYear && nearGoal.targetYear - year <= 5 && nearGoal.amount)
+    topics.push({
+      id: 'near-goal',
+      tag: 'Planning',
+      priority: nearGoal.amount > netWorth.liquid * 0.5 ? 'high' : 'medium',
+      title: `${nearGoal.title} in ${nearGoal.targetYear - year} years`,
+      why: `Needs about ${fmt(nearGoal.amount)}; ${fmt(netWorth.liquid)} is liquid today.${risk ? ` Risk profile reads “${risk.label}”.` : ''}`,
+      ask: 'Should money for this goal sit apart from long-term investments?',
+      minutes: 10,
+    })
+  for (const t of c.threads.filter((x) => !x.resolved))
+    topics.push({
+      id: `thread-${t.id}`,
+      tag: 'Open question',
+      priority: 'medium',
+      title: t.title,
+      why: `“${t.messages[0]?.body ?? ''}”`,
+      ask: 'Answer together and close the thread.',
+      minutes: 5,
+    })
+  if (!risk)
+    topics.push({
+      id: 'risk',
+      tag: 'To collect',
+      priority: 'medium',
+      title: 'Risk questionnaire not finished',
+      why: `${c.firstName} hasn’t answered the risk scenarios yet. Needed before recommending a portfolio.`,
+      ask: 'Walk through the scenarios together; it takes about five minutes.',
+      minutes: 5,
+    })
+  if (deferred.length)
+    topics.push({
+      id: 'deferred',
+      tag: 'To collect',
+      priority: 'medium',
+      title: `Collect ${deferred.length === 1 ? deferred[0] : `${deferred.length} answers`} in person`,
+      why: `${c.firstName} chose to give ${deferred.length === 1 ? 'this' : 'these'} in the meeting: ${deferred.join(', ')}.`,
+      ask: 'Have the secure form ready to fill in together.',
+      minutes: 5,
+    })
+  if (lowConfidence.length)
+    topics.push({
+      id: 'rough',
+      tag: 'To verify',
+      priority: 'medium',
+      title: `${plural(lowConfidence.length, 'balance')} still rough`,
+      why: lowConfidence.map((l) => l.split(' — ')[0]).join(', '),
+      ask: 'Ask for a statement or link the account during the meeting.',
+      minutes: 5,
+    })
+
+  const planning = topics.filter((t) => t.tag === 'Planning')
   return {
-    headline: `${c.firstName} has a net worth of about ${fmt(netWorth.total)}, ${fmt(netWorth.liquid)} of it liquid. ${conc >= 15 ? `Employer stock is ${conc}% of assets — the biggest planning lever.` : ''}`,
-    known: [
-      `${c.goals.length} goals, the nearest in ${Math.min(...c.goals.map((g) => g.targetYear ?? 9999))}`,
-      `${plural(c.items.filter((i) => i.side === 'asset').length, 'asset')} and ${plural(c.items.filter((i) => i.side === 'liability').length, 'debt')} listed`,
-      `${plural(c.documents.length, 'document')} uploaded`,
+    headline: `${c.firstName} is worth about ${fmt(netWorth.total)}, ${fmt(netWorth.liquid)} of it liquid.${planning[0] ? ` Biggest lever: ${planning[0].title.toLowerCase()}.` : ''}`,
+    topics,
+    suggestedAgenda: [
+      { title: 'Goals and priorities', minutes: 10 },
+      ...planning.slice(0, 2).map((t) => ({ title: t.title, minutes: t.minutes, topicId: t.id })),
+      { title: 'Account opening and next steps', minutes: 10 },
     ],
-    missing: [...deferred.map((d) => `${d} — deferred to the meeting`), ...lowConfidence],
-    discuss: [
-      ...(conc >= 15 ? ['Diversifying the RSU position ahead of the February vest'] : []),
-      'Rolling the old 401(k) into the new Rollover IRA',
-      ...(openThreads ? [`${openThreads} open question${openThreads > 1 ? 's' : ''} from the form`] : []),
-    ],
-    suggestedAgenda: ['Confirm goals and priorities (10 min)', 'Risk profile and investment objective (10 min)', 'Equity compensation and concentration (15 min)', 'Account opening and transfers (10 min)'],
   }
 }
