@@ -1,19 +1,18 @@
-import { ArrowRight, BellRing, CalendarClock, Check, FileText, MessageCircle, PencilLine, Plus, Send } from 'lucide-react'
+import { ArrowRight, BellRing, CalendarClock, Check, FileText, Hourglass, MessageCircle, PencilLine, Plus, Send } from 'lucide-react'
 import { useMemo, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Avatar, Badge, Button, Card, CardHeader, CountDot, ProgressBar, toast } from '../../components/primitives'
+import { Avatar, Button, Card, CardHeader, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { money, moneyCompact, relativeTime } from '../../lib/format'
 import { useStore } from '../../store/caseStore'
-import { useNow } from '../../store/hooks'
+import { useNow, usePresenceOf } from '../../store/hooks'
 import { ADVISOR_ID, pipeline, pipelineCounts } from '../../store/seed'
-import { overallProgress, pendingReview, realCases, sectionState, sectionStats, unreadCount, visibleSections } from '../../store/selectors'
+import { pendingReview, realCases, sectionState, sectionStats, visibleSections } from '../../store/selectors'
 import type { ClientCase, Stage } from '../../store/types'
 import { color } from '../../tokens/tokens'
 import { PageHeader } from './WMLayout'
 
 const stageLabel: Record<Stage, string> = { invited: 'Link sent', in_progress: 'Filling in', submitted: 'Ready for meeting', onboarded: 'Onboarded' }
-const stageTone = { invited: 'waiting', in_progress: 'progress', submitted: 'success', onboarded: 'neutral' } as const
 
 const greeting = () => {
   const h = new Date().getHours()
@@ -41,35 +40,124 @@ function PipelineBars({ live }: { live: number }) {
   )
 }
 
+type Next = { who: 'you' | 'client' | 'meeting'; text: string }
+
+/** Whose move it is, and what the move is. */
+function nextStep(c: ClientCase): Next {
+  const toReply = c.threads.filter((t) => !t.resolved && t.messages.at(-1)?.authorId === c.clientId).length
+  if (toReply) return { who: 'you', text: `Reply to ${toReply} ${toReply === 1 ? 'question' : 'questions'}` }
+  if (pendingReview(c).length) return { who: 'you', text: 'Recheck changed answers' }
+  if (c.stage === 'submitted' && !c.agenda?.sharedAt) return { who: 'you', text: 'Share the meeting agenda' }
+  const ready = visibleSections(c).filter((s) => s.kind !== 'review' && sectionState(c, s.id) === 'done' && !c.advisorReviewed[s.id]).length
+  if (ready) return { who: 'you', text: `Review ${ready} ${ready === 1 ? 'section' : 'sections'}` }
+  if (c.meeting && c.meeting.at > Date.now()) return { who: 'meeting', text: meetingLabel(c.meeting.at) }
+  if (!c.openedAt) return { who: 'client', text: 'Hasn’t opened the link' }
+  if (c.stage === 'submitted') return { who: 'client', text: 'Signed · no meeting booked' }
+  const left = visibleSections(c).filter((s) => sectionState(c, s.id) !== 'done').length
+  return { who: 'client', text: `${left} ${left === 1 ? 'section' : 'sections'} left` }
+}
+
+const segmentClass = { reviewed: 'bg-ink', done: 'bg-ink-3', progress: 'bg-progress', idle: 'bg-line-strong' }
+
+function Journey({ c }: { c: ClientCase }) {
+  const secs = visibleSections(c)
+  const states = secs.map((s) => (c.advisorReviewed[s.id] ? 'reviewed' : (sectionState(c, s.id) as 'done' | 'progress' | 'idle')))
+  const done = states.filter((x) => x === 'done' || x === 'reviewed').length
+  return (
+    <span className="flex w-full min-w-0 flex-col gap-2">
+      <span className="flex w-full gap-[3px]">
+        {secs.map((s, i) => (
+          <span key={s.id} title={`${s.wmTitle} · ${states[i] === 'reviewed' ? 'reviewed' : states[i] === 'done' ? 'done' : states[i] === 'progress' ? 'in progress' : 'not started'}`} className={cn('h-1.5 flex-1 rounded-full', segmentClass[states[i]])} />
+        ))}
+      </span>
+      <span className="text-[12px] text-ink-4">
+        {stageLabel[c.stage]} · {done} of {secs.length}
+      </span>
+    </span>
+  )
+}
+
 function CaseRow({ c }: { c: ClientCase }) {
   const navigate = useNavigate()
-  const p = overallProgress(c)
-  const unread = unreadCount(c, ADVISOR_ID)
-  const review = pendingReview(c).length
-  const last = c.activity[0]
+  const here = usePresenceOf(c.clientId, c.id)
+  const fromClient = c.activity.find((a) => a.actorId === c.clientId)
+  const next = nextStep(c)
   return (
-    <button type="button" onClick={() => navigate(`/wm/c/${c.id}`)} className="grid w-full grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] p-3 text-left transition-colors hover:bg-muted md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto]">
+    <button
+      type="button"
+      onClick={() => navigate(`/wm/c/${c.id}`)}
+      className="group grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-2 rounded-[18px] p-3 text-left transition-colors hover:bg-muted/60 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_220px]"
+    >
       <span className="flex min-w-0 items-center gap-3">
-        <Avatar name={`${c.firstName} ${c.lastName}`} size="lg" />
+        <span className="relative">
+          <Avatar name={`${c.firstName} ${c.lastName}`} size="lg" />
+          {here && <span className="absolute -right-0.5 -bottom-0.5 size-3 rounded-full bg-success ring-2 ring-surface" />}
+        </span>
         <span className="flex min-w-0 flex-col">
-          <span className="flex items-center gap-2 text-[15px] text-ink">
+          <span className="truncate text-[15px] text-ink">
             {c.firstName} {c.lastName}
-            <CountDot count={unread + review} />
           </span>
-          <span className="truncate text-[13px] text-ink-3">{last ? `${last.text} · ${relativeTime(last.ts)}` : 'Just created'}</span>
+          <span className="truncate text-[12px] text-ink-4">{here ? <span className="text-success">Filling in now</span> : c.email}</span>
         </span>
       </span>
-      <span className="hidden flex-col gap-1.5 md:flex">
-        <span className="flex justify-between text-[12px] text-ink-4">
-          <span>
-            {p.done} of {p.sections} sections
-          </span>
-          <span>{Math.round(p.ratio * 100)}%</span>
-        </span>
-        <ProgressBar value={p.ratio * 100} />
+
+      <span className="hidden md:block">
+        <Journey c={c} />
       </span>
-      <Badge tone={stageTone[c.stage]}>{stageLabel[c.stage]}</Badge>
+
+      <span className="hidden min-w-0 flex-col md:flex">
+        {fromClient ? (
+          <>
+            <span className="truncate text-[13px] text-ink-2">{fromClient.text}</span>
+            <span className="text-[12px] text-ink-4">{relativeTime(fromClient.ts)}</span>
+          </>
+        ) : (
+          <span className="text-[13px] text-ink-4">{c.invitedAt ? `Link sent ${relativeTime(c.invitedAt)}` : 'Link not sent yet'}</span>
+        )}
+      </span>
+
+      <span className="flex min-w-0 items-center justify-end gap-2.5">
+        <span className="flex min-w-0 flex-col items-end">
+          <span className={cn('text-[12px]', next.who === 'you' ? 'text-advisor' : 'text-ink-4')}>{next.who === 'you' ? 'Your move' : next.who === 'meeting' ? 'Meeting' : `Waiting on ${c.firstName}`}</span>
+          <span className={cn('truncate text-[13px]', next.who === 'you' ? 'text-ink' : 'text-ink-2')}>{next.text}</span>
+        </span>
+        <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full transition-colors', next.who === 'you' ? 'bg-advisor-soft text-advisor' : next.who === 'meeting' ? 'bg-success-soft text-success' : 'bg-muted text-ink-3')}>
+          {next.who === 'you' ? <ArrowRight className="size-4" /> : next.who === 'meeting' ? <CalendarClock className="size-4" /> : <Hourglass className="size-4" />}
+        </span>
+      </span>
     </button>
+  )
+}
+
+/** Clients in onboarding, newest activity first, with a one-line count of whose move it is. */
+function Onboarding({ cases }: { cases: ClientCase[] }) {
+  const sorted = [...cases].sort((a, b) => (b.activity[0]?.ts ?? b.createdAt) - (a.activity[0]?.ts ?? a.createdAt))
+  const yours = cases.filter((c) => nextStep(c).who === 'you').length
+  return (
+    <Card padding="sm" inner={18} className="lg:col-span-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 px-3 pt-2 pb-2">
+        <h3 className="text-[15px] font-medium text-ink">Onboarding</h3>
+        {cases.length > 0 && (
+          <span className="text-[13px] text-ink-4">
+            {cases.length} active{yours > 0 && <span className="text-advisor"> · {yours} waiting on you</span>}
+          </span>
+        )}
+      </div>
+      <div className="hidden grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_220px] gap-x-6 px-3 pb-1 text-[11px] tracking-wide text-ink-4 uppercase md:grid">
+        <span>Client</span>
+        <span>Progress</span>
+        <span>Latest from client</span>
+        <span className="text-right">Next step</span>
+      </div>
+      {sorted.map((c) => (
+        <CaseRow key={c.id} c={c} />
+      ))}
+      {!cases.length && (
+        <Link to="/wm/new" className="m-1 flex h-24 items-center justify-center gap-2 rounded-[16px] border border-dashed border-line-strong text-[14px] text-ink-3 hover:border-ink-4 hover:text-ink">
+          <Plus className="size-4" /> New client
+        </Link>
+      )}
+    </Card>
   )
 }
 
@@ -180,20 +268,7 @@ export function Overview() {
         </Card>
         <Attention cases={live} />
 
-        <Card padding="sm" inner={16} className="lg:col-span-2">
-          <div className="flex items-center justify-between px-3 pt-2 pb-3">
-            <h3 className="text-[15px] font-medium text-ink">Onboarding</h3>
-            <span className="text-[13px] text-ink-4">{live.length ? `${live.length} active` : 'Add a client to send them a link'}</span>
-          </div>
-          {live.map((c) => (
-            <CaseRow key={c.id} c={c} />
-          ))}
-          {!live.length && (
-            <Link to="/wm/new" className="m-1 flex h-24 items-center justify-center gap-2 rounded-[16px] border border-dashed border-line-strong text-[14px] text-ink-3 hover:border-ink-4 hover:text-ink">
-              <Plus className="size-4" /> New client
-            </Link>
-          )}
-        </Card>
+        <Onboarding cases={live} />
 
         <Card padding="sm" inner={16} className="lg:col-span-2">
           <div className="px-3 pt-2 pb-3 text-[15px] font-medium text-ink">Book of business</div>
