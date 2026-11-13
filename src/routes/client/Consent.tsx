@@ -36,7 +36,7 @@ export function Consent({ c, nav }: { c: ClientCase; nav: StepNav }) {
         </ul>
 
         <div className="flex flex-col border-t border-line pt-4">
-          <span className="pb-1 text-[13px] text-ink-4">Documents from your invite</span>
+          <span className="pb-1 text-[13px] text-ink-4">Documents we’ll ask you to sign</span>
           {docs.map((d) => (
             <button
               key={d}
