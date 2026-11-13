@@ -98,6 +98,8 @@ await shot('client-networth-filled', true)
 // Wealth Manager replies and suggests
 await page.goto(caseUrl, { waitUntil: 'networkidle' })
 await shot('case-progress', true)
+await page.getByRole('button', { name: /Reply/ }).first().click()
+await page.waitForTimeout(300)
 await page.getByPlaceholder('Reply…').first().fill('Green card holders pick “U.S. permanent resident”. I’ll fix it for you.')
 await page.keyboard.press('Enter')
 await page.waitForTimeout(300)
