@@ -95,7 +95,7 @@ export function FieldRow({ def }: { def: FieldDef }) {
       {pendingFill && (
         <button type="button" onClick={() => accept(caseId, def.id, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[12px] whitespace-nowrap text-ink-2 transition-colors hover:bg-muted hover:text-ink">
           <Check className="size-3.5" />
-          Looks right
+          Approve
         </button>
       )}
       {def.canDefer && !filled && !pendingFill && (
