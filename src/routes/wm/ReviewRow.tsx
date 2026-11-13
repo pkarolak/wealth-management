@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AskAdvisorButton, SourceTag, type SourceKind } from '../../components/patterns'
 import { Badge, Button, Input, Popover, Select, Tooltip } from '../../components/primitives'
 import { cn } from '../../lib/cn'
+import { withBullets } from '../../lib/masked'
 import { displayValue, isFilled, type FieldDef } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
 import type { ClientCase } from '../../store/types'
@@ -29,7 +30,7 @@ export function ReviewRow({ c, def, onHover }: { c: ClientCase; def: FieldDef; o
         {st.deferred ? (
           <span className="text-[14px] text-ink-3 italic">Moved to the meeting</span>
         ) : (
-          <span className={cn('truncate text-[14px]', filled ? 'text-ink' : 'text-ink-4')}>{filled ? displayValue(def, st.value) : s ? 'Not confirmed yet' : '—'}</span>
+          <span className={cn('truncate text-[14px]', filled ? 'text-ink' : 'text-ink-4')}>{filled ? withBullets(displayValue(def, st.value)) : s ? 'Not confirmed yet' : '—'}</span>
         )}
         {s && (
           <span className="flex items-center gap-1 text-[12px] text-ink-3">

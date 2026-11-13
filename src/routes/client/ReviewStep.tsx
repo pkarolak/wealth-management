@@ -2,6 +2,7 @@ import { AlertCircle, CalendarClock, PenLine } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Checkbox, Input, StatusIcon } from '../../components/primitives'
 import { money } from '../../lib/format'
+import { withBullets } from '../../lib/masked'
 import { displayValue, fieldsFor, isFilled, isVisible, summaryLabel, type SectionDef } from '../../schema/onboarding'
 import { scoreRisk } from '../../schema/risk'
 import { useStore } from '../../store/caseStore'
@@ -18,7 +19,7 @@ function Rows({ rows, more }: { rows: [string, string][]; more?: number }) {
       {rows.map(([label, value]) => (
         <div key={label} className="flex min-w-0 flex-col gap-0.5">
           <dt className="truncate text-[12px] text-ink-4">{label}</dt>
-          <dd className="truncate text-[14px] text-ink-2">{value}</dd>
+          <dd className="truncate text-[14px] text-ink-2">{withBullets(value)}</dd>
         </div>
       ))}
       {more !== undefined && more > 0 && (
