@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Building2, CalendarPlus, Check, Video } from 'lucide-react'
+import { Building2, CalendarPlus, Check, Mail, Video } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Avatar, Button, toast } from '../../components/primitives'
@@ -71,9 +71,22 @@ export function Done({ c }: { c: ClientCase }) {
         </section>
       )}
 
-      <Link to={`/c/${c.token}?step=review`} className="self-start text-[14px] text-ink-3 underline-offset-4 hover:text-ink hover:underline">
-        Review my answers
-      </Link>
+      <div className="flex items-start gap-3 rounded-[20px] bg-muted/60 p-4">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-surface text-ink-3">
+          <Mail className="size-4" />
+        </span>
+        <div className="flex min-w-0 flex-col gap-1 text-[14px] leading-relaxed">
+          <span className="text-ink">
+            We’ve sent a confirmation to <span className="font-medium">{c.email}</span>
+          </span>
+          <span className="text-ink-3">
+            It includes your private link to view or change your answers any time. You can close this page now.
+          </span>
+          <Link to={`/c/${c.token}?step=review`} className="mt-1 self-start text-[13px] text-ink-3 underline underline-offset-4 hover:text-ink">
+            Review my answers
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }

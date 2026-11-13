@@ -442,6 +442,17 @@ export const useStore = create<Store>()(
             text: `${c.firstName} signed and submitted`,
             email: { fromId: c.clientId, to: [advisor?.name ?? 'Wealth Manager'], subject: `${c.firstName} ${c.lastName} completed onboarding`, body: `${c.firstName} signed and submitted the onboarding form. Your meeting brief is ready.` },
           })
+          patchCase(caseId, (x) => x, {
+            actorId: c.advisorId,
+            kind: 'submitted',
+            text: `Confirmation emailed to ${c.firstName}`,
+            email: {
+              fromId: c.advisorId,
+              to: [clientEmail(c)],
+              subject: 'You’re all set — a copy of your answers',
+              body: `Hi ${c.firstName},\n\nThanks for completing your onboarding. ${advisor?.name.split(' ')[0] ?? 'Your Wealth Manager'} has everything she needs to prepare.\n\nYou can view or change your answers any time with your private link:\n${window.location.origin}/c/${c.token}\n\nSee you soon.`,
+            },
+          })
         },
 
         scheduleMeeting: (caseId, at, mode) => {
