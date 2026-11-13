@@ -1,4 +1,4 @@
-import { ArrowRight, Download } from 'lucide-react'
+import { ArrowRight, Download, EyeOff, Lock, SlidersHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Checkbox, toast } from '../../components/primitives'
 import { useStore } from '../../store/caseStore'
@@ -20,10 +20,19 @@ export function Consent({ c, nav }: { c: ClientCase; nav: StepNav }) {
       <StepHeader eyebrow="Before you start" title="How we use your information" description={`${first} uses what you share to prepare for your first meeting. This isn’t an agreement to work together; that comes later, if you decide to go ahead.`} />
 
       <div className="flex flex-col gap-5 rounded-[28px] bg-surface p-6">
-        <ul className="flex list-disc flex-col gap-2 pl-5 text-[14px] leading-snug text-ink-2 marker:text-ink-4">
-          <li>Only {first} and our operations team see it. We never sell it.</li>
-          <li>It’s encrypted, and linked accounts are read-only.</li>
-          <li>You can skip any question, or ask us to delete everything.</li>
+        <ul className="grid gap-5 sm:grid-cols-3">
+          {[
+            { icon: EyeOff, text: `Only ${first} and our operations team see it. We never sell it.` },
+            { icon: Lock, text: 'It’s encrypted, and linked accounts are read-only.' },
+            { icon: SlidersHorizontal, text: 'You can skip any question, or ask us to delete everything.' },
+          ].map(({ icon: Icon, text }) => (
+            <li key={text} className="flex flex-col gap-3">
+              <span className="flex size-9 items-center justify-center rounded-[11px] bg-muted text-ink-2">
+                <Icon className="size-4" />
+              </span>
+              <span className="text-[14px] leading-snug text-ink-2">{text}</span>
+            </li>
+          ))}
         </ul>
 
         <div className="flex flex-col border-t border-line pt-4">
