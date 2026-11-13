@@ -114,12 +114,20 @@ export function GoalsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
       <StepFooter
         onBack={nav.back}
-        hint={c.goals.length ? undefined : 'Add at least one goal, or skip and talk about it in the meeting.'}
+        hint={drafts ? 'Skipped drafts stay here as suggestions.' : c.goals.length ? undefined : 'Add at least one goal, or skip and talk about it in the meeting.'}
+        nextLabel={drafts ? `Keep ${drafts} and continue` : 'Continue'}
         onNext={() => {
           if (drafts) c.goals.filter((g) => g.draft).forEach((g) => updateGoal(c.id, g.id, { draft: false }))
           setSectionProgress(c.id, 'goals', c.goals.length ? 'done' : 'progress', c.clientId)
           nav.next()
         }}
+        extra={
+          drafts > 0 && (
+            <Button variant="ghost" size="lg" onClick={() => (setSectionProgress(c.id, 'goals', 'progress', c.clientId), nav.next())}>
+              Skip for now
+            </Button>
+          )
+        }
       />
     </div>
   )
