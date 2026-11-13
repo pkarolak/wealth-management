@@ -1,6 +1,6 @@
 import { ArrowUpRight, Check, ChevronDown, Copy, FileText, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router'
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import { AccountTile, CaseProvider, GoalCard, NetWorthSummary, PresenceStatus } from '../../components/patterns'
 import { Badge, Button, Card, ProgressBar, StatusIcon, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
@@ -12,7 +12,7 @@ import { useCase, usePublishPresence } from '../../store/hooks'
 import { ADVISOR_ID } from '../../store/seed'
 import { caseValues, netWorth, overallProgress, sectionState, sectionStats, visibleSections } from '../../store/selectors'
 import type { ClientCase } from '../../store/types'
-import { NeedsYou, OPEN_SECTION, SidePanel } from './CaseFocus'
+import { NeedsYou, OPEN_SECTION, scrollToSection, SidePanel } from './CaseFocus'
 import { ReviewRow } from './ReviewRow'
 import { PageHeader } from './WMLayout'
 
@@ -22,8 +22,13 @@ export function CaseView() {
   const people = useStore((s) => s.people)
   const navigate = useNavigate()
   const [hover, setHover] = useState<{ sectionId?: SectionId; fieldId?: string }>({})
+  const [params] = useSearchParams()
   const [tab, setTab] = useState('questions')
-  const [openThread, setOpenThread] = useState<string>()
+  const [openThread, setOpenThread] = useState<string | undefined>(params.get('thread') ?? undefined)
+  useEffect(() => {
+    const section = params.get('section') as SectionId | null
+    if (section) setTimeout(() => scrollToSection(section), 150)
+  }, [params])
   usePublishPresence(c ? { personId: ADVISOR_ID, view: 'advisor', caseId: c.id, ...hover } : undefined)
   if (!c) return <Navigate to="/wm" replace />
 
