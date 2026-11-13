@@ -167,7 +167,7 @@ export function CommentThread({ thread, showTitle = true, compact }: { thread: T
 }
 
 /** Inline "Ask Emily" affordance anchored to a field, item or section. Shows existing threads first. */
-export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean }) {
+export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact, floating }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean; floating?: boolean }) {
   const { c, caseId, viewerId, mode } = useCurrentCase()
   const peopleMap = useStore((s) => s.people)
   const startThread = useStore((s) => s.startThread)
@@ -202,14 +202,18 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
           type="button"
           aria-label={askLabel}
           className={cn(
-            'inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-control text-[13px] whitespace-nowrap transition-colors',
-            compact && !has ? 'w-7' : 'px-2',
-            has ? 'bg-muted text-ink-2 hover:bg-sunken' : 'text-ink-3 hover:bg-muted hover:text-ink',
+            floating
+              ? 'inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-surface pr-2.5 pl-2 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong'
+              : cn(
+                  'inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-control text-[13px] whitespace-nowrap transition-colors',
+                  compact && !has ? 'w-7' : 'px-2',
+                  has ? 'bg-muted text-ink-2 hover:bg-sunken' : 'text-ink-3 hover:bg-muted hover:text-ink',
+                ),
             className,
           )}
         >
-          <MessageCircle className="size-3.5" />
-          {label ?? (has ? `${count}` : compact ? null : askLabel)}
+          <MessageCircle className={floating ? 'size-3' : 'size-3.5'} />
+          {label ?? (floating ? (has ? `${count}` : askLabel) : has ? `${count}` : compact ? null : askLabel)}
           {unread > 0 && <CountDot count={unread} className="-mr-1" />}
         </button>
       }

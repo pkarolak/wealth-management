@@ -66,7 +66,18 @@ export function FieldRow({ def }: { def: FieldDef }) {
   }
 
   const outerLabel = hasOuterLabel(def)
-  const ask = <AskAdvisorButton anchor={{ sectionId: def.sectionId, fieldId: def.id }} title={def.label} compact />
+  const borderless = outerLabel || def.type === 'checkbox'
+  const ask = (
+    <span
+      className={cn(
+        'transition-opacity duration-150',
+        !hasThreads &&
+          'pointer-events-none opacity-0 group-focus-within/field:pointer-events-auto group-focus-within/field:opacity-100 group-hover/field:pointer-events-auto group-hover/field:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100',
+      )}
+    >
+      <AskAdvisorButton anchor={{ sectionId: def.sectionId, fieldId: def.id }} title={def.label} floating />
+    </span>
+  )
 
   // Always visible: only what the client needs to act on or be reassured by.
   const status = pendingFill ? (
@@ -104,11 +115,11 @@ export function FieldRow({ def }: { def: FieldDef }) {
           Do it in the meeting
         </button>
       )}
-      {!hasThreads && ask}
     </span>
   )
+  const hasActions = pendingFill || (def.canDefer && !filled)
   const alwaysOpen = def.type === 'sensitive'
-  const inline = !!status || hasThreads
+  const inline = !!status
 
   return (
     <div className="group/field relative flex flex-col gap-1" onFocusCapture={() => onFocus?.({ sectionId: def.sectionId, fieldId: def.id })}>
@@ -120,22 +131,22 @@ export function FieldRow({ def }: { def: FieldDef }) {
           tone={tone}
           labelAside={outerLabel && def.explain ? <ExplainPopover term={def.explain} advisorFirst={advisorFirst} /> : undefined}
         />
-        <AnimatePresence>{watching && advisor && <PresenceLabel person={advisor} tone="pink" className="absolute -top-3.5 right-3 z-10" />}</AnimatePresence>
+        <div className={cn('absolute z-10 flex items-center gap-1.5', borderless ? 'top-0 right-0' : '-top-3 right-3')}>
+          <AnimatePresence>{watching && advisor && <PresenceLabel person={advisor} tone="pink" className="-my-0.5" />}</AnimatePresence>
+          {ask}
+        </div>
       </div>
       {inline && (
         <div className="flex min-h-7 items-center justify-between gap-3 pl-1">
-          {status ?? <span />}
-          <span className="flex items-center gap-0.5">
-            <span className={cn(!alwaysOpen && reveal.fade)}>{actions}</span>
-            {hasThreads && ask}
-          </span>
+          {status}
+          {hasActions && <span className={cn(!alwaysOpen && reveal.fade)}>{actions}</span>}
         </div>
       )}
-      {(help || !inline) && (
+      {(help || (!inline && hasActions)) && (
         <div className={cn('grid transition-[grid-template-rows,opacity] duration-200 ease-out', alwaysOpen ? 'grid-rows-[1fr]' : reveal.collapse)}>
           <div className="flex min-h-0 items-start justify-between gap-3 overflow-hidden pl-1">
             <div className="py-1">{help}</div>
-            {!inline && actions}
+            {!inline && hasActions && actions}
           </div>
         </div>
       )}
