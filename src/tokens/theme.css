@@ -11,8 +11,9 @@
 
   --color-ink: #141413;
   --color-ink-2: #3d3b37;
-  --color-ink-3: #6b6862;
-  --color-ink-4: #9a958d;
+  --color-ink-3: #5e5b55;
+  /* Lightest text that still meets WCAG AA (4.5:1) on canvas. */
+  --color-ink-4: #74706a;
 
   --color-taupe-900: #4a423c;
   --color-taupe-700: #8c7f74;

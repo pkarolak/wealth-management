@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { Check } from 'lucide-react'
 import { AskAdvisorButton, FieldRow } from '../../components/patterns'
-import { Button, RadioCard } from '../../components/primitives'
+import { Button, RadioCard, radioKeys } from '../../components/primitives'
 import { fieldsFor } from '../../schema/onboarding'
 import { riskProfiles, riskQuestions, scoreRisk } from '../../schema/risk'
 import { useStore } from '../../store/caseStore'
@@ -28,9 +28,9 @@ export function RiskStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
                   {q.context && <span className="text-[13px] text-ink-4">{q.context}</span>}
                 </div>
               </div>
-              <div role="radiogroup" className="grid gap-2 sm:grid-cols-2">
+              <div role="radiogroup" aria-label={q.prompt} onKeyDown={radioKeys(q.options.map((_, i) => String(i)), c.risk[q.id] === undefined ? undefined : String(c.risk[q.id]), (v) => setRisk(c.id, q.id, Number(v)))} className="grid gap-2 sm:grid-cols-2">
                 {q.options.map((o, i) => (
-                  <RadioCard key={o.label} selected={c.risk[q.id] === i} onSelect={() => setRisk(c.id, q.id, i)} title={o.label} description={o.description || undefined} />
+                  <RadioCard key={o.label} selected={c.risk[q.id] === i} tabIndex={c.risk[q.id] === i || (c.risk[q.id] === undefined && i === 0) ? 0 : -1} onSelect={() => setRisk(c.id, q.id, i)} title={o.label} description={o.description || undefined} />
                 ))}
               </div>
             </section>

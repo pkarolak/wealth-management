@@ -66,12 +66,13 @@ const store = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('nev
   })
 
   await tryStep(P, 'Find whether client consented', async () => {
+    await page.waitForTimeout(500)
     const txt = await page.getByText(/consent/i).allInnerTexts()
     log(P, 'Find whether client consented', `consent texts=${JSON.stringify(txt)}`)
   })
 
   await tryStep(P, 'Request a document', async () => {
-    await page.getByRole('tab', { name: /Requests/ }).click()
+    await page.getByRole('radio', { name: /Requests/ }).click()
     await page.waitForTimeout(300)
     const inputs = await page.getByPlaceholder(/Ask .* for a document/).count()
     log(P, 'Request a document', `request input present=${inputs > 0}`)
@@ -85,7 +86,7 @@ const store = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('nev
   await tryStep(P, 'Open brief before anything is filled', async () => {
     await page.getByRole('button', { name: /Meeting brief/ }).first().click()
     await page.waitForTimeout(500)
-    log(P, 'Open brief before anything is filled', `url=${page.url().replace(BASE, '')}; headline="${(await page.locator('h2, p').filter({ hasText: /net worth/i }).first().innerText().catch(() => '')).slice(0, 90)}"`)
+    log(P, 'Open brief before anything is filled', `url=${page.url().replace(BASE, '')}; headline="${(await page.locator('h2, p').filter({ hasText: /net worth|Not enough to go on/i }).first().innerText().catch(() => '')).slice(0, 90)}"`)
   })
   await page.context().close()
 }
@@ -124,7 +125,10 @@ let token
   })
 
   await tryStep(P, 'ID scan on phone', async () => {
-    const cam = await page.getByRole('button', { name: /Use camera/ }).count()
+    const offered = await page.getByRole('button', { name: /from your driver’s license/ }).isVisible().catch(() => false)
+    log(P, 'ID scan on phone', `offered inside About=${offered}`)
+    await page.goto(page.url().replace('step=about', 'step=id'), { waitUntil: 'networkidle' })
+    const cam = await page.getByRole('button', { name: /Use camera|Take photo/ }).count()
     const upload = await page.getByRole('button', { name: /upload|choose|photo library/i }).count()
     log(P, 'ID scan on phone', `camera button=${cam > 0}; upload alternative=${upload > 0}`)
     await page.getByRole('button', { name: /Skip, I’ll type it/ }).click()
@@ -133,10 +137,15 @@ let token
   })
 
   await tryStep(P, 'Know where I am (progress) on mobile', async () => {
-    const rail = await page.getByRole('button', { name: /Work & income/ }).first().isVisible().catch(() => false)
-    const stepText = await page.getByText(/Step \d of \d/).first().innerText().catch(() => '(none)')
-    const msg = await page.getByRole('button', { name: /Message/ }).first().isVisible().catch(() => false)
-    log(P, 'Know where I am (progress) on mobile', `section list visible=${rail}; step label="${stepText}"; Message Emily visible=${msg}`)
+    const bar = page.getByRole('button', { name: /All steps/ })
+    const barText = await bar.innerText().catch(() => '(none)')
+    await bar.click()
+    await page.waitForTimeout(300)
+    const rail = await page.getByRole('dialog').getByRole('button', { name: /Work & income/ }).first().isVisible().catch(() => false)
+    const msg = await page.getByRole('dialog').getByRole('button', { name: /Message/ }).first().isVisible().catch(() => false)
+    log(P, 'Know where I am (progress) on mobile', `top bar="${barText.replace(/\s+/g, ' ')}"; section list in sheet=${rail}; Message Emily in sheet=${msg}`)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
   })
 
   await tryStep(P, 'Bad input validation', async () => {
@@ -190,7 +199,7 @@ let token
     for (const step of ['about', 'networth', 'risk']) {
       await page.goto(`${BASE}/c/${token}?step=${step}`, { waitUntil: 'networkidle' })
       const small = await page.locator('button:visible, a:visible, [role="radio"]:visible').evaluateAll((els) =>
-        els.map((e) => { const r = e.getBoundingClientRect(); return { h: r.height, t: (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 24) } }).filter((x) => x.h > 0 && x.h < 36),
+        els.map((e) => { const r = e.getBoundingClientRect(); return { h: r.height, t: (e.getAttribute('aria-label') || e.textContent || '').trim().slice(0, 24) } }).filter((x) => x.h > 0 && x.h < 36 && x.t !== 'Skip to form'),
       )
       log(P, 'Touch targets under 44px', `${step}: ${small.length} controls under 36px tall, e.g. ${JSON.stringify(small.slice(0, 5).map((s) => `${s.t} (${Math.round(s.h)})`))}`)
     }
@@ -222,6 +231,17 @@ let token
       })
       if (info.tag === 'INPUT') break
     }
+    await page.reload({ waitUntil: 'networkidle' })
+    await page.keyboard.press('Tab')
+    const first = await page.evaluate(() => document.activeElement?.textContent?.trim())
+    await page.keyboard.press('Enter')
+    let j = 0
+    while (j < 40) {
+      await page.keyboard.press('Tab')
+      j++
+      if (await page.evaluate(() => document.activeElement?.tagName === 'INPUT')) break
+    }
+    log(P, 'Tab to first field + visible focus', `first Tab="${first}"; via skip link ${j + 2} presses to first input`)
     log(P, 'Tab to first field + visible focus', `${i} Tab presses to reach first input ("${info.name}"); focus indicator outline=${info.outline} ring=${info.ring}`)
   })
 

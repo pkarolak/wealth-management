@@ -1,8 +1,8 @@
-import { Check, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, IdCard, Sparkles } from 'lucide-react'
 import { FieldRow } from '../../components/patterns'
-import { Button } from '../../components/primitives'
+import { Button, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
-import { groupsFor, isFilled, isVisible, type SectionId } from '../../schema/onboarding'
+import { groupsFor, isFilled, isVisible, sectionById, type SectionId } from '../../schema/onboarding'
 import { fieldError } from '../../schema/validation'
 import { useStore } from '../../store/caseStore'
 import { caseValues, sectionStats } from '../../store/selectors'
@@ -32,6 +32,8 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
     if (acceptDrafts) drafts.forEach((id) => accept(c.id, id, c.clientId))
     const pendingAfter = changes + (acceptDrafts ? 0 : drafts.length)
     setProgress(c.id, sectionId, remaining === 0 && pendingAfter === 0 ? 'done' : 'progress', c.clientId)
+    const left = remaining + invalid
+    if (left > 0) toast(`${left} ${left === 1 ? 'answer' : 'answers'} left in ${sectionById[sectionId].short}`, { description: 'Come back anytime from the step list.' })
     nav.next()
   }
 
@@ -51,6 +53,17 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
   return (
     <div>
       <StepHeader c={c} sectionId={sectionId} />
+
+      {sectionId === 'about' && !c.idScanned && (
+        <button type="button" onClick={() => nav.go('id')} className="mb-8 flex w-full items-center gap-3 rounded-[18px] bg-surface p-4 text-left shadow-soft transition-shadow hover:shadow-float">
+          <IdCard className="size-5 shrink-0 text-ink-2" />
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-[15px] text-ink">Fill this in from your driver’s license</span>
+            <span className="text-[13px] text-ink-3">Take or choose a photo. You check everything before it’s saved.</span>
+          </span>
+          <ArrowRight className="size-4 shrink-0 text-ink-3" />
+        </button>
+      )}
 
       {drafts.length > 0 && (
         <div className="mb-8 flex items-center gap-3 rounded-[18px] bg-ai-soft p-2 pl-4">

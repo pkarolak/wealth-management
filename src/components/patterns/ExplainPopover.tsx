@@ -17,11 +17,11 @@ export function ExplainPopover({ term, onAsk, advisorFirst = 'Emily', label, inl
       className="w-72"
       trigger={
         inline ? (
-          <button type="button" className="text-[12px] whitespace-nowrap text-ink-3 underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-ink hover:decoration-ink-3">
+          <button type="button" className="relative before:absolute before:-inset-x-1 before:-inset-y-3 text-[12px] whitespace-nowrap text-ink-3 underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-ink hover:decoration-ink-3">
             {label ?? 'Why we ask'}
           </button>
         ) : label ? (
-          <button type="button" className="inline-flex items-center gap-1 text-[12px] text-ink-3 transition-colors hover:text-ink">
+          <button type="button" className="relative before:absolute before:-inset-x-1 before:-inset-y-3 inline-flex items-center gap-1 text-[12px] text-ink-3 transition-colors hover:text-ink">
             <HelpCircle className="size-3.5" />
             {label}
           </button>

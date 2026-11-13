@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
-import { ArrowRight, Camera, IdCard, ShieldCheck } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowRight, Camera, IdCard, ImageUp, ShieldCheck } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { SourceTag } from '../../components/patterns'
 import { Button } from '../../components/primitives'
 import { displayValue, fieldById } from '../../schema/onboarding'
@@ -15,6 +15,7 @@ export function IdScan({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const setIdScanned = useStore((s) => s.setIdScanned)
   const [phase, setPhase] = useState<'idle' | 'scanning' | 'done'>(c.idScanned ? 'done' : 'idle')
   const [found, setFound] = useState<Record<string, FieldDraft>>()
+  const file = useRef<HTMLInputElement>(null)
 
   const scan = async () => {
     setPhase('scanning')
@@ -34,9 +35,17 @@ export function IdScan({ c, nav }: { c: ClientCase; nav: StepNav }) {
           <>
             <IdCard className="size-12 text-ink-4" strokeWidth={1.2} />
             <span className="text-[14px] text-ink-3">{phase === 'scanning' ? 'Reading your license…' : 'Front of your license, in good light'}</span>
-            <Button size="lg" leading={<Camera className="size-4" />} disabled={phase === 'scanning'} onClick={scan}>
-              {phase === 'scanning' ? 'Scanning…' : 'Use camera'}
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button size="lg" leading={<Camera className="size-4" />} disabled={phase === 'scanning'} onClick={scan}>
+                {phase === 'scanning' ? 'Scanning…' : 'Take photo'}
+              </Button>
+              {phase === 'idle' && (
+                <Button size="lg" variant="secondary" leading={<ImageUp className="size-4" />} onClick={() => file.current?.click()}>
+                  Choose photo
+                </Button>
+              )}
+            </div>
+            <input ref={file} type="file" accept="image/*,.pdf" className="sr-only" tabIndex={-1} onChange={(e) => e.target.files?.length && scan()} />
           </>
         ) : (
           <div className="flex w-full flex-col gap-2 p-6">
@@ -54,9 +63,13 @@ export function IdScan({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <ShieldCheck className="size-4" /> The image is used once to read the details and isn’t stored.
       </p>
       <div className="mt-10 flex items-center justify-between gap-3 border-t border-line pt-6">
-        <button type="button" onClick={nav.next} className="text-[14px] text-ink-3 hover:text-ink">
-          {phase === 'done' ? '' : 'Skip, I’ll type it'}
-        </button>
+        {phase === 'done' ? (
+          <span />
+        ) : (
+          <Button variant="ghost" size="lg" onClick={nav.next}>
+            Skip, I’ll type it
+          </Button>
+        )}
         <Button size="lg" trailing={<ArrowRight className="size-4" />} disabled={phase === 'scanning'} onClick={nav.next}>
           Continue
         </Button>

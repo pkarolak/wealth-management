@@ -123,7 +123,7 @@ function SensitiveInput({ id, label, value, onChange, tone }: { id: string; labe
       trailing={
         <span className="mr-1 flex items-center gap-0.5 text-ink-4">
           <Lock className="size-3.5" />
-          <button type="button" tabIndex={-1} onMouseDown={(e) => e.preventDefault()} onClick={() => setReveal((r) => !r)} className="flex size-8 items-center justify-center rounded-full hover:text-ink" aria-label={reveal ? 'Hide' : 'Show'}>
+          <button type="button" tabIndex={-1} onMouseDown={(e) => e.preventDefault()} onClick={() => setReveal((r) => !r)} className="flex size-8 items-center justify-center rounded-full hover:text-ink pointer-coarse:size-11" aria-label={reveal ? 'Hide' : 'Show'}>
             {reveal ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </span>

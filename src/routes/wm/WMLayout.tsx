@@ -1,4 +1,4 @@
-import { CalendarDays, Home, LayoutGrid, Users } from 'lucide-react'
+import { Home, LayoutGrid, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, useMatch } from 'react-router'
 import { LogoMark } from '../../components/shell/Brand'
@@ -10,7 +10,6 @@ import { ADVISOR_ID, staff } from '../../store/seed'
 const nav = [
   { to: '/wm', icon: <Home className="size-[18px]" />, label: 'Overview', end: true },
   { to: '/wm/new', icon: <Users className="size-[18px]" />, label: 'New client' },
-  { to: '/wm#calendar', icon: <CalendarDays className="size-[18px]" />, label: 'Calendar' },
   { to: '/gallery', icon: <LayoutGrid className="size-[18px]" />, label: 'Components' },
 ]
 
@@ -31,7 +30,8 @@ export function WMLayout() {
               <NavLink
                 to={n.to}
                 end={n.end}
-                className={({ isActive }) => cn('flex size-11 items-center justify-center rounded-control transition-colors', isActive && !n.to.includes('#') ? 'bg-surface text-ink shadow-soft' : 'text-ink-3 hover:bg-surface/70 hover:text-ink')}
+                aria-label={n.label}
+                className={({ isActive }) => cn('flex size-11 items-center justify-center rounded-control transition-colors', isActive ? 'bg-surface text-ink shadow-soft' : 'text-ink-3 hover:bg-surface/70 hover:text-ink')}
               >
                 {n.icon}
               </NavLink>

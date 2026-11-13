@@ -27,21 +27,24 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const [agreed, setAgreed] = useState(!!c.consentAt)
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8 sm:gap-10">
       <div className="flex flex-col gap-5">
-        <h1 className="display text-[56px] text-ink sm:text-[68px]">{resuming ? `Welcome back, ${c.firstName}.` : `Hi ${c.firstName},`}</h1>
+        <h1 className="display text-[44px] text-ink sm:text-[68px]">{resuming ? `Welcome back, ${c.firstName}.` : `Hi ${c.firstName},`}</h1>
         <div className="flex gap-4 rounded-[22px] bg-surface p-3 pr-6">
           <Avatar name={advisor.name} src={advisor.avatar} size="lg" />
           <div className="flex flex-col gap-1 py-1">
             <span className="text-[13px] text-ink-3">
               {advisor.name} · {advisor.title}
             </span>
-            <p className="text-[16px] leading-relaxed text-ink-2">{note}</p>
+            <p className="text-[15px] leading-relaxed text-ink-2 sm:text-[16px]">{note}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <p className="text-[15px] leading-relaxed text-ink-2 sm:hidden">
+        About 20 minutes. It saves as you go, you can talk instead of typing, and you can skip anything and do it in the meeting.
+      </p>
+      <div className="hidden gap-5 sm:grid sm:grid-cols-2">
         <Point icon={<Clock className="size-[18px]" />} title="About 20 minutes" body="It saves as you go. Stop anytime and pick up from this link." />
         <Point icon={<Mic className="size-[18px]" />} title="Talk instead of typing" body="Tell us about yourself and we’ll fill in what we can. You confirm everything." />
         <Point icon={<FileText className="size-[18px]" />} title="Statements beat typing" body="Drop in a brokerage or 401(k) statement and we read the numbers for you." />
@@ -59,17 +62,17 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
               </button>
             </span>
           </span>
-          <Checkbox checked={agreed} onChange={setAgreed} label="I agree to share my information with Parker & Lane Wealth." />
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
-        <span className="inline-flex items-center gap-2 text-[13px] text-ink-3">
+      <div className="sticky bottom-0 z-20 -mx-6 flex flex-wrap items-center gap-4 border-t border-line bg-canvas/95 px-6 py-4 backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pt-6 sm:pb-0 sm:backdrop-blur-none">
+        {!c.consentAt && <Checkbox className="w-full" checked={agreed} onChange={setAgreed} label="I agree to share my information with Parker & Lane Wealth." />}
+        <span className="hidden items-center gap-2 text-[13px] text-ink-3 sm:inline-flex">
           <IdCard className="size-4" /> Helpful to have nearby: your driver’s license and recent statements
         </span>
         <Button
           size="lg"
-          className="ml-auto"
+          className="w-full sm:ml-auto sm:w-auto"
           disabled={!agreed}
           trailing={<ArrowRight className="size-4" />}
           onClick={() => {

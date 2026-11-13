@@ -212,7 +212,7 @@ export async function explain(key: string) {
 
 export function inviteDraft(clientFirst: string, advisorFirst: string) {
   return {
-    rough: `hey ${clientFirst.toLowerCase()} pls fill this before our mtg, takes 15 min. lmk if q's`,
+    rough: `Hi ${clientFirst},\n\nAs discussed, here is a secure link to share your information before our meeting. It takes about 20 minutes and saves as you go.\n\nThank you,\n${advisorFirst}`,
     polished: `Hi ${clientFirst},\n\nIt was great meeting you. Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.\n\nThis link takes about 20 minutes, saves as you go, and you can come back anytime. If anything is unclear, leave me a comment right in the form and I’ll get back to you.\n\nOnce you send it, my team will use your answers to get your account paperwork ready, so our meeting can be about your plan.\n\nLooking forward to it,\n${advisorFirst}`,
   }
 }

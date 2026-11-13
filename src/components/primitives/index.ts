@@ -1,7 +1,7 @@
 export { Button, IconButton } from './Button'
 export { Input, Textarea, Label, DateInput, MoneyInput, PercentInput, fieldBase, fieldTones, type FieldTone } from './Input'
 export { Select, type Option } from './Select'
-export { Segmented, Chip, ChipGroup, Checkbox, CheckboxBox, RadioGroup, RadioDot, RadioCard, YesNo, Switch } from './Choice'
+export { Segmented, radioKeys, rovingTab, Chip, ChipGroup, Checkbox, CheckboxBox, RadioGroup, RadioDot, RadioCard, YesNo, Switch } from './Choice'
 export { Card, CardHeader, cardPadding, type CardPadding } from './Card'
 export { Avatar, AvatarStack, PersonChip } from './Avatar'
 export { StatusIcon, Badge, CountDot, ProgressBar, type StatusKind } from './Status'

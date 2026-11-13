@@ -200,10 +200,10 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
       trigger={
         <button
           type="button"
-          aria-label={askLabel}
+          aria-label={label ? undefined : askLabel}
           className={cn(
             floating
-              ? 'inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-surface pr-2.5 pl-2 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong'
+              ? 'relative before:absolute before:-inset-x-1 before:-inset-y-2.5 inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-surface pr-2.5 pl-2 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong'
               : cn(
                   'inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-control text-[13px] whitespace-nowrap transition-colors',
                   compact && !has ? 'w-7' : 'px-2',

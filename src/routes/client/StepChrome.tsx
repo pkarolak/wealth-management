@@ -23,13 +23,13 @@ export function StepHeader({ c, sectionId, title, description, eyebrow, aside }:
 
 export function StepFooter({ onBack, onNext, nextLabel = 'Continue', nextDisabled, hint, extra }: { onBack?: () => void; onNext: () => void; nextLabel?: string; nextDisabled?: boolean; hint?: ReactNode; extra?: ReactNode }) {
   return (
-    <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-line pt-6">
+    <div className="sticky bottom-0 z-20 -mx-6 mt-10 flex flex-wrap items-center gap-3 border-t border-line bg-canvas/95 px-6 py-3 backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pt-6 sm:pb-0 sm:backdrop-blur-none">
       {onBack && (
         <Button variant="ghost" size="lg" leading={<ArrowLeft className="size-4" />} onClick={onBack}>
           Back
         </Button>
       )}
-      {hint && <span className="text-[13px] text-ink-4">{hint}</span>}
+      {hint && <span className="order-first w-full text-[13px] text-ink-3 sm:order-none sm:w-auto">{hint}</span>}
       <div className="ml-auto flex items-center gap-2">
         {extra}
         <Button size="lg" trailing={<ArrowRight className="size-4" />} disabled={nextDisabled} onClick={onNext}>

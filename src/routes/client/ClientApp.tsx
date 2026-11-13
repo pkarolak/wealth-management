@@ -1,15 +1,15 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Check } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { CaseProvider, ProgressRail, type RailItem } from '../../components/patterns'
-import { Avatar, toast } from '../../components/primitives'
+import { Avatar, Dialog, ProgressBar, toast } from '../../components/primitives'
 import { AdvisorCard } from './AdvisorCard'
 import { Wordmark } from '../../components/shell/Brand'
 import type { SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
 import { useCaseByToken, usePublishPresence } from '../../store/hooks'
-import { sectionState, sectionStats, unreadCount, visibleSections } from '../../store/selectors'
+import { overallProgress, sectionState, sectionStats, unreadCount, visibleSections } from '../../store/selectors'
 import type { ClientCase } from '../../store/types'
 import { Done } from './Done'
 import { FormSection } from './FormSection'
@@ -44,6 +44,7 @@ export function ClientApp() {
   const people = useStore((s) => s.people)
   const [params, setParams] = useSearchParams()
   const [focus, setFocus] = useState<{ sectionId?: SectionId; fieldId?: string }>({})
+  const [sheet, setSheet] = useState(false)
 
   const step = (params.get('step') as Step) || (c?.stage === 'submitted' ? 'done' : 'welcome')
   const sectionId = (nonSection.includes(step) ? undefined : step) as SectionId | undefined
@@ -97,6 +98,19 @@ export function ClientApp() {
     })
   }
 
+  const visible = visibleSections(c)
+  const activeRail = sectionId ?? (step === 'requests' ? 'requests' : undefined)
+  const rail = (onPick?: () => void) => (
+    <ProgressRail
+      active={activeRail}
+      onSelect={(id) => {
+        go(id as Step)
+        onPick?.()
+      }}
+      items={railItems}
+    />
+  )
+
   const view = (() => {
     switch (step) {
       case 'welcome':
@@ -125,6 +139,9 @@ export function ClientApp() {
   return (
     <CaseProvider caseId={c.id} viewerId={c.clientId} mode="client" onFocus={setFocus}>
       <div className="min-h-screen">
+        <a href="#main" className="sr-only rounded-control bg-ink px-4 py-2 text-[14px] text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50">
+          Skip to form
+        </a>
         <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6">
             <Wordmark />
@@ -136,25 +153,40 @@ export function ClientApp() {
               {c.firstName}
             </span>
           </div>
+          {inSections && (
+            <button type="button" onClick={() => setSheet(true)} className="flex h-12 w-full items-center gap-3 border-t border-line/70 px-6 text-left text-[13px] text-ink-2 lg:hidden">
+              <span className="shrink-0">
+                {sectionId ? `${visible.findIndex((s) => s.id === sectionId) + 1} of ${visible.length}` : 'Requests'} · {railItems.find((r) => r.id === activeRail)?.title}
+              </span>
+              <ProgressBar value={overallProgress(c).ratio * 100} />
+              <span className="inline-flex shrink-0 items-center gap-1 text-ink">
+                All steps
+                {(unreadCount(c, c.clientId) > 0 || openRequests > 0) && <span className="size-1.5 rounded-full bg-advisor" />}
+                <ChevronDown className="size-4" />
+              </span>
+            </button>
+          )}
         </header>
+        <Dialog open={sheet} onOpenChange={setSheet} title="Your progress" description="Jump to any step. Everything you’ve entered is saved.">
+          <div className="flex flex-col gap-4">
+            <AdvisorCard c={c} sectionId={sectionId} className="order-first border-t-0 border-b pt-0 pb-4" />
+            {rail(() => setSheet(false))}
+          </div>
+        </Dialog>
 
         <div className={inSections ? 'mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[240px_minmax(0,1fr)]' : 'mx-auto max-w-3xl px-6 py-12'}>
           {inSections && (
             <aside className="hidden lg:block">
               <div className="sticky top-24 flex h-[calc(100vh-8.5rem)] flex-col gap-4">
                 <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
-                  <ProgressRail
-                    active={sectionId ?? (step === 'requests' ? 'requests' : undefined)}
-                    onSelect={(id) => go(id as Step)}
-                    items={railItems}
-                  />
+                  {rail()}
                   {unreadCount(c, c.clientId) > 0 && <p className="px-3 text-[12px] text-advisor">{advisor.name.split(' ')[0]} replied to you</p>}
                 </div>
                 <AdvisorCard c={c} sectionId={sectionId} className="mt-auto" />
               </div>
             </aside>
           )}
-          <main className="min-w-0">
+          <main id="main" tabIndex={-1} className="min-w-0 outline-none">
             {inSections && <Inbox c={c} />}
             <AnimatePresence mode="wait">
               <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>

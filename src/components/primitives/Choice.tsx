@@ -1,5 +1,5 @@
 import { Check, Minus } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { KeyboardEvent, ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import type { Option } from './Select'
 
@@ -11,10 +11,28 @@ type SegmentedProps = {
   className?: string
 }
 
+/** Arrow keys move the selection inside a radio group, as screen reader users expect. */
+export function radioKeys(values: string[], value: string | undefined, onChange: (v: string) => void) {
+  return (e: KeyboardEvent<HTMLElement>) => {
+    const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
+    if (!step || !values.length) return
+    e.preventDefault()
+    const radios = [...e.currentTarget.querySelectorAll<HTMLElement>('[role=radio]')]
+    const from = radios.indexOf(document.activeElement as HTMLElement)
+    const i = ((from >= 0 ? from : Math.max(0, values.indexOf(value ?? ''))) + step + values.length) % values.length
+    onChange(values[i])
+    radios[i]?.focus()
+  }
+}
+
+/** Only the selected radio (or the first, if none) is in the tab order. */
+export const rovingTab = (values: string[], value: string | undefined, v: string) => (v === value || (!values.includes(value ?? '') && v === values[0]) ? 0 : -1)
+
 /** Track radius 14 = segment radius 10 + 4px padding. */
 export function Segmented({ value, onChange, options, size = 'md', className }: SegmentedProps) {
+  const values = options.map((o) => o.value)
   return (
-    <div role="radiogroup" className={cn('inline-flex w-fit max-w-full flex-wrap gap-1 self-start rounded-menu bg-muted p-1', className)}>
+    <div role="radiogroup" onKeyDown={radioKeys(values, value, onChange)} className={cn('inline-flex w-fit max-w-full flex-wrap gap-1 self-start rounded-menu bg-muted p-1', className)}>
       {options.map((o) => {
         const active = o.value === value
         return (
@@ -23,6 +41,7 @@ export function Segmented({ value, onChange, options, size = 'md', className }: 
             type="button"
             role="radio"
             aria-checked={active}
+            tabIndex={rovingTab(values, value, o.value)}
             onClick={() => onChange(o.value)}
             className={cn(
               'rounded-control font-medium whitespace-nowrap transition-all focus-visible:outline-2 focus-visible:outline-ink',
@@ -134,10 +153,11 @@ type RadioGroupProps = {
 }
 
 export function RadioGroup({ value, onChange, options, className }: RadioGroupProps) {
+  const values = options.map((o) => o.value)
   return (
-    <div role="radiogroup" className={cn('flex flex-col gap-3', className)}>
+    <div role="radiogroup" onKeyDown={radioKeys(values, value, onChange)} className={cn('flex flex-col gap-3', className)}>
       {options.map((o) => (
-        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)} className="group flex items-start gap-3 text-left">
+        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} tabIndex={rovingTab(values, value, o.value)} onClick={() => onChange(o.value)} className="group flex items-start gap-3 text-left">
           <span className="mt-0.5">
             <RadioDot selected={value === o.value} />
           </span>
@@ -153,6 +173,7 @@ export function RadioGroup({ value, onChange, options, className }: RadioGroupPr
 
 type RadioCardProps = {
   selected: boolean
+  tabIndex?: number
   onSelect: () => void
   title: ReactNode
   description?: ReactNode
@@ -161,12 +182,13 @@ type RadioCardProps = {
 }
 
 /** 16px padding, text-only content: radius = 0 + 16. */
-export function RadioCard({ selected, onSelect, title, description, aside, className }: RadioCardProps) {
+export function RadioCard({ selected, onSelect, title, description, aside, className, tabIndex }: RadioCardProps) {
   return (
     <button
       type="button"
       role="radio"
       aria-checked={selected}
+      tabIndex={tabIndex}
       onClick={onSelect}
       className={cn(
         'group flex w-full items-start gap-3 rounded-[16px] border p-4 text-left transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
