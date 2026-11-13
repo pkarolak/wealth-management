@@ -33,6 +33,7 @@ type State = {
 
 type Actions = {
   createCase: (input: NewCaseInput) => ClientCase
+  updateCaseDetails: (caseId: string, input: NewCaseInput) => void
   sendInvite: (caseId: string, email: { subject: string; body: string }) => void
   markOpened: (caseId: string) => void
   setIntroDone: (caseId: string) => void
@@ -156,6 +157,24 @@ export const useStore = create<Store>()(
             rev: s.rev + 1,
           }))
           return c
+        },
+
+        updateCaseDetails: (caseId, input) => {
+          const c = get().cases[caseId]
+          if (!c) return
+          const advisorField = (value: string) => ({ value, source: 'advisor' as const, status: 'answered' as const, updatedAt: now(), updatedBy: ADVISOR_ID })
+          patchCase(caseId, (x) => ({
+            ...x,
+            ...input,
+            fields: {
+              ...x.fields,
+              firstName: advisorField(input.firstName),
+              lastName: advisorField(input.lastName),
+              email: advisorField(input.email),
+              ...(input.phone ? { phone: advisorField(input.phone) } : {}),
+            },
+          }))
+          set((s) => ({ people: { ...s.people, [c.clientId]: { ...s.people[c.clientId], name: `${input.firstName} ${input.lastName}` } } }))
         },
 
         sendInvite: (caseId, email) => {

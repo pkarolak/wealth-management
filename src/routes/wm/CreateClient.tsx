@@ -1,30 +1,39 @@
 import { ArrowRight, Wand2 } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { Button, Card, ChipGroup, Input, Label, Segmented, Switch, Textarea } from '../../components/primitives'
 import { accountTypeOptions, sectionById, type SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
 import { demoNewClient } from '../../store/seed'
+import { useCase } from '../../store/hooks'
+import { NewClientSteps } from './NewClientSteps'
 import { PageHeader } from './WMLayout'
 
-type Form = typeof demoNewClient & { household: 'individual' | 'joint'; optionalSections: SectionId[] }
+type Form = Omit<typeof demoNewClient, 'household' | 'optionalSections'> & { household: 'individual' | 'joint'; optionalSections: SectionId[] }
 
 const empty: Form = { firstName: '', lastName: '', email: '', phone: '', household: 'individual', accountTypes: [], optionalSections: [], note: '' }
 
 export function CreateClient() {
   const navigate = useNavigate()
   const createCase = useStore((s) => s.createCase)
-  const [f, setF] = useState<Form>(empty)
+  const updateCase = useStore((s) => s.updateCaseDetails)
+  const { caseId } = useParams()
+  const existing = useCase(caseId)
+  const [f, setF] = useState<Form>(() =>
+    existing
+      ? { firstName: existing.firstName, lastName: existing.lastName, email: existing.email, phone: existing.phone ?? '', household: existing.household, accountTypes: existing.accountTypes, optionalSections: existing.optionalSections, note: existing.note }
+      : empty,
+  )
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }))
   const valid = f.firstName && f.lastName && /\S+@\S+\.\S+/.test(f.email)
 
   return (
     <div className="pb-16">
       <PageHeader
-        eyebrow="New client"
+        eyebrow={<NewClientSteps step={1} caseId={existing?.id} canAdvance={!!valid} />}
         title="Who are we onboarding?"
         actions={
-          <Button variant="ghost" leading={<Wand2 className="size-4" />} onClick={() => setF({ ...demoNewClient })}>
+          !existing && <Button variant="ghost" leading={<Wand2 className="size-4" />} onClick={() => setF({ ...demoNewClient })}>
             Fill with demo client
           </Button>
         }
@@ -72,17 +81,19 @@ export function CreateClient() {
 
           <div className="flex justify-end gap-2 border-t border-line pt-5">
             <Button variant="ghost" onClick={() => navigate('/wm')}>
-              Cancel
+              {existing ? 'Back to overview' : 'Cancel'}
             </Button>
             <Button
               disabled={!valid}
               trailing={<ArrowRight className="size-4" />}
               onClick={() => {
-                const c = createCase(f)
-                navigate(`/wm/c/${c.id}/invite`)
+                if (existing) {
+                  updateCase(existing.id, f)
+                  navigate(`/wm/c/${existing.id}/invite`)
+                } else navigate(`/wm/c/${createCase(f).id}/invite`)
               }}
             >
-              Create and write invite
+              {existing ? 'Save and continue' : 'Create and write invite'}
             </Button>
           </div>
         </Card>

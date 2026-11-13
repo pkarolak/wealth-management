@@ -19,6 +19,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Overview /> },
       { path: 'new', element: <CreateClient /> },
       { path: 'c/:caseId', element: <CaseView /> },
+      { path: 'c/:caseId/edit', element: <CreateClient /> },
       { path: 'c/:caseId/invite', element: <Invite /> },
       { path: 'c/:caseId/brief', element: <MeetingBrief /> },
     ],

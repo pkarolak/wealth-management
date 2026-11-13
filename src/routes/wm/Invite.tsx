@@ -1,12 +1,17 @@
-import { ArrowUpRight, Check, Copy, Send, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft, ArrowUpRight, Check, Copy, Send, Sparkles } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { EmailPreview } from '../../components/patterns'
 import { Button, Card, Input, Textarea, toast } from '../../components/primitives'
 import { inviteDraft, wait } from '../../services/ai'
 import { useStore } from '../../store/caseStore'
 import { useCase } from '../../store/hooks'
+import { NewClientSteps } from './NewClientSteps'
 import { PageHeader } from './WMLayout'
+
+type Draft = { subject: string; body: string; phase: 'rough' | 'polishing' | 'diff' | 'final' }
+/** Keeps the email while Emily steps back to edit details. */
+const drafts = new Map<string, Draft>()
 
 export function Invite() {
   const { caseId } = useParams()
@@ -15,9 +20,13 @@ export function Invite() {
   const sendInvite = useStore((s) => s.sendInvite)
   const navigate = useNavigate()
   const draft = c ? inviteDraft(c.firstName, people[c.advisorId].name.split(' ')[0]) : undefined
-  const [body, setBody] = useState(draft?.rough ?? '')
-  const [phase, setPhase] = useState<'rough' | 'polishing' | 'diff' | 'final'>('rough')
-  const [subject, setSubject] = useState('Before we meet — a few questions')
+  const saved = caseId ? drafts.get(caseId) : undefined
+  const [body, setBody] = useState(saved?.body ?? draft?.rough ?? '')
+  const [phase, setPhase] = useState<Draft['phase']>(saved?.phase === 'polishing' ? 'rough' : (saved?.phase ?? 'rough'))
+  const [subject, setSubject] = useState(saved?.subject ?? 'Before we meet — a few questions')
+  useEffect(() => {
+    if (caseId) drafts.set(caseId, { subject, body, phase })
+  }, [caseId, subject, body, phase])
   const [copied, setCopied] = useState(false)
   if (!c || !draft) return <Navigate to="/wm" replace />
 
@@ -33,7 +42,7 @@ export function Invite() {
 
   return (
     <div className="pb-16">
-      <PageHeader eyebrow={`${c.firstName} ${c.lastName} · step 2 of 2`} title={`Invite ${c.firstName}`} />
+      <PageHeader eyebrow={<NewClientSteps step={2} caseId={c.id} />} title={`Invite ${c.firstName}`} />
       <div className="grid gap-4 px-10 lg:grid-cols-[1fr_360px]">
         <div className="flex flex-col gap-4">
           {phase === 'diff' ? (
@@ -74,6 +83,11 @@ export function Invite() {
               </div>
             </Card>
           )}
+          <div>
+            <Button variant="ghost" leading={<ArrowLeft className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/edit`)}>
+              Back to details
+            </Button>
+          </div>
         </div>
 
         <aside className="flex flex-col gap-4">
@@ -106,6 +120,7 @@ export function Invite() {
               leading={<Send className="size-4" />}
               onClick={() => {
                 sendInvite(c.id, { subject, body })
+                drafts.delete(c.id)
                 toast(`Sent to ${c.firstName}`, { description: c.email, tone: 'success' })
                 navigate(`/wm/c/${c.id}`)
               }}
