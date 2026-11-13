@@ -1,11 +1,10 @@
 import { Bitcoin, Briefcase, CreditCard, Gem, HandCoins, Home, Landmark, LineChart, Package, PiggyBank, Plus, Receipt, Sparkles, Wallet } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { money, moneyCompact } from '../../lib/format'
 import { assetCategories, categoryLabel, liabilityCategories, type NWCategory } from '../../schema/onboarding'
 import { institutions } from '../../services/ai'
 import type { NWItem } from '../../store/types'
-import { chartScale } from '../../tokens/tokens'
 import { SourceTag } from './SourceTag'
 
 export const categoryIcon: Record<NWCategory, ReactNode> = {
@@ -22,6 +21,19 @@ export const categoryIcon: Record<NWCategory, ReactNode> = {
   loan: <HandCoins className="size-[18px]" />,
   creditCard: <CreditCard className="size-[18px]" />,
   otherDebt: <Receipt className="size-[18px]" />,
+}
+
+/** Fixed per category so a slice keeps its color as balances change. Muted, but distinct in hue and value. */
+export const categoryColor: Record<string, string> = {
+  investment: '#2E3A4B',
+  realEstate: '#C8A27C',
+  retirement: '#6F8C79',
+  equityComp: '#8A6A8C',
+  cash: '#9DB4C6',
+  crypto: '#C9963F',
+  business: '#7D8A57',
+  collectible: '#B5806F',
+  otherAsset: '#BDB5AA',
 }
 
 const confidenceLabel = { exact: undefined, estimate: 'Estimate', rough: 'Rough guess' } as const
@@ -167,11 +179,13 @@ type Totals = { assets: number; liabilities: number; total: number; exHome: numb
 
 /** Live net worth: serif headline, composition bar and the three numbers regulators look at. */
 export function NetWorthSummary({ totals, items, pending = 0, className }: { totals: Totals; items: NWItem[]; pending?: number; className?: string }) {
+  const [focus, setFocus] = useState<NWCategory>()
   const byCat = assetCategories
-    .map((c, i) => ({ id: c.id, label: c.label, value: items.filter((x) => x.side === 'asset' && x.category === c.id).reduce((a, x) => a + (x.value ?? 0), 0), color: chartScale[i % chartScale.length] }))
+    .map((c) => ({ id: c.id, label: c.label, value: items.filter((x) => x.side === 'asset' && x.category === c.id).reduce((a, x) => a + (x.value ?? 0), 0), color: categoryColor[c.id] }))
     .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value)
   const sum = byCat.reduce((a, c) => a + c.value, 0)
+  const dim = (id: NWCategory) => (focus && focus !== id ? 'opacity-30' : 'opacity-100')
   if (totals.assets === 0 && totals.liabilities === 0)
     return (
       <div className={cn('flex flex-col gap-2 rounded-[24px] bg-surface p-6', className)}>
@@ -186,50 +200,60 @@ export function NetWorthSummary({ totals, items, pending = 0, className }: { tot
       </div>
     )
   return (
-    <div className={cn('flex flex-col gap-5 rounded-[24px] bg-surface p-6', className)}>
-      <div className="flex flex-col gap-1">
+    <div className={cn('@container flex flex-col gap-6 rounded-[24px] bg-surface p-6', className)}>
+      <div className="flex flex-col gap-1.5">
         <span className="text-[13px] text-ink-3">Net worth</span>
-        <span className="display tabular text-[48px] text-ink">{money(totals.total)}</span>
+        <span className="display tabular text-[44px] leading-none text-ink">{money(totals.total)}</span>
         {pending > 0 && (
-          <span className="inline-flex items-center gap-1.5 text-[12px] text-ai">
+          <span className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-ai">
             <Sparkles className="size-3" />
             {pending} from your intro still {pending === 1 ? 'needs' : 'need'} a balance
           </span>
         )}
       </div>
       {sum > 0 && (
-        <div className="flex flex-col gap-3">
-          <div className="flex h-2.5 w-full gap-[2px] overflow-hidden rounded-full">
+        <div className="flex flex-col gap-4" onMouseLeave={() => setFocus(undefined)}>
+          <div className="flex h-3 w-full gap-[3px]">
             {byCat.map((c) => (
-              <span key={c.id} className="h-full transition-[flex-grow] duration-500" style={{ flexGrow: c.value, background: c.color }} title={`${c.label} ${money(c.value)}`} />
+              <span
+                key={c.id}
+                onMouseEnter={() => setFocus(c.id)}
+                className={cn('h-full min-w-1.5 rounded-full transition-[flex-grow,opacity] duration-300', dim(c.id))}
+                style={{ flexGrow: c.value, background: c.color }}
+              />
             ))}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+          <ul className="-mx-2 grid grid-cols-1 @md:grid-cols-2 @md:gap-x-4">
             {byCat.map((c) => (
-              <span key={c.id} className="inline-flex items-center gap-1.5 text-[12px] text-ink-3">
-                <span className="size-2 rounded-full" style={{ background: c.color }} />
-                {c.label}
-                <span className="tabular text-ink-4">{Math.round((c.value / sum) * 100)}%</span>
-              </span>
+              <li
+                key={c.id}
+                onMouseEnter={() => setFocus(c.id)}
+                className={cn('flex h-8 items-center gap-2.5 rounded-[10px] px-2 text-[13px] transition-[opacity,background-color] duration-300', dim(c.id), focus === c.id && 'bg-muted/70')}
+              >
+                <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: c.color }} />
+                <span className="min-w-0 flex-1 truncate text-ink-2">{c.label}</span>
+                <span className="tabular text-ink">{moneyCompact(c.value)}</span>
+                <span className="tabular w-9 text-right text-ink-4">{Math.round((c.value / sum) * 100)}%</span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 text-[13px] sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 @lg:grid-cols-4">
         <Stat label="Assets" value={moneyCompact(totals.assets)} />
-        <Stat label="Debts" value={moneyCompact(totals.liabilities)} />
+        <Stat label="Debts" value={moneyCompact(totals.liabilities)} tone="danger" />
         <Stat label="Liquid" value={moneyCompact(totals.liquid)} />
-        <Stat label="Excl. home" value={moneyCompact(totals.exHome)} />
+        <Stat label="Without home" value={moneyCompact(totals.exHome)} />
       </div>
     </div>
   )
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: 'danger' }) {
   return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-ink-4">{label}</span>
-      <span className="tabular text-[15px] text-ink">{value}</span>
+    <div className="flex flex-col gap-0.5 rounded-[14px] bg-muted/60 px-3.5 py-3">
+      <span className="text-[12px] text-ink-3">{label}</span>
+      <span className={cn('tabular text-[16px]', tone === 'danger' ? 'text-danger' : 'text-ink')}>{tone === 'danger' && value !== '$0' ? `−${value}` : value}</span>
     </div>
   )
 }
