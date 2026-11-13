@@ -167,7 +167,7 @@ export function CommentThread({ thread, showTitle = true, compact }: { thread: T
 }
 
 /** Inline "Ask Emily" affordance anchored to a field, item or section. Shows existing threads first. */
-export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact, floating }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean; floating?: boolean }) {
+export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact, floating, align = 'end' }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean; floating?: boolean; align?: 'start' | 'end' }) {
   const { c, caseId, viewerId, mode } = useCurrentCase()
   const peopleMap = useStore((s) => s.people)
   const startThread = useStore((s) => s.startThread)
@@ -193,7 +193,7 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
     <Popover
       open={isOpen}
       onOpenChange={setOpen}
-      align="end"
+      align={align}
       padding={16}
       inner={18}
       className="w-[380px]"

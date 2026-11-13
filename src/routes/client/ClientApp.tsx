@@ -141,14 +141,16 @@ export function ClientApp() {
         <div className={inSections ? 'mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[240px_minmax(0,1fr)]' : 'mx-auto max-w-3xl px-6 py-12'}>
           {inSections && (
             <aside className="hidden lg:block">
-              <div className="sticky top-24 flex flex-col gap-4">
-                <ProgressRail
-                  active={sectionId ?? (step === 'requests' ? 'requests' : undefined)}
-                  onSelect={(id) => go(id as Step)}
-                  items={railItems}
-                />
-                {unreadCount(c, c.clientId) > 0 && <p className="px-3 text-[12px] text-advisor">{advisor.name.split(' ')[0]} replied to you</p>}
-                <AdvisorCard c={c} sectionId={sectionId} />
+              <div className="sticky top-24 flex h-[calc(100vh-8.5rem)] flex-col gap-4">
+                <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
+                  <ProgressRail
+                    active={sectionId ?? (step === 'requests' ? 'requests' : undefined)}
+                    onSelect={(id) => go(id as Step)}
+                    items={railItems}
+                  />
+                  {unreadCount(c, c.clientId) > 0 && <p className="px-3 text-[12px] text-advisor">{advisor.name.split(' ')[0]} replied to you</p>}
+                </div>
+                <AdvisorCard c={c} sectionId={sectionId} className="mt-auto" />
               </div>
             </aside>
           )}
