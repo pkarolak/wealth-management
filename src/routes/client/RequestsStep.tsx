@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, Check, FileUp, MessageSquareText } from 'lucide-react'
+import { ArrowRight, Check, FileText, FileUp, MessageSquareText } from 'lucide-react'
 import { useState } from 'react'
 import { Avatar, Button, toast } from '../../components/primitives'
 import { sectionById } from '../../schema/onboarding'
@@ -72,11 +72,26 @@ export function RequestsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
   )
 }
 
+type Phase = 'idle' | 'uploading' | 'reading' | 'done'
+
 function OpenRequest({ c, r, first, advisorName, advisorAvatar, onGo }: { c: ClientCase; r: RequestItem; first: string; advisorName: string; advisorAvatar?: string; onGo: (s: Step) => void }) {
-  const [busy, setBusy] = useState(false)
+  const fulfill = useStore((s) => s.fulfillRequest)
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [answer, setAnswer] = useState('')
   const isDoc = r.kind === 'document'
   const kind = guessDocKind(r.title)
   const file = documentKinds.find((d) => d.kind === kind)?.file ?? 'Statement.pdf'
+
+  const upload = async () => {
+    setPhase('uploading')
+    await new Promise((res) => setTimeout(res, 1400))
+    setPhase('reading')
+    await processDocument(c.id, c.clientId, kind, file)
+    setPhase('done')
+    await new Promise((res) => setTimeout(res, 900))
+    fulfill(c.id, r.id, c.clientId, `Uploaded ${file}`)
+    toast('Sent to ' + first, { description: file, tone: 'success' })
+  }
 
   return (
     <div className="flex flex-col gap-4 rounded-[22px] bg-surface p-5 shadow-soft">
@@ -101,28 +116,63 @@ function OpenRequest({ c, r, first, advisorName, advisorAvatar, onGo }: { c: Cli
           </p>
         </div>
       )}
-      <div className="flex justify-end">
-        {isDoc ? (
-          <Button
-            leading={<FileUp className="size-4" />}
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true)
-              await processDocument(c.id, c.clientId, kind, file)
-              setBusy(false)
-              toast('Uploaded', { description: `${first} has been notified.`, tone: 'success' })
-            }}
-          >
-            {busy ? 'Reading…' : 'Upload'}
-          </Button>
-        ) : (
-          r.sectionId && (
-            <Button variant="secondary" trailing={<ArrowRight className="size-4" />} onClick={() => onGo(r.sectionId as Step)}>
-              Go to {sectionById[r.sectionId].short}
+      {isDoc && phase !== 'idle' ? (
+        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 rounded-[14px] bg-muted/70 p-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-surface text-ink-3">
+            {phase === 'done' ? <Check className="size-4 text-success" /> : <FileText className="size-4" />}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="flex items-baseline justify-between gap-3 text-[13px]">
+              <span className="truncate text-ink">{file}</span>
+              <span className="shrink-0 text-ink-4">{phase === 'uploading' ? 'Uploading…' : phase === 'reading' ? 'Reading…' : 'Done'}</span>
+            </div>
+            <div className="h-1 overflow-hidden rounded-full bg-line">
+              <motion.div
+                className={phase === 'done' ? 'h-full rounded-full bg-success' : 'h-full rounded-full bg-ink'}
+                initial={{ width: '0%' }}
+                animate={{ width: phase === 'uploading' ? '70%' : '100%' }}
+                transition={{ duration: phase === 'uploading' ? 1.4 : 0.6, ease: 'easeOut' }}
+              />
+            </div>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="flex justify-end">
+          {isDoc ? (
+            <Button leading={<FileUp className="size-4" />} onClick={upload}>
+              Upload
             </Button>
-          )
-        )}
-      </div>
+          ) : (
+            <form
+              className="flex w-full flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (!answer.trim()) return
+                fulfill(c.id, r.id, c.clientId, answer.trim())
+                toast('Sent to ' + first, { tone: 'success' })
+              }}
+            >
+              <textarea
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                rows={2}
+                placeholder={`Reply to ${first}…`}
+                className="min-h-[72px] w-full resize-none rounded-[14px] bg-muted/70 px-3.5 py-3 text-[14px] text-ink outline-none ring-1 ring-transparent ring-inset placeholder:text-ink-4 focus:bg-surface focus:ring-line-strong [field-sizing:content]"
+              />
+              <div className="flex items-center justify-end gap-2">
+                {r.sectionId && (
+                  <Button type="button" variant="ghost" trailing={<ArrowRight className="size-4" />} onClick={() => onGo(r.sectionId as Step)}>
+                    Answer in {sectionById[r.sectionId].short}
+                  </Button>
+                )}
+                <Button type="submit" disabled={!answer.trim()}>
+                  Send
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   )
 }

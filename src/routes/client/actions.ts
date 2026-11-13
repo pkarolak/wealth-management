@@ -28,7 +28,7 @@ export async function linkAccount(caseId: string, institutionId: string) {
 
 export const guessDocKind = (title: string): DocKind => {
   const t = title.toLowerCase()
-  if (t.includes('401') || t.includes('ira')) return 'retirement'
+  if (t.includes('401') || t.includes('ira') || t.includes('retire') || t.includes('pension')) return 'retirement'
   if (t.includes('tax')) return 'tax'
   if (t.includes('stock') || t.includes('rsu') || t.includes('equity')) return 'equity'
   if (t.includes('mortgage')) return 'mortgage'
