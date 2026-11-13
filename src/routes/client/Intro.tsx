@@ -1,9 +1,9 @@
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { ArrowRight, Check, Sparkles } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { TaskStack, VoiceInput } from '../../components/patterns'
 import { Button } from '../../components/primitives'
-import { extractIntro, introTranscript, type IntroResult } from '../../services/ai'
+import { extractIntro, introTranscript, wait, type IntroResult } from '../../services/ai'
 import { useStore } from '../../store/caseStore'
 import type { ClientCase } from '../../store/types'
 import type { StepNav } from './ClientApp'
@@ -16,16 +16,18 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const [active, setActive] = useState(0)
   const [result, setResult] = useState<IntroResult['summary']>()
 
-  useEffect(() => {
-    if (phase !== 'working') return
-    const t = setInterval(() => setActive((a) => Math.min(work.length - 1, a + 1)), 420)
-    return () => clearInterval(t)
-  }, [phase])
-
   const submit = async (text: string) => {
     setPhase('working')
     setActive(0)
-    const r = await extractIntro(text)
+    const extraction = extractIntro(text)
+    for (let i = 1; i < work.length; i++) {
+      await wait(1050)
+      setActive(i)
+    }
+    const r = await extraction
+    await wait(900)
+    setActive(work.length)
+    await wait(700)
     const st = useStore.getState()
     st.applyDrafts(c.id, r.fields, 'ai', 'ai')
     r.goals.forEach((g) => st.addGoal(c.id, g))
@@ -60,15 +62,23 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
           </button>
         </div>
       )}
+      <AnimatePresence mode="wait" initial={false}>
       {phase === 'working' && (
-        <div className="flex flex-col items-center gap-6 rounded-[28px] bg-muted/70 px-6 py-14">
-          <TaskStack items={work.map((w, i) => ({ id: String(i), label: w, icon: i < active ? <Check className="size-4" /> : <Sparkles className="size-4" /> }))} active={active} />
-        </div>
+        <motion.div key="working" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.35 } }} className="flex flex-col items-center gap-6 rounded-[28px] bg-muted/70 px-6 py-10">
+          <TaskStack
+            items={work.map((w, i) => ({
+              id: String(i),
+              label: w,
+              icon: i < active ? <Check className="size-4 text-success" /> : <Sparkles className={i === active ? 'size-4 animate-pulse text-ai' : 'size-4'} />,
+            }))}
+            active={Math.min(active, work.length - 1)}
+          />
+        </motion.div>
       )}
       {phase === 'result' && (
-        <div className="flex flex-col gap-3">
+        <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3">
           {summary.map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} className="flex items-center gap-4 rounded-[22px] bg-surface p-3 pr-5">
+            <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.15, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="flex items-center gap-4 rounded-[22px] bg-surface p-3 pr-5">
               <span className="flex size-10 items-center justify-center rounded-control bg-ai-soft text-ai">
                 <Sparkles className="size-[18px]" />
               </span>
@@ -85,8 +95,9 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
               Continue
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 }

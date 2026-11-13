@@ -38,39 +38,41 @@ export function ProgressRail({ items, active, onSelect, className }: { items: Ra
 
 export type StackItem = { id: string; label: ReactNode; meta?: ReactNode; icon?: ReactNode }
 
-/** The reference "stack": the active task sits forward, neighbours recede. Text-only rows → 16px radius. */
+const ROW = 56
+const GAP = 8
+const ease = [0.22, 1, 0.36, 1] as const
+
+/** The reference "stack" as a slow vertical carousel: the active task sits centred and forward, neighbours recede. */
 export function TaskStack({ items, active, className }: { items: StackItem[]; active: number; className?: string }) {
+  const visible = 5
+  const height = visible * ROW + (visible - 1) * GAP
+  const offset = (height - ROW) / 2 - active * (ROW + GAP)
   return (
-    <div className={cn('relative flex flex-col items-center', className)}>
-      {items.map((it, i) => {
-        const d = i - active
-        const a = Math.abs(d)
-        if (a > 3) return null
-        const scale = [1, 0.92, 0.84, 0.76][a]
-        const opacity = [1, 0.75, 0.45, 0.22][a]
-        return (
-          <motion.div
-            key={it.id}
-            layout
-            animate={{ scale, opacity }}
-            transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-            style={{ zIndex: 10 - a, marginTop: i === 0 ? 0 : -6 }}
-            className={cn(
-              'flex w-full max-w-xl items-center gap-3 rounded-[16px] px-6 whitespace-nowrap',
-              a === 0 ? 'h-[60px] bg-surface text-[18px] text-ink shadow-float' : 'h-[52px] bg-sunken/80 text-[16px] text-ink-3',
-            )}
-          >
-            <span className="text-ink-4">{it.icon ?? <ListChecks className="size-4" />}</span>
-            <span className="truncate">{it.label}</span>
-            {it.meta && (
-              <span className="text-ink-4">
-                <span className="mx-1.5">•</span>
-                {it.meta}
-              </span>
-            )}
-          </motion.div>
-        )
-      })}
+    <div className={cn('relative w-full max-w-xl overflow-hidden', className)} style={{ height, maskImage: 'linear-gradient(transparent, black 30%, black 70%, transparent)' }}>
+      <motion.div className="flex flex-col" style={{ gap: GAP }} initial={false} animate={{ y: offset }} transition={{ duration: 0.9, ease }}>
+        {items.map((it, i) => {
+          const a = Math.min(Math.abs(i - active), 3)
+          return (
+            <motion.div
+              key={it.id}
+              initial={false}
+              animate={{ scale: [1, 0.94, 0.88, 0.84][a], opacity: [1, 0.6, 0.35, 0.2][a] }}
+              transition={{ duration: 0.9, ease }}
+              style={{ height: ROW, zIndex: 10 - a }}
+              className={cn('flex shrink-0 items-center gap-3 rounded-[16px] bg-surface px-6 whitespace-nowrap transition-[color,box-shadow] duration-700', a === 0 ? 'text-[17px] text-ink shadow-float' : 'text-[17px] text-ink-3 shadow-none')}
+            >
+              <span className="flex size-5 items-center justify-center text-ink-4">{it.icon ?? <ListChecks className="size-4" />}</span>
+              <span className="truncate">{it.label}</span>
+              {it.meta && (
+                <span className="text-ink-4">
+                  <span className="mx-1.5">•</span>
+                  {it.meta}
+                </span>
+              )}
+            </motion.div>
+          )
+        })}
+      </motion.div>
     </div>
   )
 }
