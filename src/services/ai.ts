@@ -107,7 +107,7 @@ export async function extractDocument(kind: DocKind): Promise<ExtractResult> {
       return {
         items: [{ match: 'retirement', item: { side: 'asset', category: 'retirement', name: '401(k) from previous employer', institution: 'Fidelity', value: 286_900, source: 'document', confidence: 'exact', detail: 'Target date 2045 fund · eligible for rollover', sourceLabel: src } }],
         fields: {},
-        extracted: ['Balance $286,900', 'Rollover eligible'],
+        extracted: ['Balance $286,900', 'Likely rollover eligible'],
       }
     case 'equity':
       return {
