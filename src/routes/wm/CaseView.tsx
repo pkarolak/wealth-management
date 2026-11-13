@@ -150,7 +150,7 @@ function SectionReview({ c, s, onHover }: { c: ClientCase; s: SectionDef; onHove
               ))}
             </>
           )}
-          {s.kind === 'review' && <p className="px-3 pb-2 text-[14px] text-ink-3">{c.signature ? `Signed as “${c.signature}”.` : `${c.firstName} hasn’t signed yet.`}</p>}
+          {s.kind === 'review' && <p className="px-3 pb-2 text-[14px] text-ink-3">{c.signature ? `Confirmed by ${c.signature} on ${new Date(c.submittedAt ?? Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.` : `${c.firstName} hasn’t confirmed yet.`}</p>}
           {s.kind !== 'review' && (
             <div className="flex justify-end gap-2 px-1 pt-2 pb-1">
               {reviewed ? (

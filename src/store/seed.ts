@@ -5,7 +5,7 @@ export const ASSISTANT_ID = 'mike'
 
 export const staff: Person[] = [
   { id: ADVISOR_ID, name: 'Emily Parker', role: 'advisor', title: 'Wealth Manager', avatar: '/avatars/emily.jpg' },
-  { id: ASSISTANT_ID, name: 'Mike Whiteaker', role: 'assistant', title: 'Client associate', avatar: '/avatars/mike.jpg' },
+  { id: ASSISTANT_ID, name: 'Mike Whiteaker', role: 'assistant', title: 'Client service associate', avatar: '/avatars/mike.jpg' },
 ]
 
 export const pipeline: PipelineRow[] = [
@@ -16,7 +16,7 @@ export const pipeline: PipelineRow[] = [
   { id: 'p5', name: 'Sofia Alvarez', stage: 'Info gathering', aum: 890_000, updated: '4d ago', advisorId: ADVISOR_ID },
 ]
 
-export const pipelineCounts = { Prospecting: 132, 'Info gathering': 93, Proposals: 79, Onboarded: 64 }
+export const pipelineCounts = { Prospecting: 31, 'Info gathering': 8, Proposals: 5, Onboarded: 17 }
 
 /** Defaults the advisor's "new client" form starts from in the demo. */
 export const demoNewClient = {

@@ -228,7 +228,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
                 ]}
               />
             </div>
-            {item.category === 'realEstate' && <Checkbox checked={!!item.primaryResidence} onChange={(v) => setItem({ ...item, primaryResidence: v })} label="This is where I live" description="Your home is shown separately in some regulatory checks." />}
+            {item.category === 'realEstate' && <Checkbox checked={!!item.primaryResidence} onChange={(v) => setItem({ ...item, primaryResidence: v })} label="This is where I live" description="Some rules, like accredited-investor status, leave out your primary home." />}
             {item.id && (
               <div className="flex justify-end">
                 <AskAdvisorButton anchor={{ sectionId: 'networth', itemId: item.id }} title={item.name} />

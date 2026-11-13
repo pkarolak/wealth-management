@@ -148,7 +148,7 @@ export async function extractDocument(kind: DocKind): Promise<ExtractResult> {
 export const institutions = [
   { id: 'chase', name: 'Chase', kind: 'Bank', color: '#117ACA', logo: '/logos/chase.jpg' },
   { id: 'vanguard', name: 'Vanguard', kind: 'Brokerage', color: '#96151D', logo: '/logos/vanguard.svg' },
-  { id: 'fidelity', name: 'Fidelity NetBenefits', kind: '401(k)', color: '#368727', logo: '/logos/fidelity.png' },
+  { id: 'fidelity', name: 'Fidelity', kind: '401(k) & brokerage', color: '#368727', logo: '/logos/fidelity.png' },
   { id: 'coinbase', name: 'Coinbase', kind: 'Crypto', color: '#0052FF', logo: '/logos/coinbase.png' },
   { id: 'schwab', name: 'Charles Schwab', kind: 'Brokerage', color: '#00A0DF', logo: '/logos/schwab.png' },
   { id: 'amex', name: 'American Express', kind: 'Credit card', color: '#2E77BB', logo: '/logos/amex.png' },
@@ -187,20 +187,20 @@ export async function estimateValue(category: NWCategory, input: string): Promis
 }
 
 export const glossary: Record<string, { title: string; body: string }> = {
-  ssn: { title: 'Why we need your SSN', body: 'Federal rules require every brokerage to verify who you are, and the IRS needs it for tax forms. It’s encrypted and only the last four digits are ever shown. If you’d rather, Emily can collect it on a call.' },
+  ssn: { title: 'Why we need your SSN', body: 'Federal law requires every financial firm to verify who you are, and the IRS needs it for your tax forms. It’s encrypted and only the last four digits are ever shown. If you’d rather, Emily can collect it on a call.' },
   residency: { title: 'Citizenship', body: 'This decides which tax form applies to you — a W-9 for U.S. persons, a W-8BEN for everyone else.' },
-  ranges: { title: 'Why a range is fine', body: 'Regulators only need a range to check your investments fit your situation. If you upload a tax return, we’ll use the exact numbers for planning.' },
+  ranges: { title: 'Why a range is fine', body: 'We need a sense of your income to make sure our advice fits your situation, and a range is enough for that. If you upload a tax return, we’ll use the exact numbers for planning.' },
   liquidity: { title: 'What counts as liquid', body: 'Money you could get to within a few days without a big penalty: cash, brokerage accounts, most crypto. Retirement accounts, property and private companies usually aren’t.' },
   trust: { title: 'Living trust', body: 'A legal document that holds your assets and passes them on without going through probate court. Not everyone needs one.' },
   poa: { title: 'Power of attorney', body: 'Names someone who can make financial (or medical) decisions for you if you can’t.' },
-  finra: { title: 'Why we ask', body: 'If you work in the securities industry, your employer has to approve this account and may receive copies of your statements. It’s FINRA Rule 3210.' },
-  insider: { title: 'Why we ask', body: 'Company insiders face special rules about when they can sell their company’s stock (SEC Rule 144). Knowing this helps us plan around trading windows.' },
-  pep: { title: 'Politically exposed person', body: 'A senior official in a foreign government, military, judiciary or state-owned company — or their close family. Anti-money-laundering rules require extra checks. Almost everyone answers no.' },
+  finra: { title: 'Why we ask', body: 'If you work in the securities industry, your employer has to approve this account in writing and may ask for copies of your statements (FINRA Rule 3210).' },
+  insider: { title: 'Why we ask', body: 'Company insiders face extra SEC rules on selling their company’s stock (Rule 144) and can usually trade only in open windows. Knowing this helps us plan sales around them.' },
+  pep: { title: 'Senior foreign political figure', body: 'A senior official in a foreign government, military, political party or state-owned company — or their close family and associates. Anti-money-laundering rules require extra checks. Almost everyone answers no.' },
   sourceOfFunds: { title: 'Source of funds', body: 'Anti-money-laundering rules ask where the money originally came from. Pick everything that applies.' },
-  trustedContact: { title: 'Emergency contact', body: 'Someone we can reach if we can’t reach you, or if we’re worried about your wellbeing or possible fraud. They can’t see your accounts or make trades. You can skip this.' },
-  w9: { title: 'Tax certification (W-9)', body: 'The IRS requires you to confirm your taxpayer ID is correct. It replaces filling in a separate W-9 form.' },
+  trustedContact: { title: 'Trusted contact', body: 'Someone 18 or older we may call if we can’t reach you, or if we’re worried about your health or possible financial exploitation. They can’t see your accounts or make decisions for you. It’s optional, but we recommend it.' },
+  w9: { title: 'Tax certification (W-9)', body: 'The IRS requires you to confirm your taxpayer ID and U.S. status. Checking this replaces filling in a separate Form W-9.' },
   backupWithholding: { title: 'Backup withholding', body: 'Rare. Only check this if the IRS sent you a letter saying they’ll withhold tax from your investment income.' },
-  netWorth: { title: 'Net worth', body: 'Everything you own minus everything you owe. Regulators also look at it without your home, and at how much is liquid.' },
+  netWorth: { title: 'Net worth', body: 'Everything you own minus everything you owe. Some rules, like accredited-investor status, count it without your primary home.' },
   rsu: { title: 'RSUs', body: 'Restricted stock units — shares your employer grants you that become yours on a schedule (vesting). They’re taxed as income when they vest.' },
   objective: { title: 'Investment objective', body: 'The overall aim for your money — from protecting it to growing it as much as possible. Your answers above suggest one; you can change it.' },
 }
@@ -213,7 +213,7 @@ export async function explain(key: string) {
 export function inviteDraft(clientFirst: string, advisorFirst: string) {
   return {
     rough: `hey ${clientFirst.toLowerCase()} pls fill this before our mtg, takes 15 min. lmk if q's`,
-    polished: `Hi ${clientFirst},\n\nIt was great meeting you. Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.\n\nThis link takes about 15–20 minutes, saves as you go, and you can come back anytime. If anything is unclear, leave me a comment right in the form and I’ll get back to you.\n\nLooking forward to it,\n${advisorFirst}`,
+    polished: `Hi ${clientFirst},\n\nIt was great meeting you. Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.\n\nThis link takes about 20 minutes, saves as you go, and you can come back anytime. If anything is unclear, leave me a comment right in the form and I’ll get back to you.\n\nI’ve also included our Form CRS, Form ADV Part 2 and privacy notice. They explain our services, fees and how we protect your information — we share them with everyone before we start working together.\n\nLooking forward to it,\n${advisorFirst}`,
   }
 }
 
@@ -275,7 +275,7 @@ export function meetingBrief(
       priority: 'high',
       title: 'Roll over the old 401(k)',
       why: oldPlan.value ? `${fmt(oldPlan.value)}${oldPlan.institution ? ` at ${oldPlan.institution}` : ''}, still with a previous employer.` : 'Still with a previous employer. Balance not known yet.',
-      ask: 'Would you like us to consolidate it into an IRA we manage together?',
+      ask: 'What do you like about the plan today? Compare fees, investment options and services before recommending a rollover, and document why.',
       minutes: 10,
     })
   if (nearGoal && nearGoal.targetYear && nearGoal.targetYear - year <= 5 && nearGoal.amount)
@@ -331,12 +331,12 @@ export function meetingBrief(
 
   const planning = topics.filter((t) => t.tag === 'Planning')
   return {
-    headline: `${c.firstName} is worth about ${fmt(netWorth.total)}, ${fmt(netWorth.liquid)} of it liquid.${planning[0] ? ` Biggest lever: ${planning[0].title.toLowerCase()}.` : ''}`,
+    headline: `Household net worth is about ${fmt(netWorth.total)}, ${fmt(netWorth.liquid)} of it liquid.${planning[0] ? ` Biggest lever: ${planning[0].title.toLowerCase()}.` : ''}`,
     topics,
     suggestedAgenda: [
       { title: 'Goals and priorities', minutes: 10 },
       ...planning.slice(0, 2).map((t) => ({ title: t.title, minutes: t.minutes, topicId: t.id })),
-      { title: 'Account opening and next steps', minutes: 10 },
+      { title: 'Advisory agreement and account opening', minutes: 10 },
     ],
   }
 }

@@ -27,7 +27,7 @@ export function IdScan({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
   return (
     <div>
-      <StepHeader eyebrow="Getting started · 30 seconds" title="Scan your driver’s license." description="Your name, date of birth and address come straight from it, exactly as the custodian needs them." />
+      <StepHeader eyebrow="Getting started · 30 seconds" title="Scan your driver’s license." description="Your name, date of birth and address come straight from it, exactly as they need to appear on your accounts." />
       <div className="relative flex aspect-[1.7] w-full max-w-xl flex-col items-center justify-center gap-4 overflow-hidden rounded-[28px] border border-dashed border-line-strong bg-surface/70">
         {phase === 'scanning' && <motion.span className="absolute inset-x-6 h-0.5 rounded-full bg-ai/60 shadow-[0_0_16px_var(--color-ai)]" initial={{ top: '12%' }} animate={{ top: ['12%', '88%', '12%'] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} />}
         {phase !== 'done' ? (

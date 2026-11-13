@@ -9,7 +9,7 @@ export const riskQuestions: RiskQuestion[] = [
   {
     id: 'drop',
     prompt: 'Your portfolio drops 20% in a month. What do you do?',
-    context: 'This happened in early 2020 and again in 2022.',
+    context: 'U.S. stocks fell more than that in a few weeks in early 2020.',
     options: [
       { label: 'Sell most of it', description: 'Protect what’s left, even if I miss the recovery.', score: 1 },
       { label: 'Sell some', description: 'Move part of it to cash until things calm down.', score: 2 },
@@ -20,11 +20,12 @@ export const riskQuestions: RiskQuestion[] = [
   {
     id: 'tradeoff',
     prompt: 'Which would you rather have over 10 years?',
+    context: 'Hypothetical, for illustration only — not a forecast of any portfolio.',
     options: [
-      { label: 'Steady and modest', description: 'Around 4% a year, rarely down more than 5%.', score: 1 },
-      { label: 'Balanced', description: 'Around 6% a year, sometimes down 15%.', score: 2 },
-      { label: 'Growth', description: 'Around 8% a year, sometimes down 25%.', score: 3 },
-      { label: 'Maximum growth', description: 'Around 10% a year, sometimes down 40%.', score: 4 },
+      { label: 'Steady and modest', description: 'Lowest long-term growth. A bad year might be down 5%.', score: 1 },
+      { label: 'Balanced', description: 'More growth. A bad year might be down 15%.', score: 2 },
+      { label: 'Growth', description: 'Higher growth. A bad year might be down 25%.', score: 3 },
+      { label: 'Maximum growth', description: 'Highest growth potential. A bad year might be down 40%.', score: 4 },
     ],
   },
   {
@@ -52,9 +53,9 @@ export const riskQuestions: RiskQuestion[] = [
 export const riskProfiles = [
   { min: 0, label: 'Conservative', objective: 'Preservation with some income', description: 'Protecting what you have matters more than growth.' },
   { min: 1.75, label: 'Moderately conservative', objective: 'Income with modest growth', description: 'You want some growth but feel losses sharply.' },
-  { min: 2.4, label: 'Balanced', objective: 'Balanced growth and income', description: 'You accept ups and downs for steady long-term growth.' },
+  { min: 2.4, label: 'Moderate', objective: 'Balanced growth and income', description: 'You accept ups and downs for steady long-term growth.' },
   { min: 3.0, label: 'Growth', objective: 'Long-term growth', description: 'You’re comfortable riding out drops for higher returns.' },
-  { min: 3.6, label: 'Aggressive growth', objective: 'Maximum long-term growth', description: 'You see downturns as opportunities.' },
+  { min: 3.6, label: 'Aggressive', objective: 'Maximum long-term growth', description: 'You see downturns as opportunities.' },
 ]
 
 export const scoreRisk = (answers: Record<string, number>) => {

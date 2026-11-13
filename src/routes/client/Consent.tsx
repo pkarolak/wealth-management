@@ -9,7 +9,7 @@ import { StepHeader } from './StepChrome'
 const docs = [
   { name: 'Privacy notice', hint: 'How we collect, use and protect your information' },
   { name: 'Form CRS', hint: 'Our services, fees and conflicts, in plain language' },
-  { name: 'Form ADV Part 2', hint: 'Our firm brochure, filed with the SEC' },
+  { name: 'Form ADV Part 2A & 2B', hint: 'Our firm brochure, and a supplement about your Wealth Manager' },
 ]
 
 function Point({ icon, title, children }: { icon: ReactNode; title: string; children: ReactNode }) {

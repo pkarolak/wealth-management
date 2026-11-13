@@ -61,7 +61,7 @@ export const sections: SectionDef[] = [
   { id: 'networth', title: 'What you own and owe', short: 'Net worth', wmTitle: 'Net worth', wmShort: 'Net worth', description: 'Add your accounts, property and debts. We do the math.', minutes: 6, kind: 'networth' },
   { id: 'risk', title: 'How you feel about risk', short: 'Risk', wmTitle: 'Risk profile', wmShort: 'Risk', description: 'A few scenarios. There are no wrong answers.', minutes: 2, kind: 'risk' },
   { id: 'estate', title: 'Family & protection', short: 'Estate', wmTitle: 'Family & protection', wmShort: 'Estate', description: 'Wills, insurance and the people who help you.', minutes: 2, kind: 'form', optional: true },
-  { id: 'required', title: 'A few required questions', short: 'Required', wmTitle: 'Regulatory questions', wmShort: 'Required', description: 'Regulators ask every client these. Most people answer “no” and move on.', minutes: 2, kind: 'form' },
+  { id: 'required', title: 'A few required questions', short: 'Required', wmTitle: 'Regulatory questions', wmShort: 'Required', description: 'Every U.S. investment firm asks these before opening an account. Most people answer “no” and move on.', minutes: 2, kind: 'form' },
   { id: 'review', title: 'Review & send', short: 'Review', wmTitle: 'Review & submit', wmShort: 'Review', description: 'Check everything once, then send it to your Wealth Manager.', minutes: 2, kind: 'review' },
 ]
 
@@ -96,8 +96,8 @@ export const fields: FieldDef[] = [
     options: [
       { value: 'us', label: 'U.S. citizen' },
       { value: 'pr', label: 'U.S. permanent resident' },
-      { value: 'npr', label: 'Non-permanent resident' },
-      { value: 'nr', label: 'Non-resident' },
+      { value: 'npr', label: 'Living in the U.S. on a visa' },
+      { value: 'nr', label: 'Living outside the U.S.' },
     ],
   },
   { id: 'citizenshipCountry', sectionId: 'about', group: 'Birth & citizenship', label: 'Country of citizenship', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: not('citizenship', 'us') },
@@ -127,7 +127,7 @@ export const fields: FieldDef[] = [
   { id: 'jointName', sectionId: 'about', group: 'Joint account co-owner', label: 'Full legal name', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: isJoint, why: 'Both owners sign for a joint account.' },
   { id: 'jointDob', sectionId: 'about', group: 'Joint account co-owner', label: 'Date of birth', type: 'date', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: isJoint },
   { id: 'jointEmail', sectionId: 'about', group: 'Joint account co-owner', label: 'Their email', type: 'email', tier: 1, requiredBy: ['custodian'], required: true, showWhen: isJoint, why: 'We’ll send them a short link to add their own ID and SSN.' },
-  { id: 'ssn', sectionId: 'about', group: 'Taxpayer ID', label: 'Social Security number', type: 'sensitive', tier: 1, requiredBy: ['custodian'], required: true, explain: 'ssn', canDefer: true, why: 'Required by the IRS and federal identity rules. Encrypted and never shown in full.' },
+  { id: 'ssn', sectionId: 'about', group: 'Taxpayer ID', label: 'Social Security number', type: 'sensitive', tier: 1, requiredBy: ['custodian'], required: true, explain: 'ssn', canDefer: true, why: 'The IRS needs it for tax reporting, and federal law requires us to verify your identity. Encrypted and never shown in full.' },
 
   // Work & income
   {
@@ -149,7 +149,7 @@ export const fields: FieldDef[] = [
   { id: 'employer', sectionId: 'work', group: 'Your work', label: 'Employer', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: oneOf('employmentStatus', ['employed', 'self']) },
   { id: 'employerAddress', sectionId: 'work', group: 'Your work', label: 'Employer address', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, showWhen: oneOf('employmentStatus', ['employed', 'self']) },
   {
-    id: 'annualIncome', sectionId: 'work', group: 'Your income', label: 'Household income per year', type: 'select', tier: 1, requiredBy: ['ria'], required: true, width: 'half', explain: 'ranges', why: 'A range is fine. Upload a tax return later for detail.',
+    id: 'annualIncome', sectionId: 'work', group: 'Your income', label: 'Household income per year', type: 'select', tier: 1, requiredBy: ['ria'], required: true, width: 'half', explain: 'ranges', why: 'A range is fine. A tax return gives us the detail later.',
     options: [
       { value: '0-100', label: 'Under $100k' },
       { value: '100-200', label: '$100k – $200k' },
@@ -212,17 +212,17 @@ export const fields: FieldDef[] = [
   // Estate (optional)
   { id: 'hasWill', sectionId: 'estate', group: 'Your documents', label: 'Do you have a will?', type: 'yesno', tier: 2, requiredBy: ['advisor'] },
   { id: 'hasTrust', sectionId: 'estate', group: 'Your documents', label: 'Do you have a living trust?', type: 'yesno', tier: 2, requiredBy: ['advisor'], explain: 'trust' },
-  { id: 'hasPoa', sectionId: 'estate', group: 'Your documents', label: 'Power of attorney and healthcare directive?', type: 'yesno', tier: 2, requiredBy: ['advisor'], explain: 'poa' },
+  { id: 'hasPoa', sectionId: 'estate', group: 'Your documents', label: 'Do you have a power of attorney and a healthcare directive?', type: 'yesno', tier: 2, requiredBy: ['advisor'], explain: 'poa' },
   { id: 'hasLifeInsurance', sectionId: 'estate', group: 'Protection', label: 'Do you have life insurance?', type: 'yesno', tier: 2, requiredBy: ['advisor'] },
   { id: 'lifeCoverage', sectionId: 'estate', group: 'Protection', label: 'Total coverage', type: 'money', tier: 2, requiredBy: ['advisor'], width: 'half', showWhen: yes('hasLifeInsurance'), canDefer: true },
   { id: 'professionals', sectionId: 'estate', group: 'Your team', label: 'Anyone we should coordinate with? (CPA, attorney)', type: 'textarea', tier: 3, requiredBy: ['advisor'], placeholder: 'e.g. Our CPA is Ana Ruiz at Ruiz & Co.' },
 
   // Required
-  { id: 'finraAffiliated', sectionId: 'required', group: 'Your connections', label: 'Do you or someone in your household work for a brokerage firm, stock exchange or FINRA?', type: 'yesno', tier: 1, requiredBy: ['custodian'], required: true, explain: 'finra' },
-  { id: 'finraFirm', sectionId: 'required', group: 'Your connections', label: 'Which firm?', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, showWhen: yes('finraAffiliated'), why: 'We’ll need a short approval letter from their compliance team.' },
-  { id: 'insider', sectionId: 'required', group: 'Your connections', label: 'Are you a director, officer or 10% owner of a public company?', type: 'yesno', tier: 1, requiredBy: ['custodian'], required: true, explain: 'insider' },
+  { id: 'finraAffiliated', sectionId: 'required', group: 'Your connections', label: 'Do you or anyone in your household work for a brokerage firm, a stock exchange or FINRA?', type: 'yesno', tier: 1, requiredBy: ['custodian'], required: true, explain: 'finra' },
+  { id: 'finraFirm', sectionId: 'required', group: 'Your connections', label: 'Which firm?', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, showWhen: yes('finraAffiliated'), why: 'Your employer has to approve the account in writing. We’ll ask their compliance team for the letter.' },
+  { id: 'insider', sectionId: 'required', group: 'Your connections', label: 'Are you a director, senior officer or 10% shareholder of a publicly traded company?', type: 'yesno', tier: 1, requiredBy: ['custodian'], required: true, explain: 'insider' },
   { id: 'insiderCompany', sectionId: 'required', group: 'Your connections', label: 'Company and ticker', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, showWhen: yes('insider') },
-  { id: 'pep', sectionId: 'required', group: 'Your connections', label: 'Do you or a close family member hold a senior government or political role outside the U.S.?', type: 'yesno', tier: 1, requiredBy: ['custodian', 'ria'], required: true, explain: 'pep' },
+  { id: 'pep', sectionId: 'required', group: 'Your connections', label: 'Are you, or a close family member or associate, a senior political figure outside the U.S.?', type: 'yesno', tier: 1, requiredBy: ['custodian', 'ria'], required: true, explain: 'pep' },
   { id: 'pepDetails', sectionId: 'required', group: 'Your connections', label: 'Role and country', type: 'text', tier: 1, requiredBy: ['ria'], required: true, showWhen: yes('pep') },
   {
     id: 'sourceOfFunds', sectionId: 'required', group: 'About the money', label: 'Where does the money you’re investing come from?', type: 'chips', tier: 1, requiredBy: ['custodian'], required: true, explain: 'sourceOfFunds',
@@ -235,15 +235,15 @@ export const fields: FieldDef[] = [
       { value: 'other', label: 'Other' },
     ],
   },
-  { id: 'trustedName', sectionId: 'required', group: 'Emergency contact', label: 'Full name', type: 'text', tier: 1, requiredBy: ['custodian'], width: 'half', explain: 'trustedContact', showWhen: (v) => v.trustedDecline !== true },
-  { id: 'trustedRelationship', sectionId: 'required', group: 'Emergency contact', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], width: 'half', showWhen: (v) => v.trustedDecline !== true },
-  { id: 'trustedPhone', sectionId: 'required', group: 'Emergency contact', label: 'Phone or email', type: 'text', tier: 1, requiredBy: ['custodian'], showWhen: (v) => v.trustedDecline !== true },
-  { id: 'trustedDecline', sectionId: 'required', group: 'Emergency contact', label: 'I’d rather not name anyone right now', type: 'checkbox', tier: 1, requiredBy: ['custodian'] },
+  { id: 'trustedName', sectionId: 'required', group: 'Trusted contact', label: 'Full name', type: 'text', tier: 1, requiredBy: ['custodian'], width: 'half', explain: 'trustedContact', showWhen: (v) => v.trustedDecline !== true },
+  { id: 'trustedRelationship', sectionId: 'required', group: 'Trusted contact', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], width: 'half', showWhen: (v) => v.trustedDecline !== true },
+  { id: 'trustedPhone', sectionId: 'required', group: 'Trusted contact', label: 'Phone or email', type: 'text', tier: 1, requiredBy: ['custodian'], showWhen: (v) => v.trustedDecline !== true },
+  { id: 'trustedDecline', sectionId: 'required', group: 'Trusted contact', label: 'I’d rather not name anyone right now', type: 'checkbox', tier: 1, requiredBy: ['custodian'] },
   { id: 'beneficiaryName', sectionId: 'required', group: 'Beneficiaries', label: 'Primary beneficiary', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra, why: 'An IRA passes straight to the people named here, outside your will.' },
   { id: 'beneficiaryRelationship', sectionId: 'required', group: 'Beneficiaries', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra },
-  { id: 'contingentBeneficiary', sectionId: 'required', group: 'Beneficiaries', label: 'Backup beneficiary (optional)', type: 'text', tier: 2, requiredBy: ['advisor'], showWhen: hasIra, canDefer: true },
-  { id: 'w9Certify', sectionId: 'required', group: 'Tax certification', label: 'I certify my Social Security number is correct and I’m a U.S. person', type: 'checkbox', tier: 1, requiredBy: ['custodian'], required: true, explain: 'w9', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
-  { id: 'backupWithholding', sectionId: 'required', group: 'Tax certification', label: 'The IRS has told me I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
+  { id: 'contingentBeneficiary', sectionId: 'required', group: 'Beneficiaries', label: 'Contingent beneficiary (optional)', type: 'text', tier: 2, requiredBy: ['advisor'], showWhen: hasIra, canDefer: true, why: 'Receives the IRA if your primary beneficiary can’t.' },
+  { id: 'w9Certify', sectionId: 'required', group: 'Tax certification', label: 'Under penalties of perjury, I certify that my Social Security number is correct and that I’m a U.S. citizen or other U.S. person', type: 'checkbox', tier: 1, requiredBy: ['custodian'], required: true, explain: 'w9', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
+  { id: 'backupWithholding', sectionId: 'required', group: 'Tax certification', label: 'The IRS has notified me that I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
 ]
 
 const summaryLabels: Record<string, string> = {
@@ -258,12 +258,12 @@ const summaryLabels: Record<string, string> = {
   hasTrust: 'Living trust',
   hasPoa: 'Power of attorney',
   hasLifeInsurance: 'Life insurance',
-  professionals: 'Other advisors',
+  professionals: 'Other professionals',
   finraAffiliated: 'Works in finance',
   insider: 'Public company insider',
   pep: 'Political role abroad',
   sourceOfFunds: 'Source of funds',
-  trustedName: 'Emergency contact',
+  trustedName: 'Trusted contact',
 }
 
 /** Short label for summaries, where the full question would be too long. */

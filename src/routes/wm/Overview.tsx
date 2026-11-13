@@ -271,7 +271,7 @@ export function Overview() {
         <Onboarding cases={live} />
 
         <Card padding="sm" inner={16} className="lg:col-span-2">
-          <div className="px-3 pt-2 pb-3 text-[15px] font-medium text-ink">Book of business</div>
+          <div className="px-3 pt-2 pb-3 text-[15px] font-medium text-ink">Households</div>
           <div className="flex flex-col">
             {pipeline.map((p) => (
               <div key={p.id} className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] p-3 md:grid-cols-[minmax(0,1.4fr)_140px_120px_100px]">
