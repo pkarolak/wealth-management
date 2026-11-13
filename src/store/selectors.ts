@@ -89,6 +89,7 @@ export function sectionState(c: ClientCase, sectionId: SectionId): SectionProgre
   if (explicit === 'done') return 'done'
   if (!c.openedAt && !explicit) return 'idle'
   const s = sectionStats(c, sectionId)
+  if (explicit === 'progress' && s.requiredFilled >= s.required && s.suggestions === 0) return 'done'
   if (s.filled > 0 || s.suggestions > 0 || explicit === 'progress') return 'progress'
   return 'idle'
 }

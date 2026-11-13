@@ -23,7 +23,7 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
   const visibleFields = groupsFor(sectionId).flatMap((g) => g.fields.filter((f) => isVisible(f, merged)))
   const drafts = visibleFields.filter((f) => c.fields[f.id]?.suggestion && !isFilled(values[f.id])).map((f) => f.id)
   const changes = visibleFields.filter((f) => c.fields[f.id]?.suggestion && isFilled(values[f.id])).length
-  const remaining = stats.required - stats.requiredFilled - visibleFields.filter((f) => f.required && drafts.includes(f.id)).length
+  const remaining = visibleFields.filter((f) => f.required && !c.fields[f.id]?.deferred && !isFilled(values[f.id]) && !drafts.includes(f.id)).length
   const advisorFirst = useStore((s) => s.people[c.advisorId]?.name.split(' ')[0] ?? 'your Wealth Manager')
 
   const leave = (acceptDrafts: boolean) => {
