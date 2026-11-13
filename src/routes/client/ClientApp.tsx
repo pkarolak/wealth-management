@@ -85,7 +85,8 @@ export function ClientApp() {
   const railItems: RailItem[] = visibleSections(c).map((s) => {
     const st = sectionState(c, s.id)
     const stats = sectionStats(c, s.id)
-    return { id: s.id, title: s.short, state: st === 'done' ? 'done' : st === 'progress' ? 'progress' : 'idle', meta: st === 'done' ? undefined : `${s.minutes} min`, count: stats.suggestions || undefined, optional: s.optional }
+    const meta = stats.suggestions ? <span className="text-ai">{stats.suggestions} to check</span> : st === 'done' ? undefined : `${s.minutes} min`
+    return { id: s.id, title: s.short, state: st === 'done' ? 'done' : st === 'progress' ? 'progress' : 'idle', meta, optional: s.optional }
   })
   if (c.requests.length) {
     railItems.splice(railItems.findIndex((r) => r.id === 'review'), 0, {
