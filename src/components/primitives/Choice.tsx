@@ -14,7 +14,7 @@ type SegmentedProps = {
 /** Track radius 14 = segment radius 10 + 4px padding. */
 export function Segmented({ value, onChange, options, size = 'md', className }: SegmentedProps) {
   return (
-    <div role="radiogroup" className={cn('inline-flex flex-wrap gap-1 rounded-menu bg-muted p-1', className)}>
+    <div role="radiogroup" className={cn('inline-flex w-fit max-w-full flex-wrap gap-1 self-start rounded-menu bg-muted p-1', className)}>
       {options.map((o) => {
         const active = o.value === value
         return (
