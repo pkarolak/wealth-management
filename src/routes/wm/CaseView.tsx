@@ -1,8 +1,8 @@
-import { ArrowUpRight, Check, ChevronDown, Copy, FileText, Plus, Sparkles } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ArrowUpRight, Check, ChevronDown, Copy, FileText, Sparkles } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
-import { AccountTile, ActivityFeed, CaseProvider, CommentThread, GoalCard, KanbanColumn, NetWorthSummary, PresenceStatus, type KanbanCardData } from '../../components/patterns'
-import { Badge, Button, Card, CardHeader, Input, ProgressBar, Segmented, StatusIcon, toast } from '../../components/primitives'
+import { AccountTile, CaseProvider, GoalCard, NetWorthSummary, PresenceStatus } from '../../components/patterns'
+import { Badge, Button, Card, ProgressBar, StatusIcon, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { relativeTime } from '../../lib/format'
 import { fieldsFor, isVisible, type SectionDef, type SectionId } from '../../schema/onboarding'
@@ -12,6 +12,7 @@ import { useCase, usePublishPresence } from '../../store/hooks'
 import { ADVISOR_ID } from '../../store/seed'
 import { caseValues, netWorth, overallProgress, sectionState, sectionStats, visibleSections } from '../../store/selectors'
 import type { ClientCase } from '../../store/types'
+import { NeedsYou, OPEN_SECTION, SidePanel } from './CaseFocus'
 import { ReviewRow } from './ReviewRow'
 import { PageHeader } from './WMLayout'
 
@@ -21,6 +22,8 @@ export function CaseView() {
   const people = useStore((s) => s.people)
   const navigate = useNavigate()
   const [hover, setHover] = useState<{ sectionId?: SectionId; fieldId?: string }>({})
+  const [tab, setTab] = useState('questions')
+  const [openThread, setOpenThread] = useState<string>()
   usePublishPresence(c ? { personId: ADVISOR_ID, view: 'advisor', caseId: c.id, ...hover } : undefined)
   if (!c) return <Navigate to="/wm" replace />
 
@@ -28,20 +31,6 @@ export function CaseView() {
   const p = overallProgress(c)
   const secs = visibleSections(c)
   const link = `${window.location.origin}/c/${c.token}`
-
-  const kanban = (state: 'idle' | 'progress' | 'done'): KanbanCardData[] =>
-    secs
-      .filter((s) => sectionState(c, s.id) === state)
-      .map((s) => {
-        const st = sectionStats(c, s.id)
-        return {
-          id: s.id,
-          title: s.title,
-          status: state === 'idle' ? 'waiting' : state === 'progress' ? 'progress' : 'done',
-          meta: state === 'done' ? (c.advisorReviewed[s.id] ? 'Reviewed' : 'Ready for your review') : state === 'progress' ? (s.kind === 'networth' ? `${c.items.length} accounts and debts` : s.kind === 'goals' ? `${c.goals.length} goals` : `${st.filled} of ${st.total} answered`) : `${s.minutes} min`,
-          onClick: () => document.getElementById(`review-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-        }
-      })
 
   return (
     <CaseProvider caseId={c.id} viewerId={ADVISOR_ID} mode="advisor">
@@ -89,24 +78,21 @@ export function CaseView() {
           </div>
         </PageHeader>
 
-        <div className="grid items-start gap-4 px-10 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="grid items-start gap-4 px-10 xl:grid-cols-[minmax(0,1fr)_400px]">
           <div className="flex min-w-0 flex-col gap-4">
-            <Card tone="muted" padding="md" inner={16} className="grid gap-3 sm:grid-cols-3">
-              <KanbanColumn title={`Waiting on ${c.firstName}`} cards={kanban('idle')} />
-              <KanbanColumn title="In progress" cards={kanban('progress')} />
-              <KanbanColumn title="Done" cards={kanban('done')} />
-            </Card>
+            <NeedsYou
+              c={c}
+              onOpenThread={(id) => {
+                setTab('questions')
+                setOpenThread(id)
+              }}
+            />
             {secs.map((s) => (
               <SectionReview key={s.id} c={c} s={s} onHover={(fieldId) => setHover(fieldId ? { sectionId: s.id, fieldId } : {})} />
             ))}
           </div>
-          <aside className="flex flex-col gap-4 xl:sticky xl:top-6">
-            <ThreadsPanel c={c} />
-            <RequestsPanel c={c} />
-            <Card padding="lg" inner={10}>
-              <CardHeader title="Activity" />
-              <ActivityFeed items={c.activity} people={people} limit={12} />
-            </Card>
+          <aside className="xl:sticky xl:top-6">
+            <SidePanel c={c} tab={tab} onTab={setTab} openThread={openThread} onOpenThread={setOpenThread} />
           </aside>
         </div>
       </div>
@@ -120,7 +106,12 @@ function SectionReview({ c, s, onHover }: { c: ClientCase; s: SectionDef; onHove
   const state = sectionState(c, s.id)
   const stats = sectionStats(c, s.id)
   const reviewed = !!c.advisorReviewed[s.id]
-  const [open, setOpen] = useState(state !== 'idle')
+  const [open, setOpen] = useState((state === 'done' && !reviewed) || state === 'progress' || stats.needsReview > 0)
+  useEffect(() => {
+    const onOpen = (e: Event) => (e as CustomEvent<SectionId>).detail === s.id && setOpen(true)
+    window.addEventListener(OPEN_SECTION, onOpen)
+    return () => window.removeEventListener(OPEN_SECTION, onOpen)
+  }, [s.id])
   const values = caseValues(c)
   const defs = fieldsFor(s.id).filter((f) => isVisible(f, values))
 
@@ -215,83 +206,5 @@ function RiskReview({ c }: { c: ClientCase }) {
         Objective: {score.objective}. {score.description}
       </span>
     </div>
-  )
-}
-
-function ThreadsPanel({ c }: { c: ClientCase }) {
-  const [filter, setFilter] = useState('open')
-  const threads = c.threads.filter((t) => (filter === 'open' ? !t.resolved : t.resolved))
-  return (
-    <Card padding="lg" inner={18}>
-      <CardHeader
-        title="Questions"
-        action={
-          <Segmented
-            size="sm"
-            value={filter}
-            onChange={setFilter}
-            options={[
-              { value: 'open', label: `Open ${c.threads.filter((t) => !t.resolved).length}` },
-              { value: 'resolved', label: 'Resolved' },
-            ]}
-          />
-        }
-      />
-      <div className="flex flex-col gap-6">
-        {threads.map((t) => (
-          <CommentThread key={t.id} thread={t} />
-        ))}
-        {!threads.length && <p className="text-[14px] text-ink-4">{filter === 'open' ? `No open questions. ${c.firstName} can ask on any field.` : 'Nothing resolved yet.'}</p>}
-      </div>
-    </Card>
-  )
-}
-
-const requestIdeas = ['Latest 401(k) statement', 'Most recent tax return', 'Copy of your trust documents', 'Employer stock plan statement']
-
-function RequestsPanel({ c }: { c: ClientCase }) {
-  const addRequest = useStore((s) => s.addRequest)
-  const [title, setTitle] = useState('')
-  const open = useMemo(() => c.requests.filter((r) => r.status === 'open'), [c.requests])
-  const done = c.requests.filter((r) => r.status === 'done')
-  const send = (t: string) => {
-    if (!t.trim()) return
-    addRequest(c.id, { kind: 'document', title: t.trim(), sectionId: 'networth' }, c.advisorId)
-    setTitle('')
-    toast('Request sent', { description: `${c.firstName} will see it at the top of the form.` })
-  }
-  return (
-    <Card padding="lg" inner={10}>
-      <CardHeader title="Requests" subtitle={`Ask ${c.firstName} for a document or answer`} />
-      <div className="flex flex-col gap-2">
-        {[...open, ...done].map((r) => (
-          <div key={r.id} className="flex items-center gap-3 rounded-control bg-muted/60 px-3 py-2.5">
-            <StatusIcon status={r.status === 'done' ? 'done' : 'waiting'} size={16} />
-            <span className={cn('flex-1 text-[14px]', r.status === 'done' ? 'text-ink-3 line-through' : 'text-ink')}>{r.title}</span>
-            <span className="text-[12px] text-ink-4">{relativeTime(r.fulfilledAt ?? r.createdAt)}</span>
-          </div>
-        ))}
-        <Input
-          placeholder="e.g. Latest 401(k) statement"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && send(title)}
-          trailing={
-            <button type="button" onClick={() => send(title)} disabled={!title.trim()} className="flex size-8 items-center justify-center rounded-control bg-ink text-white disabled:opacity-25" aria-label="Send request">
-              <Plus className="size-4" />
-            </button>
-          }
-        />
-        {!c.requests.length && (
-          <div className="flex flex-wrap gap-1.5">
-            {requestIdeas.map((r) => (
-              <button key={r} type="button" onClick={() => send(r)} className="rounded-full bg-muted px-2.5 py-1 text-[12px] text-ink-3 hover:text-ink">
-                {r}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </Card>
   )
 }
