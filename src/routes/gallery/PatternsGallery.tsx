@@ -77,7 +77,7 @@ export function PatternsGallery() {
   return (
     <CaseProvider caseId={caseId} viewerId={c.clientId} mode="client">
       <GallerySection id="patterns" title="Patterns">
-        <Specimen label="Field states: AI suggestion, Wealth Manager change, confirmed, needs review, deferred, chips" className="[&>div:last-child]:grid [&>div:last-child]:grid-cols-1 [&>div:last-child]:gap-5 sm:[&>div:last-child]:grid-cols-2">
+        <Specimen label="Field states: AI suggestion, Wealth Manager change, deferred, chips" className="[&>div:last-child]:grid [&>div:last-child]:grid-cols-1 [&>div:last-child]:gap-5 sm:[&>div:last-child]:grid-cols-2">
           {['jobTitle', 'employer', 'dob', 'phone', 'ssn', 'citizenship', 'incomeSources'].map((id) => (
             <div key={id} className={id === 'incomeSources' || id === 'employer' ? 'sm:col-span-2' : undefined}>
               <FieldRow def={fieldById[id]} />
@@ -97,7 +97,6 @@ export function PatternsGallery() {
                 <SourceTag kind="document" />
                 <SourceTag kind="linked" />
                 <SourceTag kind="advisor" />
-                <SourceTag kind="confirmed" label="Confirmed by Emily" />
               </div>
               <div className="flex flex-wrap gap-3">
                 <PresenceLabel person={people[ADVISOR_ID]} tone="blue" />

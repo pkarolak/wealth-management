@@ -93,10 +93,6 @@ export function FieldRow({ def }: { def: FieldDef }) {
         Approve
       </button>
     </span>
-  ) : st.status === 'needs_review' ? (
-    <span className="text-[12px] text-progress-ink">Changed · {advisorFirst} will recheck it</span>
-  ) : st.status === 'confirmed' ? (
-    <SourceTag kind="confirmed" label={`Confirmed by ${advisorFirst}`} />
   ) : null
 
   // Revealed on focus, or while one of the field's popovers is open.
