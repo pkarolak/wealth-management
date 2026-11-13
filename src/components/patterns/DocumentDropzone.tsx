@@ -23,12 +23,11 @@ type Props = {
   /** Sample files offered as one-click "uploads". */
   samples?: DocKind[]
   done?: { name: string; extracted: string[] }[]
-  compact?: boolean
   className?: string
 }
 
-/** Drop or pick statements; each moves through uploading → reading → extracted. Radius 30 = 10 + 20. */
-export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retirement', 'equity', 'mortgage', 'tax'], done = [], compact, className }: Props) {
+/** Drop or pick statements; each moves through uploading → reading → extracted. Same 22 = 10 + 12 geometry as DocRow (11px padding + 1px dashed border). */
+export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retirement', 'equity', 'mortgage', 'tax'], done = [], className }: Props) {
   const [jobs, setJobs] = useState<Job[]>([])
   const [over, setOver] = useState(false)
   const input = useRef<HTMLInputElement>(null)
@@ -58,14 +57,14 @@ export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retiremen
         onDragOver={(e) => (e.preventDefault(), setOver(true))}
         onDragLeave={() => setOver(false)}
         onDrop={onDrop}
-        className={cn('flex flex-col gap-4 rounded-[30px] border border-dashed p-5 transition-colors', over ? 'border-ink bg-muted' : 'border-line-strong bg-surface/60', compact && 'gap-3')}
+        className={cn('flex flex-col gap-3 rounded-[22px] border border-dashed p-[11px] transition-colors', over ? 'border-ink bg-muted' : 'border-line-strong bg-surface/60')}
       >
         <div className="flex items-center gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-muted text-ink-2">
             <UploadCloud className="size-[18px]" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[15px] font-medium text-ink">Drop statements here</span>
+            <span className="text-[14px] font-medium text-ink">Drop statements here</span>
             <span className="text-[13px] text-ink-3">We read the numbers for you. Files stay encrypted and go only to your Wealth Manager.</span>
           </div>
           <button type="button" onClick={() => input.current?.click()} className="h-10 shrink-0 rounded-control border border-line bg-surface px-4 text-[14px] font-medium text-ink hover:border-line-strong">
@@ -74,7 +73,7 @@ export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retiremen
           <input ref={input} type="file" multiple className="hidden" onChange={(e) => Array.from(e.target.files ?? []).forEach((f) => run(f.name, guessKind(f.name)))} />
         </div>
         {remaining.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pb-1 pl-[52px]">
             <span className="w-full text-[12px] text-ink-4">Try a sample</span>
             {remaining.map((d) => (
               <button
