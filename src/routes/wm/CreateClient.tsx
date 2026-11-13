@@ -2,7 +2,7 @@ import { ArrowRight, Wand2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { Button, Card, ChipGroup, Input, Label, Segmented, Switch, Textarea } from '../../components/primitives'
-import { accountTypeOptions, sectionById, type SectionId } from '../../schema/onboarding'
+import { accountEffects, accountTypeOptions, sectionById, type SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
 import { demoNewClient } from '../../store/seed'
 import { useCase } from '../../store/hooks'
@@ -25,6 +25,7 @@ export function CreateClient() {
       : empty,
   )
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }))
+  const effects = accountEffects(f.accountTypes, f.household)
   const valid = f.firstName && f.lastName && /\S+@\S+\.\S+/.test(f.email)
 
   return (
@@ -64,9 +65,19 @@ export function CreateClient() {
               />
             </div>
             <div className="flex flex-col gap-2.5">
-              <Label>Account types</Label>
+              <Label hint={f.firstName ? `${f.firstName} only sees the questions these need` : 'Clients only see the questions these need'}>Account types</Label>
               <ChipGroup value={f.accountTypes} onChange={(v) => set('accountTypes', v)} options={accountTypeOptions} />
             </div>
+            {effects.length > 0 && (
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-3">
+                <span className="text-ink-4">Adds to {f.firstName ? `${f.firstName}’s` : 'their'} form:</span>
+                {effects.map((e) => (
+                  <span key={e} className="inline-flex h-6 items-center rounded-full bg-muted px-2.5 text-[12px] text-ink-2">
+                    {e}
+                  </span>
+                ))}
+              </p>
+            )}
           </section>
 
           <section className="flex flex-col gap-3">

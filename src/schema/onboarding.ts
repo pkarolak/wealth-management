@@ -72,6 +72,15 @@ export const optionalSections = sections.filter((s) => s.optional)
 const yes = (id: string) => (v: Values) => v[id] === 'yes'
 const not = (id: string, value: string) => (v: Values) => !!v[id] && v[id] !== value
 const oneOf = (id: string, values: string[]) => (v: Values) => values.includes(String(v[id] ?? ''))
+const accounts = (v: Values) => (v.__accounts as string[] | undefined) ?? []
+const isJoint = (v: Values) => v.__household === 'joint' || accounts(v).includes('joint')
+const hasIra = (v: Values) => accounts(v).some((a) => a.endsWith('_ira'))
+
+/** What each account choice adds to the client's form, for Emily's preview. */
+export const accountEffects = (accountTypes: string[], household: 'individual' | 'joint') => {
+  const v: Values = { __accounts: accountTypes, __household: household }
+  return [isJoint(v) && 'Co-owner details', hasIra(v) && 'IRA beneficiaries', accountTypes.includes('rollover_ira') && 'Old 401(k) to roll over'].filter(Boolean) as string[]
+}
 
 const states: Option[] = ['Texas', 'California', 'New York', 'Florida', 'Illinois', 'Washington', 'Massachusetts', 'Colorado', 'Other'].map((s) => ({ value: s, label: s }))
 
@@ -115,6 +124,9 @@ export const fields: FieldDef[] = [
     id: 'dependents', sectionId: 'about', group: 'Your household', label: 'Children or other dependents', type: 'segmented', tier: 2, requiredBy: ['advisor'],
     options: ['0', '1', '2', '3', '4+'].map((n) => ({ value: n, label: n })),
   },
+  { id: 'jointName', sectionId: 'about', group: 'Joint account co-owner', label: 'Full legal name', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: isJoint, why: 'Both owners sign for a joint account.' },
+  { id: 'jointDob', sectionId: 'about', group: 'Joint account co-owner', label: 'Date of birth', type: 'date', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: isJoint },
+  { id: 'jointEmail', sectionId: 'about', group: 'Joint account co-owner', label: 'Their email', type: 'email', tier: 1, requiredBy: ['custodian'], required: true, showWhen: isJoint, why: 'We’ll send them a short link to add their own ID and SSN.' },
   { id: 'ssn', sectionId: 'about', group: 'Taxpayer ID', label: 'Social Security number', type: 'sensitive', tier: 1, requiredBy: ['custodian'], required: true, explain: 'ssn', canDefer: true, why: 'Required by the IRS and federal identity rules. Encrypted and never shown in full.' },
 
   // Work & income
@@ -227,6 +239,9 @@ export const fields: FieldDef[] = [
   { id: 'trustedRelationship', sectionId: 'required', group: 'Emergency contact', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], width: 'half', showWhen: (v) => v.trustedDecline !== true },
   { id: 'trustedPhone', sectionId: 'required', group: 'Emergency contact', label: 'Phone or email', type: 'text', tier: 1, requiredBy: ['custodian'], showWhen: (v) => v.trustedDecline !== true },
   { id: 'trustedDecline', sectionId: 'required', group: 'Emergency contact', label: 'I’d rather not name anyone right now', type: 'checkbox', tier: 1, requiredBy: ['custodian'] },
+  { id: 'beneficiaryName', sectionId: 'required', group: 'Beneficiaries', label: 'Primary beneficiary', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra, why: 'An IRA passes straight to the people named here, outside your will.' },
+  { id: 'beneficiaryRelationship', sectionId: 'required', group: 'Beneficiaries', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra },
+  { id: 'contingentBeneficiary', sectionId: 'required', group: 'Beneficiaries', label: 'Backup beneficiary (optional)', type: 'text', tier: 2, requiredBy: ['advisor'], showWhen: hasIra, canDefer: true },
   { id: 'w9Certify', sectionId: 'required', group: 'Tax certification', label: 'I certify my Social Security number is correct and I’m a U.S. person', type: 'checkbox', tier: 1, requiredBy: ['custodian'], required: true, explain: 'w9', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
   { id: 'backupWithholding', sectionId: 'required', group: 'Tax certification', label: 'The IRS has told me I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
 ]

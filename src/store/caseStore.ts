@@ -21,6 +21,12 @@ import type {
   Thread,
 } from './types'
 
+/** A Rollover IRA means there's an old employer plan to bring over; start it as a balance to add. */
+const rolloverItems = (accountTypes: string[], items: NWItem[]): NWItem[] =>
+  accountTypes.includes('rollover_ira') && !items.some((i) => i.category === 'retirement')
+    ? [...items, { id: uid('item'), side: 'asset', category: 'retirement', name: '401(k) from previous employer', source: 'manual', confidence: 'rough', draft: true, sourceLabel: 'To roll over', updatedAt: now() }]
+    : items
+
 type NewCaseInput = Pick<ClientCase, 'firstName' | 'lastName' | 'email' | 'phone' | 'household' | 'accountTypes' | 'optionalSections' | 'note'>
 
 type State = {
@@ -142,7 +148,7 @@ export const useStore = create<Store>()(
               ...(input.phone ? { phone: { value: input.phone, source: 'advisor' as const, status: 'answered' as const, updatedAt: now(), updatedBy: ADVISOR_ID } } : {}),
             },
             goals: [],
-            items: [],
+            items: rolloverItems(input.accountTypes, []),
             risk: {},
             threads: [],
             requests: [],
@@ -166,6 +172,7 @@ export const useStore = create<Store>()(
           patchCase(caseId, (x) => ({
             ...x,
             ...input,
+            items: rolloverItems(input.accountTypes, x.items),
             fields: {
               ...x.fields,
               firstName: advisorField(input.firstName),

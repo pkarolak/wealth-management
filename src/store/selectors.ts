@@ -10,7 +10,12 @@ export const realCases = (cases: Record<string, ClientCase>) =>
 
 export const latestCase = (cases: Record<string, ClientCase>) => realCases(cases)[0]
 
-export const caseValues = (c: ClientCase): Values => Object.fromEntries(Object.entries(c.fields).map(([k, f]) => [k, f.value]))
+/** Field values plus the account setup Emily chose, so `showWhen` can depend on what's being opened. */
+export const caseValues = (c: ClientCase): Values => ({
+  ...Object.fromEntries(Object.entries(c.fields).map(([k, f]) => [k, f.value])),
+  __accounts: c.accountTypes ?? [],
+  __household: c.household,
+})
 
 export function netWorth(c: ClientCase) {
   let assets = 0

@@ -29,7 +29,7 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
     const st = useStore.getState()
     st.applyDrafts(c.id, r.fields, 'ai', 'ai')
     r.goals.forEach((g) => st.addGoal(c.id, g))
-    r.items.forEach((i) => st.upsertItem(c.id, { ...i, draft: true }))
+    r.items.forEach((i) => st.upsertItem(c.id, { ...i, draft: true }, i.category === 'retirement' ? 'retirement' : undefined))
     st.setIntroDone(c.id)
     setResult(r.summary)
     setPhase('result')
