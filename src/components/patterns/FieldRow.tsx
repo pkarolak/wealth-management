@@ -84,6 +84,14 @@ export function FieldRow({ def }: { def: FieldDef }) {
     <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <SourceTag kind={s.by === 'advisor' ? 'advisor' : 'ai'} label={s.sourceLabel} />
       {s.confidence === 'low' && <span className="text-[12px] whitespace-nowrap text-progress-ink">Please double-check</span>}
+      <button
+        type="button"
+        onClick={() => accept(caseId, def.id, viewerId)}
+        className="-my-1 -ml-1 inline-flex h-6 items-center gap-1 rounded-full bg-surface pr-2.5 pl-2 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong"
+      >
+        <Check className="size-3.5" />
+        Approve
+      </button>
     </span>
   ) : st.status === 'needs_review' ? (
     <span className="text-[12px] text-progress-ink">Changed · {advisorFirst} will recheck it</span>
@@ -103,12 +111,6 @@ export function FieldRow({ def }: { def: FieldDef }) {
   )
   const actions = (
     <span className="flex shrink-0 items-center gap-0.5">
-      {pendingFill && (
-        <button type="button" onClick={() => accept(caseId, def.id, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[12px] whitespace-nowrap text-ink-2 transition-colors hover:bg-muted hover:text-ink">
-          <Check className="size-3.5" />
-          Approve
-        </button>
-      )}
       {def.canDefer && !filled && !pendingFill && (
         <button type="button" onClick={() => defer(caseId, def.id, true, viewerId)} className="inline-flex h-7 items-center gap-1.5 rounded-control px-2 text-[12px] whitespace-nowrap text-ink-3 transition-colors hover:bg-muted hover:text-ink">
           <CalendarClock className="size-3.5" />
@@ -117,7 +119,7 @@ export function FieldRow({ def }: { def: FieldDef }) {
       )}
     </span>
   )
-  const hasActions = pendingFill || (def.canDefer && !filled)
+  const hasActions = !!def.canDefer && !filled && !pendingFill
   const alwaysOpen = def.type === 'sensitive'
   const inline = !!status
 
