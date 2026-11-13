@@ -17,14 +17,16 @@ type ItemDraft = Partial<NWItem> & { side: 'asset' | 'liability'; category: NWCa
 
 const estimable: NWCategory[] = ['realEstate', 'collectible', 'crypto', 'business']
 
-function ActionTile({ icon, title, body, onClick, active }: { icon: ReactNode; title: string; body: string; onClick: () => void; active?: boolean }) {
+function ActionButton({ icon, children, onClick, active }: { icon: ReactNode; children: ReactNode; onClick: () => void; active?: boolean }) {
   return (
-    <button type="button" onClick={onClick} className={cn('flex items-start gap-3 rounded-[22px] p-3 text-left transition-colors', active ? 'bg-surface shadow-float' : 'bg-surface/70 hover:bg-surface')}>
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-muted text-ink-2">{icon}</span>
-      <span className="flex flex-col gap-0.5 pt-0.5">
-        <span className="text-[15px] text-ink">{title}</span>
-        <span className="text-[13px] leading-snug text-ink-3">{body}</span>
-      </span>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn('inline-flex h-10 items-center gap-2 rounded-control border px-3.5 text-[14px] transition-colors', active ? 'border-ink bg-surface text-ink' : 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink')}
+    >
+      {icon}
+      {children}
     </button>
   )
 }
@@ -65,35 +67,30 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
       <div className="grid items-start gap-8 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-8">
-          <div className="grid gap-2 sm:grid-cols-3">
-            <ActionTile icon={<Link2 className="size-[18px]" />} title="Link an account" body="Balances update on their own" onClick={() => setLinkOpen(true)} />
-            <ActionTile icon={<FileUp className="size-[18px]" />} title="Upload statements" body="We read the numbers" onClick={() => setUpload((u) => !u)} active={upload} />
-            <ActionTile icon={<PenLine className="size-[18px]" />} title="Add manually" body="Property, art, loans…" onClick={() => openItem({ side: 'asset', category: 'realEstate' })} />
+          <div className="flex flex-wrap gap-2">
+            <ActionButton icon={<Link2 className="size-4" />} onClick={() => setLinkOpen(true)}>
+              Link an account
+            </ActionButton>
+            <ActionButton icon={<FileUp className="size-4" />} onClick={() => setUpload((u) => !u)} active={upload}>
+              Upload statements
+            </ActionButton>
+            <ActionButton icon={<PenLine className="size-4" />} onClick={() => openItem({ side: 'asset', category: 'realEstate' })}>
+              Add manually
+            </ActionButton>
           </div>
 
           {upload && <DocumentDropzone onProcess={(kind, name) => processDocument(c.id, c.clientId, kind, name)} done={c.documents.map((d) => ({ name: d.name, extracted: d.extracted }))} />}
 
-          {drafts > 0 && (
-            <p className="inline-flex items-center gap-2 text-[14px] text-ai">
-              <Sparkles className="size-4" /> You mentioned {drafts} {drafts === 1 ? 'account' : 'accounts'} in your intro. Add a balance, link or upload to fill them in.
-            </p>
-          )}
-
-          <section className="flex flex-col gap-3">
-            <h2 className="px-3 text-[15px] font-medium text-ink">What you own</h2>
-            <AssetLiabilityList items={c.items} side="asset" onSelect={(i) => openItem(i)} onAdd={(cat) => openItem({ side: 'asset', category: cat })} />
-            {!c.items.some((i) => i.side === 'asset') && <p className="px-3 text-[14px] text-ink-4">Nothing yet. Link, upload or add your first account.</p>}
-          </section>
-          <section className="flex flex-col gap-3">
-            <div className="flex items-center justify-between px-3">
-              <h2 className="text-[15px] font-medium text-ink">What you owe</h2>
-              <button type="button" onClick={() => openItem({ side: 'liability', category: 'mortgage' })} className="text-[13px] text-ink-3 hover:text-ink">
-                + Add a debt
-              </button>
-            </div>
-            <AssetLiabilityList items={c.items} side="liability" onSelect={(i) => openItem(i)} />
-            {!c.items.some((i) => i.side === 'liability') && <p className="px-3 text-[14px] text-ink-4">No debts added.</p>}
-          </section>
+          {(['asset', 'liability'] as const).map((side) => (
+            <section key={side} className="flex flex-col gap-3">
+              <h2 className="px-2 text-[15px] font-medium text-ink">{side === 'asset' ? 'What you own' : 'What you owe'}</h2>
+              {c.items.some((i) => i.side === side) ? (
+                <AssetLiabilityList variant="row" items={c.items} side={side} onSelect={(i) => openItem(i)} />
+              ) : (
+                <p className="px-2 text-[14px] text-ink-4">{side === 'asset' ? 'Nothing yet. Link, upload or add your first account.' : 'No debts added.'}</p>
+              )}
+            </section>
+          ))}
         </div>
 
         <aside className="order-first 2xl:sticky 2xl:top-24 2xl:order-last">
