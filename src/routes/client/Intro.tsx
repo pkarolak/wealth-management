@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, Check, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, PencilLine, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { TaskStack, VoiceInput } from '../../components/patterns'
 import { Button } from '../../components/primitives'
@@ -57,9 +57,12 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
       {phase === 'input' && (
         <div className="flex flex-col gap-4">
           <VoiceInput transcript={introTranscript} onSubmit={submit} />
-          <button type="button" onClick={nav.next} className="self-start text-[14px] text-ink-3 underline-offset-4 hover:text-ink hover:underline">
-            Skip, I’ll fill in the form myself
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-[14px] text-ink-3">or</span>
+            <Button variant="secondary" size="lg" leading={<PencilLine className="size-4" />} onClick={nav.next}>
+              Skip, I’ll fill in the form myself
+            </Button>
+          </div>
         </div>
       )}
       <AnimatePresence mode="wait" initial={false}>
