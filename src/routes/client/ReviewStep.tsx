@@ -62,6 +62,10 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const submit = useStore((s) => s.submit)
   const advisor = useStore((s) => s.people[c.advisorId])
   const [sig, setSig] = useState(c.signature ?? '')
+  const legalName = [c.fields.firstName?.value ?? c.firstName, c.fields.lastName?.value ?? c.lastName].join(' ')
+  const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[^a-z ]/g, '').split(/\s+/).filter(Boolean)
+  const typed = norm(sig)
+  const nameOk = typed.length > 1 && typed[0] === norm(String(c.fields.firstName?.value ?? c.firstName))[0] && typed.at(-1) === norm(String(c.fields.lastName?.value ?? c.lastName)).at(-1)
   const [accurate, setAccurate] = useState(!!c.signature)
   const secs = visibleSections(c).filter((s) => s.kind !== 'review')
   const deferred = deferredLabels(c)
@@ -142,10 +146,13 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
       <section className="mt-10 flex flex-col gap-4 border-t border-line pt-8">
         <div className="flex flex-col gap-1">
           <h2 className="text-[17px] text-ink">Confirm and send</h2>
-          <p className="text-[14px] text-ink-3">This isn’t your advisory agreement — {first} will share that after your meeting, once you’ve decided to go ahead.</p>
+          <p className="text-[14px] text-ink-3">{first} and her team use this to open your accounts and prepare your plan. You can still change answers after sending.</p>
         </div>
         <Checkbox checked={accurate} onChange={setAccurate} label="The information I’ve provided is accurate to the best of my knowledge." />
-        <Input label="Type your full name to confirm" value={sig} onChange={(e) => setSig(e.target.value)} className="max-w-md" />
+        <div className="flex max-w-md flex-col gap-1.5">
+          <Input label="Type your full name to confirm" value={sig} tone={sig.trim() && !nameOk ? 'error' : 'default'} onChange={(e) => setSig(e.target.value)} />
+          {sig.trim().split(/\s+/).length > 1 && !nameOk && <span className="pl-1 text-[13px] text-danger">Use the name on your account: {legalName}.</span>}
+        </div>
         {sig && <span className="font-serif text-[30px] text-ink italic">{sig}</span>}
         <div className="mt-4 flex items-center gap-3">
           <Button variant="ghost" size="lg" onClick={nav.back}>
@@ -154,7 +161,7 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
           <Button
             size="lg"
             className="ml-auto"
-            disabled={!sig.trim() || !accurate}
+            disabled={!nameOk || !accurate}
             onClick={() => {
               submit(c.id, sig.trim())
               nav.go('done')

@@ -1,14 +1,14 @@
-import { ArrowLeft, Check, MessageCircle, Plus, Printer, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, ClipboardList, MessageCircle, Plus, Printer, Sparkles } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { GoalCard, NetWorthSummary } from '../../components/patterns'
-import { Button } from '../../components/primitives'
+import { Button, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { moneyCompact, uid } from '../../lib/format'
 import { scoreRisk } from '../../schema/risk'
 import { meetingBrief, type Topic, type TopicTag } from '../../services/ai'
 import { useStore } from '../../store/caseStore'
 import { useCase } from '../../store/hooks'
-import { deferredLabels, netWorth, roughItems } from '../../store/selectors'
+import { cifProgress, deferredLabels, netWorth, roughItems } from '../../store/selectors'
 import type { AgendaItem } from '../../store/types'
 import { AgendaEditor } from './AgendaEditor'
 import { PageHeader } from './WMLayout'
@@ -24,6 +24,7 @@ export function MeetingBrief() {
   const { caseId } = useParams()
   const c = useCase(caseId)
   const setAgenda = useStore((s) => s.setAgenda)
+  const addRequest = useStore((s) => s.addRequest)
   const navigate = useNavigate()
   if (!c) return <Navigate to="/wm" replace />
   const totals = netWorth(c)
@@ -34,8 +35,12 @@ export function MeetingBrief() {
   const toggleTopic = (t: Topic) =>
     setAgenda(c.id, onAgenda.has(t.id) ? agenda.filter((a) => a.topicId !== t.id) : [...agenda, { id: uid('ag'), title: t.title, minutes: t.minutes, topicId: t.id }])
   const nearest = [...c.goals].filter((g) => g.targetYear).sort((a, b) => (a.targetYear ?? 0) - (b.targetYear ?? 0))[0]
-  const high = brief.topics.filter((t) => t.priority === 'high')
-  const rest = brief.topics.filter((t) => t.priority !== 'high')
+  const before = brief.topics.filter((t) => t.tag !== 'Planning')
+  const during = brief.topics.filter((t) => t.tag === 'Planning')
+  const acct = cifProgress(c).accounts
+  const acctLeft = acct.total - acct.done
+  const rough = roughItems(c).length > 0
+  const hasBalances = c.items.some((i) => i.value !== undefined)
 
   return (
     <div className="pb-20">
@@ -61,29 +66,50 @@ export function MeetingBrief() {
             </span>
             <p className="display max-w-3xl text-[30px] leading-[1.15] text-ink">{brief.headline}</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <Fact label="Net worth" value={moneyCompact(totals.total)} />
-              <Fact label="Liquid" value={moneyCompact(totals.liquid)} />
+              <Fact label={rough ? 'Known net worth' : 'Net worth'} value={hasBalances ? moneyCompact(totals.total) : 'Waiting on accounts'} muted={!hasBalances} />
+              <Fact label="Liquid" value={hasBalances ? moneyCompact(totals.liquid) : '—'} muted={!hasBalances} />
               <Fact label="Risk profile" value={risk?.label ?? 'Not answered'} muted={!risk} />
               <Fact label="Nearest goal" value={nearest ? `${nearest.title.split(' ').slice(0, 3).join(' ')} · ${nearest.targetYear}` : '—'} muted={!nearest} />
             </div>
           </section>
 
-          <section className="flex flex-col gap-4">
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-[20px] font-medium text-ink">Worth discussing</h2>
-              <span className="text-[13px] text-ink-4">{brief.topics.length} topics · add the ones you want to cover</span>
-            </div>
-            {high.map((t) => (
-              <TopicCard key={t.id} t={t} on={onAgenda.has(t.id)} onToggle={() => toggleTopic(t)} />
-            ))}
-            {rest.length > 0 && (
-              <div className="grid gap-3 md:grid-cols-2">
-                {rest.map((t) => (
-                  <TopicCard key={t.id} t={t} compact on={onAgenda.has(t.id)} onToggle={() => toggleTopic(t)} />
+          {(before.length > 0 || acctLeft > 0) && (
+            <section className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-[20px] font-medium text-ink">Before the meeting</h2>
+                <span className="text-[14px] text-ink-3">Close these first, so the meeting can be about strategy.</span>
+              </div>
+              <div className="flex flex-col divide-y divide-line rounded-[22px] bg-surface px-5">
+                {acctLeft > 0 && (
+                  <BeforeRow tag="To collect" title={`${acctLeft} ${acctLeft === 1 ? 'answer' : 'answers'} still needed to open accounts`} why={acct.open.slice(0, 4).map((r) => r.def.label).join(', ') + (acct.open.length > 4 ? '…' : '')} action="Open CIF" icon={<ClipboardList className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/cif`)} />
+                )}
+                {before.map((t) => (
+                  <BeforeRow
+                    key={t.id}
+                    tag={t.tag}
+                    title={t.title}
+                    why={t.why}
+                    action={t.tag === 'Open question' ? 'Reply' : t.tag === 'To verify' ? 'Ask for statements' : `Remind ${c.firstName}`}
+                    onClick={() => {
+                      if (t.tag === 'Open question') return navigate(`/wm/c/${c.id}?thread=${t.id.replace('thread-', '')}`)
+                      addRequest(c.id, { kind: t.tag === 'To verify' ? 'document' : 'answer', title: t.title, detail: t.why, sectionId: t.tag === 'To verify' ? 'networth' : undefined }, c.advisorId)
+                      toast('Request sent', { description: `${c.firstName} sees it in the form and by email.`, tone: 'success' })
+                    }}
+                  />
                 ))}
               </div>
-            )}
-            {!brief.topics.length && <p className="text-[14px] text-ink-4">Nothing stands out yet. The brief fills in as {c.firstName} answers.</p>}
+            </section>
+          )}
+
+          <section className="flex flex-col gap-4">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-[20px] font-medium text-ink">In the meeting</h2>
+              <span className="text-[13px] text-ink-4">{during.length} strategy {during.length === 1 ? 'topic' : 'topics'} · add the ones you want to cover</span>
+            </div>
+            {during.map((t) => (
+              <TopicCard key={t.id} t={t} compact={t.priority !== 'high'} on={onAgenda.has(t.id)} onToggle={() => toggleTopic(t)} />
+            ))}
+            {!during.length && <p className="text-[14px] text-ink-4">Nothing stands out yet. Strategy topics appear as {c.firstName} adds goals and accounts.</p>}
           </section>
 
           <section className="flex flex-col gap-4">
@@ -138,5 +164,20 @@ function TopicCard({ t, on, onToggle, compact }: { t: Topic; on: boolean; onTogg
         </Button>
       </div>
     </article>
+  )
+}
+
+function BeforeRow({ tag, title, why, action, icon, onClick }: { tag: TopicTag; title: string; why: string; action: string; icon?: React.ReactNode; onClick: () => void }) {
+  return (
+    <div className="flex items-center gap-4 py-4">
+      <span className={cn('shrink-0 rounded-full px-2.5 py-1 text-[11px] leading-none', tagTone[tag])}>{tag}</span>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-[15px] text-ink">{title}</span>
+        <span className="truncate text-[13px] text-ink-3">{why}</span>
+      </div>
+      <Button size="md" variant="secondary" leading={icon} trailing={icon ? undefined : <ArrowRight className="size-4" />} onClick={onClick}>
+        {action}
+      </Button>
+    </div>
   )
 }

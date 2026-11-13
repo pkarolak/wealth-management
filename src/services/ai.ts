@@ -213,7 +213,7 @@ export async function explain(key: string) {
 export function inviteDraft(clientFirst: string, advisorFirst: string) {
   return {
     rough: `hey ${clientFirst.toLowerCase()} pls fill this before our mtg, takes 15 min. lmk if q's`,
-    polished: `Hi ${clientFirst},\n\nIt was great meeting you. Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.\n\nThis link takes about 20 minutes, saves as you go, and you can come back anytime. If anything is unclear, leave me a comment right in the form and I’ll get back to you.\n\nI’ve also included our Form CRS, Form ADV Part 2 and privacy notice. They explain our services, fees and how we protect your information — we share them with everyone before we start working together.\n\nLooking forward to it,\n${advisorFirst}`,
+    polished: `Hi ${clientFirst},\n\nIt was great meeting you. Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.\n\nThis link takes about 20 minutes, saves as you go, and you can come back anytime. If anything is unclear, leave me a comment right in the form and I’ll get back to you.\n\nOnce you send it, my team will use your answers to get your account paperwork ready, so our meeting can be about your plan.\n\nLooking forward to it,\n${advisorFirst}`,
   }
 }
 
@@ -258,6 +258,17 @@ export function meetingBrief(
   const nearGoal = [...c.goals].filter((g) => g.targetYear).sort((a, b) => (a.targetYear ?? 0) - (b.targetYear ?? 0))[0]
   const topics: Topic[] = []
 
+  const unvaluedEquity = c.items.find((i) => i.category === 'equityComp' && i.value === undefined)
+  if (!equityItem && unvaluedEquity)
+    topics.push({
+      id: 'concentration',
+      tag: 'Planning',
+      priority: 'high',
+      title: 'Employer stock, not valued yet',
+      why: `${unvaluedEquity.name} came up in the intro but has no balance. Likely a large share of assets.`,
+      ask: 'How much is vested, what’s the next vest, and how do you feel about holding this much in one company?',
+      minutes: 15,
+    })
   if (conc >= 15)
     topics.push({
       id: 'concentration',
@@ -288,14 +299,14 @@ export function meetingBrief(
       ask: 'Should money for this goal sit apart from long-term investments?',
       minutes: 10,
     })
-  for (const t of c.threads.filter((x) => !x.resolved))
+  for (const t of c.threads.filter((x) => !x.resolved && x.messages.at(-1)?.authorId === c.clientId))
     topics.push({
       id: `thread-${t.id}`,
       tag: 'Open question',
       priority: 'medium',
       title: t.title,
       why: `“${t.messages[0]?.body ?? ''}”`,
-      ask: 'Answer together and close the thread.',
+      ask: 'Reply before the meeting so it doesn’t take meeting time.',
       minutes: 5,
     })
   if (!risk)
@@ -315,7 +326,7 @@ export function meetingBrief(
       priority: 'medium',
       title: `Collect ${deferred.length === 1 ? deferred[0] : `${deferred.length} answers`} in person`,
       why: `${c.firstName} chose to give ${deferred.length === 1 ? 'this' : 'these'} in the meeting: ${deferred.join(', ')}.`,
-      ask: 'Have the secure form ready to fill in together.',
+      ask: 'Collect on a short call with the client associate, or at the start of the meeting.',
       minutes: 5,
     })
   if (lowConfidence.length)
@@ -325,18 +336,20 @@ export function meetingBrief(
       priority: 'medium',
       title: `${plural(lowConfidence.length, 'balance')} still rough`,
       why: lowConfidence.map((l) => l.split(' — ')[0]).join(', '),
-      ask: 'Ask for a statement or link the account during the meeting.',
+      ask: 'Ask for a statement or a linked account before the meeting.',
       minutes: 5,
     })
 
   const planning = topics.filter((t) => t.tag === 'Planning')
   return {
-    headline: `Household net worth is about ${fmt(netWorth.total)}, ${fmt(netWorth.liquid)} of it liquid.${planning[0] ? ` Biggest lever: ${planning[0].title.toLowerCase()}.` : ''}`,
+    headline: !c.items.some((i) => i.value !== undefined)
+      ? `Not enough to go on yet. The brief fills in as ${c.firstName} adds accounts and goals.`
+      : `${lowConfidence.length ? 'Known balances put household net worth at about' : 'Household net worth is about'} ${fmt(netWorth.total)}${lowConfidence.length ? `, with ${plural(lowConfidence.length, 'holding')} still unvalued` : `, ${fmt(netWorth.liquid)} of it liquid`}.${planning[0] ? ` Biggest lever: ${planning[0].title.toLowerCase()}.` : ''}`,
     topics,
     suggestedAgenda: [
       { title: 'Goals and priorities', minutes: 10 },
       ...planning.slice(0, 2).map((t) => ({ title: t.title, minutes: t.minutes, topicId: t.id })),
-      { title: 'Advisory agreement and account opening', minutes: 10 },
+      { title: 'Next steps and account paperwork', minutes: 5 },
     ],
   }
 }

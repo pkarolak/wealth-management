@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowUpRight, Check, Copy, Paperclip, Send, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Check, Copy, Send, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { EmailPreview } from '../../components/patterns'
@@ -115,15 +115,6 @@ export function Invite() {
                 </Button>
               }
             />
-            <div className="flex flex-col gap-2 border-t border-line pt-4">
-              <span className="text-[13px] text-ink-3">Attached to every invite</span>
-              {['Form CRS', 'Form ADV Part 2A & 2B', 'Privacy notice'].map((d) => (
-                <span key={d} className="flex items-center gap-2 text-[14px] text-ink-2">
-                  <Paperclip className="size-3.5 text-ink-4" />
-                  {d}
-                </span>
-              ))}
-            </div>
             <Button
               size="lg"
               leading={<Send className="size-4" />}

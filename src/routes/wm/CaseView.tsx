@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, ChevronDown, Copy, FileText, Shield, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Check, ChevronDown, ClipboardList, Copy, FileText, Shield, ShieldCheck, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import { AccountTile, CaseProvider, GoalCard, NetWorthSummary, PresenceStatus } from '../../components/patterns'
@@ -10,7 +10,7 @@ import { riskQuestions, scoreRisk } from '../../schema/risk'
 import { useStore } from '../../store/caseStore'
 import { useCase, usePublishPresence } from '../../store/hooks'
 import { ADVISOR_ID } from '../../store/seed'
-import { caseValues, netWorth, overallProgress, sectionState, sectionStats, visibleSections } from '../../store/selectors'
+import { caseValues, cifProgress, netWorth, sectionState, sectionStats, visibleSections } from '../../store/selectors'
 import type { ClientCase } from '../../store/types'
 import { NeedsYou, OPEN_SECTION, scrollToSection, SidePanel } from './CaseFocus'
 import { ReviewRow } from './ReviewRow'
@@ -33,7 +33,8 @@ export function CaseView() {
   if (!c) return <Navigate to="/wm" replace />
 
   const client = people[c.clientId]
-  const p = overallProgress(c)
+  const cif = cifProgress(c)
+  const submitted = c.stage === 'submitted'
   const secs = visibleSections(c)
   const link = `${window.location.origin}/c/${c.token}`
 
@@ -66,8 +67,11 @@ export function CaseView() {
               <Button variant="secondary" trailing={<ArrowUpRight className="size-4" />} onClick={() => window.open(`/c/${c.token}`, 'client')}>
                 Open as {c.firstName}
               </Button>
-              <Button leading={<FileText className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/brief`)}>
+              <Button variant="secondary" leading={<FileText className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/brief`)}>
                 Meeting brief
+              </Button>
+              <Button variant={submitted ? 'primary' : 'secondary'} leading={<ClipboardList className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/cif`)}>
+                CIF
               </Button>
             </>
           }
@@ -75,10 +79,8 @@ export function CaseView() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <PresenceStatus person={client} caseId={c.id} />
             <span className="text-[13px] text-ink-3">{c.invitedAt ? `Link sent ${relativeTime(c.invitedAt)}` : 'Link not sent yet'}</span>
-            <span className="flex w-56 items-center gap-3 text-[13px] text-ink-3">
-              <ProgressBar value={p.ratio * 100} />
-              <span className="tabular shrink-0">{Math.round(p.ratio * 100)}%</span>
-            </span>
+            <Meter label="To open accounts" {...cif.accounts} />
+            <Meter label="For planning" {...cif.planning} />
             {c.stage === 'submitted' && <Badge tone="success">Submitted {c.submittedAt && relativeTime(c.submittedAt)}</Badge>}
             <Compliance c={c} />
           </div>
@@ -217,12 +219,9 @@ function RiskReview({ c }: { c: ClientCase }) {
 
 const day = (ts: number) => new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
-/** The paper trail compliance asks for: documents delivered and consent given, with dates. */
+/** When the client agreed to share their information, for the file. */
 function Compliance({ c }: { c: ClientCase }) {
-  const items = [
-    { label: 'Form CRS & ADV sent', at: c.invitedAt, missing: 'Form CRS & ADV not sent' },
-    { label: 'Consent given', at: c.consentAt, missing: 'No consent yet' },
-  ]
+  const items = [{ label: 'Consent given', at: c.consentAt, missing: 'No consent yet' }]
   return (
     <span className="flex items-center gap-4 text-[13px]">
       {items.map((i) => (
@@ -231,6 +230,20 @@ function Compliance({ c }: { c: ClientCase }) {
           {i.at ? `${i.label} · ${day(i.at)}` : i.missing}
         </span>
       ))}
+    </span>
+  )
+}
+
+export function Meter({ label, done, total }: { label: string; done: number; total: number }) {
+  return (
+    <span className="flex items-center gap-2.5 text-[13px] text-ink-3" title={`${done} of ${total}`}>
+      {label}
+      <span className="w-20">
+        <ProgressBar value={total ? (done / total) * 100 : 0} />
+      </span>
+      <span className="tabular text-ink-2">
+        {done}/{total}
+      </span>
     </span>
   )
 }

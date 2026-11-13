@@ -1,6 +1,7 @@
 import { Eye, EyeOff, Lock } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import type { FieldDef } from '../../schema/onboarding'
+import { fieldError, maskValue } from '../../schema/validation'
 import { Checkbox, ChipGroup, DateInput, Input, Label, MoneyInput, Segmented, Select, Textarea, YesNo, type FieldTone } from '../primitives'
 
 type Props = {
@@ -15,8 +16,23 @@ type Props = {
 /** Controls whose label sits above them rather than floating inside. */
 export const hasOuterLabel = (def: FieldDef) => ['yesno', 'chips', 'segmented'].includes(def.type)
 
-/** Renders the right primitive for a schema field. */
-export function FieldControl({ def, value, onChange, tone = 'default', labelAside }: Props) {
+/** Renders the right primitive for a schema field, with a format check once the client leaves it. */
+export function FieldControl(props: Props) {
+  const [touched, setTouched] = useState(false)
+  const error = touched ? fieldError(props.def, props.value) : undefined
+  return (
+    <div onBlur={() => setTouched(true)} aria-invalid={!!error || undefined} className="flex flex-col gap-1.5">
+      <Control {...props} tone={error ? 'error' : props.tone} />
+      {error && (
+        <span role="alert" className="pl-1 text-[13px] text-danger">
+          {error}
+        </span>
+      )}
+    </div>
+  )
+}
+
+function Control({ def, value, onChange, tone = 'default', labelAside }: Props) {
   const id = `f-${def.id}`
   const str = typeof value === 'string' ? value : value === undefined || value === null ? '' : String(value)
 
@@ -71,7 +87,8 @@ export function FieldControl({ def, value, onChange, tone = 'default', labelAsid
           label={def.label}
           type={def.type === 'email' ? 'email' : def.type === 'tel' ? 'tel' : 'text'}
           value={str}
-          onChange={(e) => onChange(def.type === 'tel' ? formatPhone(e.target.value) : e.target.value)}
+          onChange={(e) => onChange(def.type === 'tel' ? formatPhone(e.target.value) : maskValue(def, e.target.value))}
+          inputMode={def.id === 'zip' || def.type === 'tel' ? 'numeric' : undefined}
           tone={tone}
           autoComplete="off"
         />

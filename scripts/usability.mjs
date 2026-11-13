@@ -110,15 +110,8 @@ let token
   await tryStep(P, 'Welcome fits first screen', async () => {
     const box = await page.getByRole('button', { name: /Let’s begin/ }).boundingBox()
     log(P, 'Welcome fits first screen', `CTA y=${Math.round(box.y)} of viewport 664 → ${box.y > 664 ? 'below the fold' : 'visible'}`)
-    await page.getByRole('button', { name: /Let’s begin/ }).click()
-  })
-
-  await tryStep(P, 'Consent', async () => {
-    const btn = page.getByRole('button', { name: 'Agree and continue' })
-    const box = await btn.boundingBox()
-    log(P, 'Consent', `Agree button y=${Math.round(box.y)} (${box.y > 664 ? 'needs scroll' : 'visible'}); disabled before tick=${await btn.isDisabled()}`)
     await page.getByText('I agree to share my information').click()
-    await btn.click()
+    await page.getByRole('button', { name: /Let’s begin/ }).click()
   })
 
   await tryStep(P, 'Skip the voice intro', async () => {

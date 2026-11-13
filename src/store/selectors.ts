@@ -1,4 +1,5 @@
-import { fieldById, fieldsFor, isFilled, isVisible, sections, type SectionDef, type SectionId, type Values } from '../schema/onboarding'
+import { fieldError } from '../schema/validation'
+import { fieldById, fieldsFor, isFilled, isVisible, sections, type FieldDef, type SectionDef, type SectionId, type Values } from '../schema/onboarding'
 import { riskQuestions } from '../schema/risk'
 import type { Anchor, ClientCase, SectionProgress, Thread } from './types'
 
@@ -75,7 +76,7 @@ export function sectionStats(c: ClientCase, sectionId: SectionId): SectionStats 
   for (const f of fieldsFor(sectionId)) {
     if (!isVisible(f, values)) continue
     const st = c.fields[f.id]
-    const filled = isFilled(st?.value) || !!st?.deferred
+    const filled = (isFilled(st?.value) && !fieldError(f, st?.value)) || !!st?.deferred
     s.total++
     if (filled) s.filled++
     if (f.required) {
@@ -142,4 +143,46 @@ export const anchorLabel = (a: Anchor, c?: ClientCase) => {
   if (a.itemId) return c?.items.find((i) => i.id === a.itemId)?.name ?? 'Account'
   if (a.goalId) return c?.goals.find((g) => g.id === a.goalId)?.title ?? 'Goal'
   return sections.find((s) => s.id === a.sectionId)?.title ?? a.sectionId
+}
+
+// CIF ------------------------------------------------------------------------
+
+export type CifStatus = 'verified' | 'entered' | 'draft' | 'deferred' | 'invalid' | 'missing'
+export type CifRow = { def: FieldDef; value: unknown; status: CifStatus; purpose: 'accounts' | 'planning' }
+
+/** Every visible field as the Customer Information Form sees it: what it's for and how far it can be trusted. */
+export function cifRows(c: ClientCase): CifRow[] {
+  const values = caseValues(c)
+  return visibleSections(c)
+    .filter((s) => s.kind === 'form' || s.kind === 'risk')
+    .flatMap((s) => fieldsFor(s.id))
+    .filter((f) => isVisible(f, values))
+    .map((def) => {
+      const st = c.fields[def.id] ?? {}
+      const status: CifStatus = st.deferred
+        ? 'deferred'
+        : isFilled(st.value)
+          ? fieldError(def, st.value)
+            ? 'invalid'
+            : st.status === 'confirmed' || st.source === 'id' || st.source === 'document' || st.source === 'linked'
+              ? 'verified'
+              : 'entered'
+          : st.suggestion
+            ? 'draft'
+            : 'missing'
+      return { def, value: st.value, status, purpose: def.tier === 1 ? 'accounts' : 'planning' }
+    })
+}
+
+/** Progress split by what it unblocks: opening accounts (required custodian and firm fields) or the planning conversation. */
+export function cifProgress(c: ClientCase) {
+  const rows = cifRows(c)
+  const ok = (r: CifRow) => r.status === 'verified' || r.status === 'entered'
+  const acct = rows.filter((r) => r.purpose === 'accounts' && r.def.required)
+  const plan = rows.filter((r) => r.purpose === 'planning')
+  const planExtra = [c.goals.some((g) => !g.draft), c.items.some((i) => !i.draft && i.value !== undefined), Object.keys(c.risk).length >= riskQuestions.length]
+  return {
+    accounts: { done: acct.filter(ok).length, total: acct.length, open: acct.filter((r) => !ok(r)) },
+    planning: { done: plan.filter(ok).length + planExtra.filter(Boolean).length, total: plan.length + planExtra.length },
+  }
 }

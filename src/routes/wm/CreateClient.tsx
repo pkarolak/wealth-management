@@ -1,6 +1,6 @@
 import { ArrowRight, Wand2 } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { Button, Card, ChipGroup, Input, Label, Segmented, Switch, Textarea } from '../../components/primitives'
 import { accountEffects, accountTypeOptions, sectionById, type SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
@@ -26,7 +26,16 @@ export function CreateClient() {
   )
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }))
   const effects = accountEffects(f.accountTypes, f.household)
-  const valid = f.firstName && f.lastName && /\S+@\S+\.\S+/.test(f.email)
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())
+  const valid = f.firstName.trim() && f.lastName.trim() && emailOk
+  const [emailTouched, setEmailTouched] = useState(false)
+  const cases = useStore((s) => s.cases)
+  const duplicate = Object.values(cases).find((x) => x.id !== existing?.id && x.token !== 'gallery' && x.email.toLowerCase() === f.email.trim().toLowerCase())
+  const missing = [!f.firstName.trim() && 'first name', !f.lastName.trim() && 'last name', !emailOk && 'a valid email'].filter(Boolean)
+  const phoneMask = (raw: string) => {
+    const d = raw.replace(/\D/g, '').slice(0, 10)
+    return d.length < 4 ? d : d.length < 7 ? `(${d.slice(0, 3)}) ${d.slice(3)}` : `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
 
   return (
     <div className="pb-16">
@@ -46,8 +55,19 @@ export function CreateClient() {
             <div className="grid gap-3 sm:grid-cols-2">
               <Input label="First name" value={f.firstName} onChange={(e) => set('firstName', e.target.value)} />
               <Input label="Last name" value={f.lastName} onChange={(e) => set('lastName', e.target.value)} />
-              <Input label="Email" type="email" value={f.email} onChange={(e) => set('email', e.target.value)} />
-              <Input label="Mobile phone" type="tel" value={f.phone} onChange={(e) => set('phone', e.target.value)} />
+              <div className="flex flex-col gap-1.5">
+                <Input label="Email" type="email" value={f.email} tone={emailTouched && f.email && !emailOk ? 'error' : 'default'} onBlur={() => setEmailTouched(true)} onChange={(e) => set('email', e.target.value)} />
+                {emailTouched && f.email && !emailOk && <span className="pl-1 text-[13px] text-danger">Check the email address.</span>}
+                {duplicate && (
+                  <span className="pl-1 text-[13px] text-ink-3">
+                    {duplicate.firstName} {duplicate.lastName} already has an onboarding with this email.{' '}
+                    <Link to={`/wm/c/${duplicate.id}`} className="text-ink underline underline-offset-2">
+                      Open it
+                    </Link>
+                  </span>
+                )}
+              </div>
+              <Input label="Mobile phone" type="tel" inputMode="numeric" value={f.phone} onChange={(e) => set('phone', phoneMask(e.target.value))} />
             </div>
           </section>
 
@@ -90,7 +110,8 @@ export function CreateClient() {
             <Textarea label="Notes from your first conversation" value={f.note} onChange={(e) => set('note', e.target.value)} />
           </section>
 
-          <div className="flex justify-end gap-2 border-t border-line pt-5">
+          <div className="flex items-center justify-end gap-2 border-t border-line pt-5">
+            {!valid && <span className="mr-auto text-[13px] text-ink-3">Add {missing.join(', ').replace(/, ([^,]*)$/, ' and $1')} to continue.</span>}
             <Button variant="ghost" onClick={() => navigate('/wm')}>
               {existing ? 'Back to overview' : 'Cancel'}
             </Button>
@@ -101,7 +122,11 @@ export function CreateClient() {
                 if (existing) {
                   updateCase(existing.id, f)
                   navigate(`/wm/c/${existing.id}/invite`)
-                } else navigate(`/wm/c/${createCase(f).id}/invite`)
+                } else {
+                  const id = createCase(f).id
+                  navigate(`/wm/c/${id}/edit`, { replace: true })
+                  navigate(`/wm/c/${id}/invite`)
+                }
               }}
             >
               {existing ? 'Save and continue' : 'Create and write invite'}
@@ -113,7 +138,7 @@ export function CreateClient() {
           <Card tone="muted" padding="lg" inner={0} className="flex flex-col gap-3 leading-relaxed">
             <span className="font-medium text-ink">What happens next</span>
             <p>We create a private link for the client. They can fill it in on their own time, by voice or by uploading statements.</p>
-            <p>You’ll see their progress live, can answer questions right on a field, and get a meeting brief once they submit.</p>
+            <p>You’ll see their progress live and answer questions right on a field. When they send it, you get a completed CIF for the paperwork and a brief for your strategy meeting.</p>
           </Card>
         </aside>
       </div>

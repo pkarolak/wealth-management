@@ -74,6 +74,7 @@ type Actions = {
   resolveThread: (caseId: string, threadId: string, resolved: boolean, actorId: string) => void
   markRead: (caseId: string, personId: string, threadIds?: string[]) => void
 
+  assignCifGaps: (caseId: string, assigneeId: string, fieldIds: string[], actorId: string) => void
   addRequest: (caseId: string, req: Pick<RequestItem, 'kind' | 'title' | 'detail' | 'sectionId'>, advisorId: string) => void
   fulfillRequest: (caseId: string, requestId: string, actorId: string, note?: string) => void
 
@@ -211,7 +212,7 @@ export const useStore = create<Store>()(
         giveConsent: (caseId) => {
           const c = get().cases[caseId]
           if (!c || c.consentAt) return
-          patchCase(caseId, (x) => ({ ...x, consentAt: now() }), { actorId: c.clientId, kind: 'consent', text: `${c.firstName} agreed to share their information and acknowledged the privacy notice, Form CRS and Form ADV` })
+          patchCase(caseId, (x) => ({ ...x, consentAt: now() }), { actorId: c.clientId, kind: 'consent', text: `${c.firstName} agreed to share their information` })
         },
 
         setIdScanned: (caseId) => {
@@ -411,6 +412,17 @@ export const useStore = create<Store>()(
           const needs = c.threads.some((t) => (!threadIds || threadIds.includes(t.id)) && t.messages.some((m) => m.authorId !== personId && m.ts > (t.readAt[personId] ?? 0)))
           if (!needs) return
           patchCase(caseId, (x) => ({ ...x, threads: x.threads.map((t) => (!threadIds || threadIds.includes(t.id) ? { ...t, readAt: { ...t.readAt, [personId]: now() } } : t)) }))
+        },
+
+        assignCifGaps: (caseId, assigneeId, fieldIds, actorId) => {
+          const c = get().cases[caseId]
+          const who = get().people[assigneeId]
+          if (!c || !who) return
+          patchCase(caseId, (x) => ({ ...x, cifAssignment: { assigneeId, fieldIds, at: now() } }), {
+            actorId,
+            kind: 'assigned',
+            text: `Asked ${who.name.split(' ')[0]} to chase ${fieldIds.length} open ${fieldIds.length === 1 ? 'answer' : 'answers'} on the CIF`,
+          })
         },
 
         addRequest: (caseId, req, advisorId) => {

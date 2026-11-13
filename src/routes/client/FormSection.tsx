@@ -3,6 +3,7 @@ import { FieldRow } from '../../components/patterns'
 import { Button } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { groupsFor, isFilled, isVisible, type SectionId } from '../../schema/onboarding'
+import { fieldError } from '../../schema/validation'
 import { useStore } from '../../store/caseStore'
 import { caseValues, sectionStats } from '../../store/selectors'
 import type { ClientCase } from '../../store/types'
@@ -23,7 +24,8 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
   const visibleFields = groupsFor(sectionId).flatMap((g) => g.fields.filter((f) => isVisible(f, merged)))
   const drafts = visibleFields.filter((f) => c.fields[f.id]?.suggestion && !isFilled(values[f.id])).map((f) => f.id)
   const changes = visibleFields.filter((f) => c.fields[f.id]?.suggestion && isFilled(values[f.id])).length
-  const remaining = visibleFields.filter((f) => f.required && !c.fields[f.id]?.deferred && !isFilled(values[f.id]) && !drafts.includes(f.id)).length
+  const invalid = visibleFields.filter((f) => fieldError(f, values[f.id])).length
+  const remaining = visibleFields.filter((f) => f.required && !c.fields[f.id]?.deferred && (!isFilled(values[f.id]) || fieldError(f, values[f.id])) && !drafts.includes(f.id)).length
   const advisorFirst = useStore((s) => s.people[c.advisorId]?.name.split(' ')[0] ?? 'your Wealth Manager')
 
   const leave = (acceptDrafts: boolean) => {
@@ -34,7 +36,9 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
   }
 
   const hint =
-    changes > 0
+    invalid > 0
+      ? `${invalid === 1 ? 'One answer needs' : `${invalid} answers need`} a quick fix above.`
+      : changes > 0
       ? `${advisorFirst} suggested ${changes === 1 ? 'a change' : `${changes} changes`} above. Approve or keep yours.`
       : drafts.length > 0
         ? 'Skipped drafts stay here as suggestions.'

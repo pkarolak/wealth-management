@@ -7,7 +7,7 @@ import { money, moneyCompact, relativeTime } from '../../lib/format'
 import { useStore } from '../../store/caseStore'
 import { useNow, usePresenceOf } from '../../store/hooks'
 import { ADVISOR_ID, pipeline, pipelineCounts } from '../../store/seed'
-import { pendingReview, realCases, sectionState, sectionStats, visibleSections } from '../../store/selectors'
+import { cifProgress, pendingReview, realCases, sectionState, sectionStats, visibleSections } from '../../store/selectors'
 import type { ClientCase, Stage } from '../../store/types'
 import { color } from '../../tokens/tokens'
 import { PageHeader } from './WMLayout'
@@ -62,7 +62,8 @@ const segmentClass = { reviewed: 'bg-ink', done: 'bg-ink-3', progress: 'bg-progr
 function Journey({ c }: { c: ClientCase }) {
   const secs = visibleSections(c)
   const states = secs.map((s) => (c.advisorReviewed[s.id] ? 'reviewed' : (sectionState(c, s.id) as 'done' | 'progress' | 'idle')))
-  const done = states.filter((x) => x === 'done' || x === 'reviewed').length
+  const acct = cifProgress(c).accounts
+  const left = acct.total - acct.done
   return (
     <span className="flex w-full min-w-0 flex-col gap-2">
       <span className="flex w-full gap-[3px]">
@@ -71,7 +72,7 @@ function Journey({ c }: { c: ClientCase }) {
         ))}
       </span>
       <span className="text-[12px] text-ink-4">
-        {stageLabel[c.stage]} · {done} of {secs.length}
+        {stageLabel[c.stage]} · {left ? `${left} left to open accounts` : 'Ready to open accounts'}
       </span>
     </span>
   )

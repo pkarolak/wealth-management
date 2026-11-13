@@ -121,6 +121,7 @@ export type ActivityKind =
   | 'meeting'
   | 'agenda'
   | 'email'
+  | 'assigned'
 
 export type Activity = { id: string; ts: number; actorId: string; kind: ActivityKind; text: string; email?: EmailPayload }
 
@@ -154,8 +155,10 @@ export type ClientCase = {
   meeting?: { at: number; mode: 'video' | 'office' }
   agenda?: { items: AgendaItem[]; sharedAt?: number; updatedAt: number }
   introDone?: boolean
-  /** Client agreed to share their information and acknowledged the privacy notice, Form CRS and Form ADV. */
+  /** Client agreed to share their information with the firm. */
   consentAt?: number
+  /** CIF gaps handed to a teammate to chase. */
+  cifAssignment?: { assigneeId: string; fieldIds: string[]; at: number }
   idScanned?: boolean
   fields: Record<string, FieldState>
   goals: Goal[]

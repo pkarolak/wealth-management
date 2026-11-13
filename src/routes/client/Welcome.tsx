@@ -1,6 +1,6 @@
-import { ArrowRight, Clock, FileText, IdCard, MessageCircle, Mic } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { Avatar, Button } from '../../components/primitives'
+import { ArrowRight, Clock, FileText, IdCard, MessageCircle, Mic, ShieldCheck } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { Avatar, Button, Checkbox, toast } from '../../components/primitives'
 import { useStore } from '../../store/caseStore'
 import type { ClientCase } from '../../store/types'
 import type { StepNav } from './ClientApp'
@@ -23,6 +23,8 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const invite = c.activity.find((a) => a.kind === 'invited')?.email?.body
   const note = invite?.split(/\n{2,}/).slice(1, 2).join(' ') || `Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.`
   const resuming = c.introDone || c.idScanned || Object.values(c.sectionProgress ?? {}).some(Boolean)
+  const giveConsent = useStore((s) => s.giveConsent)
+  const [agreed, setAgreed] = useState(!!c.consentAt)
 
   return (
     <div className="flex flex-col gap-10">
@@ -46,11 +48,35 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <Point icon={<MessageCircle className="size-[18px]" />} title={`Ask ${first} anywhere`} body="Unsure about a question? Leave a comment on it. Skip anything and do it in the meeting." />
       </div>
 
+      {!c.consentAt && (
+        <div className="flex flex-col gap-3 rounded-[22px] bg-surface p-5">
+          <span className="flex items-start gap-3 text-[14px] leading-snug text-ink-2">
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink-3" />
+            <span>
+              Only {first} and her team at Parker & Lane see your answers. They’re encrypted, linked accounts are read-only, and we never sell your data.{' '}
+              <button type="button" onClick={() => toast('Privacy notice downloaded', { tone: 'success' })} className="text-ink underline underline-offset-2">
+                Privacy notice
+              </button>
+            </span>
+          </span>
+          <Checkbox checked={agreed} onChange={setAgreed} label="I agree to share my information with Parker & Lane Wealth." />
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-4 border-t border-line pt-6">
         <span className="inline-flex items-center gap-2 text-[13px] text-ink-3">
           <IdCard className="size-4" /> Helpful to have nearby: your driver’s license and recent statements
         </span>
-        <Button size="lg" className="ml-auto" trailing={<ArrowRight className="size-4" />} onClick={() => (!c.consentAt ? nav.go('consent') : nav.go(c.introDone ? 'about' : 'intro'))}>
+        <Button
+          size="lg"
+          className="ml-auto"
+          disabled={!agreed}
+          trailing={<ArrowRight className="size-4" />}
+          onClick={() => {
+            if (!c.consentAt) giveConsent(c.id)
+            nav.go(c.introDone ? 'about' : 'intro')
+          }}
+        >
           {resuming ? 'Continue where I left off' : 'Let’s begin'}
         </Button>
       </div>
