@@ -268,7 +268,7 @@ export const useStore = create<Store>()(
                 [fieldId]: { ...x.fields[fieldId], value: s.value, source: fromAdvisor ? 'advisor' : s.sourceLabel?.includes('license') ? 'id' : s.sourceLabel?.startsWith('From your') && !s.sourceLabel.includes('intro') ? 'document' : 'ai', status: fromAdvisor ? 'confirmed' : 'answered', confidence: s.confidence, suggestion: undefined, updatedAt: now(), updatedBy: actorId },
               },
             }),
-            fromAdvisor ? { actorId, kind: 'suggestion_accepted', text: `${c.firstName} accepted ${personName(s.authorId).split(' ')[0]}’s change to “${fieldById[fieldId]?.label}”` } : undefined,
+            fromAdvisor ? { actorId, kind: 'suggestion_accepted', text: `${c.firstName} approved ${personName(s.authorId).split(' ')[0]}’s change to “${fieldById[fieldId]?.label}”` } : undefined,
           )
         },
 
@@ -303,7 +303,7 @@ export const useStore = create<Store>()(
               actorId: advisorId,
               kind: 'suggestion',
               text: `Suggested a change to “${label}”`,
-              email: { fromId: advisorId, to: [clientEmail(c)], subject: `${personName(advisorId).split(' ')[0]} suggested a change`, body: `Hi ${c.firstName},\n\nI suggested a small change to “${label}”${note ? `: ${note}` : '.'}\n\nYou can accept or keep your answer in the form.` },
+              email: { fromId: advisorId, to: [clientEmail(c)], subject: `${personName(advisorId).split(' ')[0]} suggested a change`, body: `Hi ${c.firstName},\n\nI suggested a small change to “${label}”${note ? `: ${note}` : '.'}\n\nYou can approve it or keep your answer in the form.` },
             },
           )
         },

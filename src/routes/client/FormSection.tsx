@@ -35,7 +35,7 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
 
   const hint =
     changes > 0
-      ? `${advisorFirst} suggested ${changes === 1 ? 'a change' : `${changes} changes`} above. Accept or keep yours.`
+      ? `${advisorFirst} suggested ${changes === 1 ? 'a change' : `${changes} changes`} above. Approve or keep yours.`
       : drafts.length > 0
         ? 'Skipped drafts stay here as suggestions.'
         : remaining > 0
@@ -52,10 +52,10 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
         <div className="mb-8 flex items-center gap-3 rounded-[18px] bg-ai-soft p-2 pl-4">
           <Sparkles className="size-4 shrink-0 text-ai" />
           <span className="flex-1 text-[14px] text-ink-2">
-            We drafted <span className="font-medium">{drafts.length}</span> answers from what you shared. Check them; Continue accepts them.
+            We drafted <span className="font-medium">{drafts.length}</span> answers from what you shared. Check them; Continue approves them.
           </span>
           <Button size="md" variant="secondary" leading={<Check className="size-4" />} onClick={() => acceptAll(c.id, sectionId, c.clientId)}>
-            Accept all
+            Approve all
           </Button>
         </div>
       )}
@@ -82,7 +82,7 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
       <StepFooter
         onBack={nav.back}
         hint={hint}
-        nextLabel={drafts.length ? `Accept ${drafts.length} and continue` : 'Continue'}
+        nextLabel={drafts.length ? `Approve ${drafts.length} and continue` : 'Continue'}
         onNext={() => leave(true)}
         extra={
           drafts.length > 0 && (

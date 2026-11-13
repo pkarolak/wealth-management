@@ -84,7 +84,7 @@ function SuggestPopover({ c, def }: { c: ClientCase; def: FieldDef }) {
       <div className="flex flex-col gap-3">
         <div className="flex flex-col">
           <span className="text-[14px] font-medium text-ink">Suggest a change</span>
-          <span className="text-[12px] text-ink-3">{c.firstName} accepts or keeps their answer. Nothing changes until then.</span>
+          <span className="text-[12px] text-ink-3">{c.firstName} approves or keeps their answer. Nothing changes until then.</span>
         </div>
         {def.options || def.type === 'yesno' ? (
           <Select label={def.label} value={value} onChange={setValue} options={def.options ?? [{ value: 'no', label: 'No' }, { value: 'yes', label: 'Yes' }]} />

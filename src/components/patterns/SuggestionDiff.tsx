@@ -26,7 +26,7 @@ const tone = {
 }
 
 /** Old value struck through, new value highlighted. Blue for AI, pink for the advisor. */
-export function SuggestionDiff({ from, to, by, authorName, authorAvatar, sourceLabel, note, onAccept, onReject, acceptLabel = 'Accept', rejectLabel = 'Keep mine', feedback, className }: Props) {
+export function SuggestionDiff({ from, to, by, authorName, authorAvatar, sourceLabel, note, onAccept, onReject, acceptLabel = 'Approve', rejectLabel = 'Keep mine', feedback, className }: Props) {
   const t = tone[by]
   return (
     <div className={cn('flex flex-col gap-3 rounded-[22px] border border-line bg-surface p-3', className)}>

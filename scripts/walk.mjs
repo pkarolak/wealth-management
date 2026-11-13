@@ -65,7 +65,7 @@ await shot('client-id-done')
 await click('Continue')
 await page.waitForTimeout(300)
 await shot('client-about', true)
-await click('Accept all')
+await click('Approve all')
 await page.waitForTimeout(300)
 await shot('client-about-accepted', true)
 
