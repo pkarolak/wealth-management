@@ -27,13 +27,15 @@ export function WMLayout() {
         <LogoMark size={40} className="mb-4" />
         {nav.map((n) => (
           <Tooltip key={n.label} content={n.label} side="right">
-            <NavLink
-              to={n.to}
-              end={n.end}
-              className={({ isActive }) => cn('flex size-11 items-center justify-center rounded-control transition-colors', isActive && !n.to.includes('#') ? 'bg-surface text-ink shadow-soft' : 'text-ink-3 hover:bg-surface/70 hover:text-ink')}
-            >
-              {n.icon}
-            </NavLink>
+            <span className="flex">
+              <NavLink
+                to={n.to}
+                end={n.end}
+                className={({ isActive }) => cn('flex size-11 items-center justify-center rounded-control transition-colors', isActive && !n.to.includes('#') ? 'bg-surface text-ink shadow-soft' : 'text-ink-3 hover:bg-surface/70 hover:text-ink')}
+              >
+                {n.icon}
+              </NavLink>
+            </span>
           </Tooltip>
         ))}
         <div className="mt-auto">
