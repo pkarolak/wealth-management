@@ -1,6 +1,6 @@
 import { Building2, ChevronLeft, ChevronRight, Video } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
-import { Avatar, Button, Segmented, toast } from '../../components/primitives'
+import { Button, Segmented, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { useStore } from '../../store/caseStore'
 import type { ClientCase } from '../../store/types'
@@ -37,7 +37,7 @@ function useCalendar() {
 }
 
 /** Day strip + time grid. `bare` drops the card chrome and header for use inside a dialog. */
-export function Scheduler({ c, advisorName, advisorAvatar, onBooked, onCancel, bare }: { c: ClientCase; advisorName: string; advisorAvatar?: string; onBooked: () => void; onCancel?: () => void; bare?: boolean }) {
+export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: ClientCase; advisorName: string; onBooked: () => void; onCancel?: () => void; bare?: boolean }) {
   const schedule = useStore((s) => s.scheduleMeeting)
   const days = useCalendar()
   const first = advisorName.split(' ')[0]
@@ -49,19 +49,19 @@ export function Scheduler({ c, advisorName, advisorAvatar, onBooked, onCancel, b
   const day = days[dayIdx]
   const scroll = (dir: number) => strip.current?.scrollBy({ left: dir * 280, behavior: 'smooth' })
 
+  const free = day.slots.filter((s) => s.free)
+
   return (
-    <section className={cn('flex flex-col', !bare && 'rounded-[28px] bg-surface p-2 shadow-soft')}>
-      <div className={cn('flex flex-wrap items-center gap-4', bare ? 'pb-4' : 'p-4 pb-5')}>
+    <section className={cn('flex flex-col gap-6', !bare && 'rounded-[28px] bg-surface p-6')}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         {!bare && (
-          <>
-            <Avatar name={advisorName} src={advisorAvatar} size="lg" />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <h2 className="text-[17px] text-ink">Book your planning meeting</h2>
-              <span className="text-[13px] text-ink-3">45 minutes with {advisorName} · no cost</span>
-            </div>
-          </>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <h2 className="text-[17px] text-ink">Book your planning meeting</h2>
+            <span className="text-[13px] text-ink-3">45 minutes with {first}</span>
+          </div>
         )}
         <Segmented
+          size="sm"
           value={mode}
           onChange={(v) => setMode(v as 'video' | 'office')}
           options={[
@@ -71,69 +71,63 @@ export function Scheduler({ c, advisorName, advisorAvatar, onBooked, onCancel, b
         />
       </div>
 
-      <div className="flex flex-col gap-5 rounded-[20px] bg-muted/50 p-4">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-[14px] text-ink">{day.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-          <span className="flex gap-1">
-            <button type="button" aria-label="Earlier" onClick={() => scroll(-1)} className="flex size-8 items-center justify-center rounded-full text-ink-3 hover:bg-surface hover:text-ink">
+          <span className="text-[13px] text-ink-3">{day.date.toLocaleDateString('en-US', { month: 'long' })}</span>
+          <span className="flex">
+            <button type="button" aria-label="Earlier" onClick={() => scroll(-1)} className="flex size-7 items-center justify-center rounded-full text-ink-4 hover:bg-muted hover:text-ink">
               <ChevronLeft className="size-4" />
             </button>
-            <button type="button" aria-label="Later" onClick={() => scroll(1)} className="flex size-8 items-center justify-center rounded-full text-ink-3 hover:bg-surface hover:text-ink">
+            <button type="button" aria-label="Later" onClick={() => scroll(1)} className="flex size-7 items-center justify-center rounded-full text-ink-4 hover:bg-muted hover:text-ink">
               <ChevronRight className="size-4" />
             </button>
           </span>
         </div>
-
-        <div ref={strip} className="-m-1 flex snap-x scroll-px-1 gap-1.5 overflow-x-auto p-1 [scrollbar-width:none]">
+        <div ref={strip} className="-mx-1 flex snap-x scroll-px-1 gap-1 overflow-x-auto px-1 [scrollbar-width:none]">
           {days.map((d, i) => {
-            const free = d.slots.filter((s) => s.free).length
+            const open = d.slots.some((s) => s.free)
             const on = i === dayIdx
             return (
               <button
                 key={d.date.toISOString()}
                 type="button"
-                disabled={!free}
+                disabled={!open}
                 onClick={() => setDayIdx(i)}
                 className={cn(
-                  'flex w-[68px] shrink-0 snap-start flex-col items-center gap-0.5 rounded-[16px] py-3 ring-1 transition-[background-color,box-shadow] ring-inset',
-                  on ? 'bg-ink text-white ring-ink' : free ? 'bg-surface text-ink ring-transparent hover:ring-line-strong' : 'cursor-not-allowed text-ink-4 ring-transparent',
+                  'flex w-12 shrink-0 snap-start flex-col items-center gap-0.5 rounded-[14px] py-2 transition-colors',
+                  on ? 'bg-ink text-white' : open ? 'text-ink hover:bg-muted' : 'cursor-not-allowed text-ink-4/60',
                 )}
               >
-                <span className={cn('text-[12px]', on ? 'text-white/70' : 'text-ink-3', !free && 'text-ink-4')}>{d.date.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-                <span className="display text-[24px] leading-tight">{d.date.getDate()}</span>
-                <span className={cn('text-[11px]', on ? 'text-white/60' : 'text-ink-4')}>{free ? `${free} open` : 'Full'}</span>
+                <span className={cn('text-[11px]', on ? 'text-white/65' : 'text-ink-4')}>{d.date.toLocaleDateString('en-US', { weekday: 'narrow' })}</span>
+                <span className="tabular text-[16px]">{d.date.getDate()}</span>
               </button>
             )
           })}
         </div>
-
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-          {day.slots.map((s) => (
-            <button
-              key={s.at}
-              type="button"
-              disabled={!s.free}
-              onClick={() => setAt(s.at)}
-              className={cn(
-                'tabular h-11 rounded-[14px] text-[14px] ring-1 transition-[background-color,box-shadow] ring-inset',
-                !s.free ? 'cursor-not-allowed text-ink-4 line-through decoration-ink-4/50 ring-transparent' : at === s.at ? 'bg-ink text-white ring-ink' : 'bg-surface text-ink ring-line hover:ring-line-strong',
-              )}
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
       </div>
 
-      <div className={cn('flex flex-wrap items-center gap-3', bare ? 'pt-5' : 'p-3 pt-4 pl-4')}>
+      <div className="flex flex-wrap gap-2">
+        {free.map((s) => (
+          <button
+            key={s.at}
+            type="button"
+            onClick={() => setAt(s.at)}
+            className={cn('tabular h-9 rounded-full px-4 text-[14px] ring-1 transition-colors ring-inset', at === s.at ? 'bg-ink text-white ring-ink' : 'text-ink ring-line hover:ring-line-strong')}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
         <span className="flex min-w-0 flex-1 items-center gap-2 text-[14px] text-ink-3">
-          {mode === 'video' ? <Video className="size-4" /> : <Building2 className="size-4" />}
+          {mode === 'video' ? <Video className="size-4 shrink-0" /> : <Building2 className="size-4 shrink-0" />}
           {at ? (
-            <span className="text-ink">
+            <span className="truncate text-ink">
               {fmtDay(new Date(at), true)} · {new Date(at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
             </span>
           ) : (
-            'Pick a time that works for you'
+            'Pick a time'
           )}
         </span>
         {onCancel && (

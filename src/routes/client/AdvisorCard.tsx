@@ -45,7 +45,7 @@ export function AdvisorCard({ c, sectionId }: { c: ClientCase; sectionId?: Secti
         </button>
       </div>
       <Dialog open={scheduling} onOpenChange={setScheduling} width="lg" title={`Schedule a call with ${first}`} description="45 minutes, by video or at the office.">
-        <Scheduler c={c} advisorName={advisor.name} advisorAvatar={advisor.avatar} bare onBooked={() => setScheduling(false)} />
+        <Scheduler c={c} advisorName={advisor.name} bare onBooked={() => setScheduling(false)} />
       </Dialog>
     </div>
   )
