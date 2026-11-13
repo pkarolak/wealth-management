@@ -84,7 +84,7 @@ export function AccountTile({ item, onClick, aside, className, variant = 'card' 
       onClick={onClick}
       className={cn(
         'group flex w-full items-center gap-3 text-left transition-colors',
-        row ? 'rounded-[14px] px-2 py-2 hover:bg-muted/70' : 'rounded-[22px] p-3',
+        row ? cn('rounded-[14px] px-2 py-2', item.draft ? 'bg-ai-soft/45 hover:bg-ai-soft/70' : 'hover:bg-muted/70') : 'rounded-[22px] p-3',
         !row && (item.draft ? 'border border-dashed border-ai/35 bg-ai-soft/35 hover:bg-ai-soft/60' : 'bg-surface hover:bg-muted/60'),
         className,
       )}
@@ -110,7 +110,10 @@ export function AccountTile({ item, onClick, aside, className, variant = 'card' 
             {money(item.value)}
           </span>
         ) : row ? (
-          <span className="text-[13px] text-ink-3 transition-colors group-hover:text-ink">Add balance</span>
+          <span className="inline-flex h-7 items-center gap-1 rounded-full bg-surface px-2.5 text-[13px] text-ai shadow-soft ring-1 ring-ai/20 ring-inset">
+            <Plus className="size-3.5" />
+            Add balance
+          </span>
         ) : (
           <span className="inline-flex items-center gap-1 text-[13px] font-medium text-ai">
             <Plus className="size-3.5" />
