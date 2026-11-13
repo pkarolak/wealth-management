@@ -30,7 +30,7 @@ export function GoalsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
       {drafts > 0 && (
         <div className="mb-6 inline-flex items-center gap-2 text-[14px] text-ai">
-          <Sparkles className="size-4" /> {drafts} goals drafted from your intro. Keep, edit or remove them.
+          <Sparkles className="size-4" /> {drafts} goals drafted from your intro. Approve, edit or remove them.
         </div>
       )}
 

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { moneyCompact } from '../../lib/format'
 import type { Goal, GoalKind } from '../../store/types'
+import { Tooltip } from '../primitives'
 
 export const goalMeta: Record<GoalKind, { icon: ReactNode; tint: string; label: string }> = {
   retirement: { icon: <Sunset className="size-4" />, tint: 'bg-progress-soft text-progress-ink', label: 'Retirement' },
@@ -16,16 +17,27 @@ export const goalMeta: Record<GoalKind, { icon: ReactNode; tint: string; label: 
 
 const priorityLabel = { high: 'Top priority', medium: 'Important', low: 'Nice to have' }
 
-/** Goal tile in the style of the reference agent cards. 16px padding around a 10px icon tile → 26. */
+function IconAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+  return (
+    <Tooltip content={label}>
+      <button type="button" onClick={onClick} aria-label={label} className="flex size-9 items-center justify-center rounded-control bg-surface text-ink-2 shadow-soft transition-colors hover:text-ink">
+        {children}
+      </button>
+    </Tooltip>
+  )
+}
+
+/** Goal tile. 16px padding around a 10px icon tile → 26. Drafts: tinted, with actions on hover in place of the icon. */
 export function GoalCard({ goal, onClick, onAccept, onRemove, className }: { goal: Goal; onClick?: () => void; onAccept?: () => void; onRemove?: () => void; className?: string }) {
   const m = goalMeta[goal.kind]
   const years = goal.targetYear ? goal.targetYear - new Date().getFullYear() : undefined
+  const actions = goal.draft && (onAccept || onRemove)
   return (
     <div
       onClick={onClick}
       className={cn(
         'group relative flex min-h-40 flex-col justify-between gap-4 rounded-[26px] p-4 text-left transition-colors',
-        goal.draft ? 'border border-dashed border-ai/35 bg-ai-soft/35' : 'bg-muted hover:bg-sunken/70',
+        goal.draft ? 'bg-ai-soft/70 hover:bg-ai-soft' : 'bg-muted hover:bg-sunken/70',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -37,33 +49,34 @@ export function GoalCard({ goal, onClick, onAccept, onRemove, className }: { goa
             {goal.targetYear ? `${goal.targetYear}${years !== undefined && years > 0 ? ` · in ${years} years` : ''}` : 'No date yet'}
           </span>
         </div>
-        <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-control', m.tint)}>{m.icon}</span>
-      </div>
-      <div className="flex items-end justify-between gap-3 pl-1">
-        <div className="flex flex-col gap-1">
-          {goal.draft && (
-            <span className="inline-flex items-center gap-1 text-[12px] text-ai">
-              <Sparkles className="size-3" /> {goal.sourceLabel ?? 'Suggested'}
-            </span>
-          )}
-          <span className="text-[13px] text-ink-3">
-            {goal.amount ? <span className="tabular text-ink">{moneyCompact(goal.amount)}</span> : 'Amount to discuss'} · {priorityLabel[goal.priority]}
+        <div className="relative shrink-0">
+          <span className={cn('relative flex size-9 items-center justify-center rounded-control transition-opacity', m.tint, actions && 'group-focus-within:opacity-0 group-hover:opacity-0')}>
+            {m.icon}
+            {goal.draft && (
+              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-surface text-ai shadow-soft">
+                <Sparkles className="size-2.5" />
+              </span>
+            )}
           </span>
+          {actions && (
+            <div className="absolute top-0 right-0 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+              {onRemove && (
+                <IconAction label="Remove" onClick={onRemove}>
+                  <X className="size-4" />
+                </IconAction>
+              )}
+              {onAccept && (
+                <IconAction label="Approve" onClick={onAccept}>
+                  <Check className="size-4" />
+                </IconAction>
+              )}
+            </div>
+          )}
         </div>
-        {goal.draft && (onAccept || onRemove) && (
-          <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-            {onRemove && (
-              <button type="button" onClick={onRemove} className="flex size-8 items-center justify-center rounded-control text-ink-3 hover:bg-surface hover:text-ink" aria-label="Remove goal">
-                <X className="size-4" />
-              </button>
-            )}
-            {onAccept && (
-              <button type="button" onClick={onAccept} className="inline-flex h-8 items-center gap-1 rounded-control bg-ink px-3 text-[13px] font-medium text-white" aria-label="Keep goal">
-                <Check className="size-3.5" /> Keep
-              </button>
-            )}
-          </div>
-        )}
+      </div>
+      <div className="flex flex-col gap-0.5 pl-1">
+        <span className="tabular text-[17px] text-ink">{goal.amount ? moneyCompact(goal.amount) : 'Amount to discuss'}</span>
+        <span className="text-[13px] whitespace-nowrap text-ink-3">{goal.draft ? (goal.sourceLabel ?? 'Suggested') : priorityLabel[goal.priority]}</span>
       </div>
     </div>
   )
