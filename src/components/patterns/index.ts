@@ -10,5 +10,6 @@ export { AccountTile, AssetLiabilityList, categoryIcon, InstitutionLogo, NetWort
 export { PresenceChip, PresenceLabel, PresenceStatus, type PresenceTone } from './Presence'
 export { SourceTag, type SourceKind } from './SourceTag'
 export { SuggestionDiff, Thumbs } from './SuggestionDiff'
+export { ThreadList } from './ThreadList'
 export { VoiceInput, Waveform } from './VoiceInput'
 export { KanbanColumn, ProgressRail, TaskStack, type KanbanCardData, type RailItem, type StackItem } from './Workflow'
