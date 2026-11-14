@@ -1,6 +1,7 @@
 import { Calendar, Sparkles } from 'lucide-react'
 import { forwardRef, useEffect, useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { cn } from '../../lib/cn'
+import { Tooltip } from './Overlay'
 
 export type FieldTone = 'default' | 'filled' | 'ai' | 'advisor' | 'warning' | 'error'
 
@@ -19,7 +20,13 @@ export const fieldTones: Record<FieldTone, string> = {
 }
 
 /** Marks an auto-filled value. Sits right after the text, so it reads as part of the answer rather than the label. */
-export const AiMark = () => <Sparkles aria-hidden strokeWidth={1.5} className="size-3 shrink-0 text-ai/50" />
+export const AiMark = () => (
+  <Tooltip content="Auto-filled">
+    <span className="pointer-events-auto flex shrink-0 text-ai/80">
+      <Sparkles aria-hidden strokeWidth={1.75} className="size-3.5" />
+    </span>
+  </Tooltip>
+)
 
 /** Floating label: placeholder-sized when empty, shrinks to the top-left on focus or value. */
 const floatLabel = (always: boolean, hasLeading: boolean) =>
