@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { CalendarClock, Undo2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
-import { displayValue, isFilled, type FieldDef } from '../../schema/onboarding'
+import { displayValue, fieldById, isFilled, type FieldDef } from '../../schema/onboarding'
+import { fieldError } from '../../schema/validation'
 import { useStore } from '../../store/caseStore'
 import { usePresenceOf } from '../../store/hooks'
 import { threadsFor } from '../../store/selectors'
@@ -53,6 +54,11 @@ export function FieldRow({ def }: { def: FieldDef }) {
 
   const tone: FieldTone = pendingFill ? (s.by === 'ai' ? 'ai' : 'advisor') : st.status === 'needs_review' ? 'warning' : filled ? 'filled' : 'default'
   const value = pendingFill ? s.value : st.value
+  const dep = def.needs ? c.fields[def.needs] : undefined
+  const blocked = !!def.needs && (!isFilled(dep?.value) || !!fieldError(fieldById[def.needs], dep?.value))
+
+  // It moved to the meeting along with the answer it depends on.
+  if (def.needs && dep?.deferred) return null
 
   if (st.deferred) {
     return (
@@ -137,6 +143,8 @@ export function FieldRow({ def }: { def: FieldDef }) {
           value={value}
           onChange={(v) => setField(caseId, def.id, v, viewerId)}
           tone={tone}
+          disabled={blocked}
+          hint={blocked ? `Enter your ${fieldById[def.needs!]?.label} above first.` : undefined}
           labelAside={
             borderless ? (
               <span className="-my-1 ml-0.5 inline-flex items-center gap-1.5">

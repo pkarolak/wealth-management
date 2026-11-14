@@ -2,7 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { uid } from '../lib/format'
 import { clock, OFFICE_ZONE } from '../lib/time'
-import { fieldById, sectionById, type SectionId } from '../schema/onboarding'
+import { fieldById, fields, isFilled, sectionById, type SectionId } from '../schema/onboarding'
+import { fieldError } from '../schema/validation'
 import type { FieldDraft } from '../services/ai'
 import { ADVISOR_ID, staff } from './seed'
 import type {
@@ -236,6 +237,10 @@ export const useStore = create<Store>()(
                 fields: {
                   ...next.fields,
                   [fieldId]: { ...prev, value, source, status: flag ? 'needs_review' : prev.status === 'needs_review' ? 'needs_review' : 'answered', suggestion: undefined, deferred: false, updatedAt: now(), updatedBy: actorId },
+                  // A certification of this answer no longer holds once the answer is gone or invalid.
+                  ...(def && (!isFilled(value) || fieldError(def, value))
+                    ? Object.fromEntries(fields.filter((f) => f.needs === fieldId && next.fields[f.id]?.value).map((f) => [f.id, { ...next.fields[f.id], value: undefined }]))
+                    : {}),
                 },
               }
             },
@@ -335,7 +340,8 @@ export const useStore = create<Store>()(
 
         deferField: (caseId, fieldId, deferred, actorId) => {
           const label = fieldById[fieldId]?.label ?? fieldId
-          patchCase(caseId, (x) => ({ ...x, fields: { ...x.fields, [fieldId]: { ...x.fields[fieldId], deferred } } }), deferred ? { actorId, kind: 'deferred', text: `Moved “${label}” to the meeting agenda` } : undefined)
+          const linked = fields.filter((f) => f.needs === fieldId).map((f) => f.id)
+          patchCase(caseId, (x) => ({ ...x, fields: { ...x.fields, ...Object.fromEntries([fieldId, ...linked].map((id) => [id, { ...x.fields[id], deferred }])) } }), deferred ? { actorId, kind: 'deferred', text: `Moved “${label}” to the meeting agenda` } : undefined)
         },
 
         addGoal: (caseId, goal) => patchCase(caseId, (c) => touchSection({ ...c, goals: [...c.goals, { ...goal, id: uid('goal') }] }, 'goals')),

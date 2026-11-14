@@ -117,15 +117,16 @@ type CheckboxProps = {
   label: ReactNode
   description?: ReactNode
   className?: string
+  disabled?: boolean
 }
 
-export function Checkbox({ checked, onChange, label, description, className }: CheckboxProps) {
+export function Checkbox({ checked, onChange, label, description, className, disabled }: CheckboxProps) {
   return (
-    <label className={cn('group flex cursor-pointer items-start gap-3', className)}>
+    <label className={cn('group flex items-start gap-3', disabled ? 'cursor-not-allowed [&>span:first-child]:opacity-40' : 'cursor-pointer', className)}>
       <CheckboxBox checked={checked} />
-      <input type="checkbox" className="sr-only" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <input type="checkbox" className="sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span className="flex flex-col gap-0.5">
-        <span className="text-[14px] leading-5 text-ink">{label}</span>
+        <span className={cn('text-[14px] leading-5', disabled ? 'text-ink-3' : 'text-ink')}>{label}</span>
         {description && <span className="text-[13px] leading-[18px] text-ink-3">{description}</span>}
       </span>
     </label>

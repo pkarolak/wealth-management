@@ -11,6 +11,9 @@ type Props = {
   tone?: FieldTone
   /** Rendered next to the label for controls whose label sits outside (chips, yes/no). */
   labelAside?: ReactNode
+  /** Only checkboxes support this today: they certify another answer that isn't there yet. */
+  disabled?: boolean
+  hint?: ReactNode
 }
 
 /** Controls whose label sits above them rather than floating inside. */
@@ -35,7 +38,7 @@ export function FieldControl(props: Props) {
 /** Most fields are required, so only the exceptions are marked. A whole optional step isn't. */
 const isOptional = (def: FieldDef) => !def.required && def.type !== 'checkbox' && !sectionById[def.sectionId]?.optional
 
-function Control({ def, value, onChange, tone = 'default', labelAside }: Props) {
+function Control({ def, value, onChange, tone = 'default', labelAside, disabled, hint }: Props) {
   const id = `f-${def.id}`
   const optional = isOptional(def)
   const suffix = optional && !hasOuterLabel(def) ? ' (optional)' : ''
@@ -72,13 +75,14 @@ function Control({ def, value, onChange, tone = 'default', labelAside }: Props) 
     case 'checkbox':
       return (
         <Checkbox
-          checked={value === true}
+          checked={!disabled && value === true}
           onChange={onChange}
+          disabled={disabled}
+          description={hint}
           label={
             labelAside ? (
-              <span className="inline-flex flex-wrap items-center gap-x-2">
-                {name}
-                {labelAside}
+              <span>
+                {name} <span className="inline-flex align-middle">{labelAside}</span>
               </span>
             ) : (
               name

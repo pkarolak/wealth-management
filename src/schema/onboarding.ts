@@ -37,6 +37,8 @@ export type FieldDef = {
   showWhen?: (v: Values) => boolean
   /** Client may hand this field to the advisor or the meeting. */
   canDefer?: boolean
+  /** Only answerable once this other field has a valid value; moves to the meeting with it. */
+  needs?: string
 }
 
 export type SectionId = 'about' | 'work' | 'goals' | 'networth' | 'risk' | 'estate' | 'required' | 'review'
@@ -128,6 +130,8 @@ export const fields: FieldDef[] = [
   { id: 'jointDob', sectionId: 'about', group: 'Joint account co-owner', label: 'Date of birth', type: 'date', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: isJoint },
   { id: 'jointEmail', sectionId: 'about', group: 'Joint account co-owner', label: 'Their email', type: 'email', tier: 1, requiredBy: ['custodian'], required: true, showWhen: isJoint, why: 'We’ll send them a short link to add their own ID and SSN.' },
   { id: 'ssn', sectionId: 'about', group: 'Taxpayer ID', label: 'Social Security number', type: 'sensitive', tier: 1, requiredBy: ['custodian'], required: true, explain: 'ssn', canDefer: true, why: 'The IRS needs it for tax reporting, and federal law requires us to verify your identity. Encrypted and never shown in full.' },
+  { id: 'w9Certify', sectionId: 'about', group: 'Taxpayer ID', label: 'Under penalties of perjury, I certify that my Social Security number is correct and that I’m a U.S. citizen or other U.S. person', type: 'checkbox', tier: 1, requiredBy: ['custodian'], required: true, explain: 'w9', needs: 'ssn', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
+  { id: 'backupWithholding', sectionId: 'about', group: 'Taxpayer ID', label: 'The IRS has notified me that I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
 
   // Work & income
   {
@@ -242,8 +246,6 @@ export const fields: FieldDef[] = [
   { id: 'beneficiaryName', sectionId: 'required', group: 'Beneficiaries', label: 'Primary beneficiary', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra, why: 'An IRA passes straight to the people named here, outside your will.' },
   { id: 'beneficiaryRelationship', sectionId: 'required', group: 'Beneficiaries', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra },
   { id: 'contingentBeneficiary', sectionId: 'required', group: 'Beneficiaries', label: 'Contingent beneficiary', type: 'text', tier: 2, requiredBy: ['advisor'], showWhen: hasIra, canDefer: true, why: 'Receives the IRA if your primary beneficiary can’t.' },
-  { id: 'w9Certify', sectionId: 'required', group: 'Tax certification', label: 'Under penalties of perjury, I certify that my Social Security number is correct and that I’m a U.S. citizen or other U.S. person', type: 'checkbox', tier: 1, requiredBy: ['custodian'], required: true, explain: 'w9', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
-  { id: 'backupWithholding', sectionId: 'required', group: 'Tax certification', label: 'The IRS has notified me that I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
 ]
 
 const summaryLabels: Record<string, string> = {
