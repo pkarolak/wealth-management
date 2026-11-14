@@ -1,13 +1,13 @@
 // Walks the demo and sends chosen screens to Figma via html-to-design.
 // Usage: node scripts/figma-capture.mjs ids.json   where ids.json maps screen name -> { id, prompt }
-// SHOTS=dir saves full-page screenshots instead, for comparing against Figma.
+// SHOTS=dir saves full-page screenshots instead, for comparing against Figma. DPR=2 for retina shots, MOBILE=1 to shoot client screens at 390x844.
 import { readFileSync } from 'node:fs'
 import { chromium } from 'playwright'
 
 const BASE = 'http://localhost:5199'
 const ids = JSON.parse(readFileSync(process.argv[2], 'utf8'))
 const browser = await chromium.launch()
-const ctx = await browser.newContext({ viewport: { width: 1440, height: 960 } })
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 960 }, deviceScaleFactor: Number(process.env.DPR ?? 1) })
 const page = await ctx.newPage()
 const script = await (await ctx.request.get('https://mcp.figma.com/mcp/html-to-design/capture.js')).text()
 
@@ -17,7 +17,10 @@ const capture = async (name) => {
   await page.waitForTimeout(600)
   await page.evaluate(() => window.scrollTo(0, 0))
   if (process.env.SHOTS) {
-    await page.screenshot({ path: `${process.env.SHOTS}/${name}.png`, fullPage: true })
+    const mobile = process.env.MOBILE && name.startsWith('client-')
+    if (mobile) { await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(700); await page.evaluate(() => window.scrollTo(0, 0)) }
+    await page.screenshot({ path: `${process.env.SHOTS}/${name}${mobile ? '-mobile' : ''}.png`, fullPage: !mobile })
+    if (mobile) await page.setViewportSize({ width: 1440, height: 960 })
     console.log('shot', name)
     return
   }
