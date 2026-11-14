@@ -3,7 +3,7 @@ import { Check, ChevronDown, MessageCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { CaseProvider, ProgressRail, type RailItem } from '../../components/patterns'
-import { Dialog, ProgressBar, toast } from '../../components/primitives'
+import { Dialog, ProgressBar, toast, Tooltip } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { relativeTime } from '../../lib/format'
 import { AdvisorCard } from './AdvisorCard'
@@ -154,28 +154,32 @@ export function ClientApp() {
         <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6">
             <Wordmark />
-            <span className="ml-auto text-[13px] text-ink-3">
-              {c.firstName} {c.lastName}
-            </span>
-            {lastSaved > 0 && (
-              <span className="hidden items-center gap-1.5 text-[13px] text-ink-3 sm:inline-flex">
-                <Check className="size-3.5" /> Saved {relativeTime(lastSaved)}
-              </span>
-            )}
-            {step !== 'welcome' && (
-              <button
-                type="button"
-                onClick={() => setTalk({ open: true })}
-                aria-label={`Comments, ${openThreads} open${unread ? `, ${unread} new` : ''}`}
-                className="relative inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] text-ink-2 ring-1 ring-line transition-colors ring-inset hover:bg-surface hover:text-ink hover:ring-line-strong"
-              >
-                <MessageCircle className="size-4" />
-                <span className="hidden sm:inline">Comments</span>
-                {openThreads > 0 && (
-                  <span className={cn('tabular flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[12px] font-medium', unread ? 'bg-advisor text-white' : 'bg-muted text-ink-2')}>{openThreads}</span>
-                )}
-              </button>
-            )}
+            <div className="ml-auto flex items-center gap-3">
+              {lastSaved > 0 && (
+                <Tooltip content={`Saved ${relativeTime(lastSaved)}`}>
+                  <span className="hidden items-center gap-1 text-[13px] text-ink-4 sm:inline-flex">
+                    <Check className="size-3.5" /> Saved
+                  </span>
+                </Tooltip>
+              )}
+              {step !== 'welcome' && (
+                <Tooltip content="Comments">
+                  <button
+                    type="button"
+                    onClick={() => setTalk({ open: true })}
+                    aria-label={`Comments, ${openThreads} open${unread ? `, ${unread} new` : ''}`}
+                    className="relative flex size-9 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-surface hover:text-ink"
+                  >
+                    <MessageCircle className="size-[18px]" />
+                    {openThreads > 0 && (
+                      <span className={cn('tabular absolute top-0.5 right-0 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium ring-2 ring-canvas', unread ? 'bg-advisor text-white' : 'bg-ink-2 text-white')}>
+                        {openThreads}
+                      </span>
+                    )}
+                  </button>
+                </Tooltip>
+              )}
+            </div>
           </div>
           {inSections && (
             <button type="button" onClick={() => setSheet(true)} className="flex h-12 w-full items-center gap-3 border-t border-line/70 px-6 text-left text-[13px] text-ink-2 lg:hidden">
