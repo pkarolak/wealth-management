@@ -46,7 +46,7 @@ export function CreateClient() {
         eyebrow={<NewClientSteps step={1} caseId={existing?.id} canAdvance={!!valid} />}
         title="Who are we onboarding?"
       />
-      <div className="grid max-w-4xl gap-4 px-10">
+      <div className="grid max-w-5xl gap-4 px-10">
         <Card padding="lg" inner={10} className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
             <h3 className="text-[15px] font-medium text-ink">Contact</h3>

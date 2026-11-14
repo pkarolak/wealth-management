@@ -43,7 +43,7 @@ export function Invite() {
   return (
     <div className="pb-16">
       <PageHeader eyebrow={<NewClientSteps step={2} caseId={c.id} />} title={`Invite ${c.firstName}`} />
-      <div className="grid gap-4 px-10 lg:grid-cols-[1fr_360px]">
+      <div className="grid max-w-5xl gap-4 px-10 lg:grid-cols-[1fr_340px]">
         <div className="flex flex-col gap-4">
           {phase === 'diff' ? (
             <EmailPreview
