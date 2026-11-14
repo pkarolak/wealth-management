@@ -57,12 +57,9 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
       {phase === 'input' && (
         <div className="flex flex-col gap-4">
           <VoiceInput transcript={introTranscript} onSubmit={submit} />
-          <div className="flex items-center gap-3">
-            <span className="text-[14px] text-ink-3">or</span>
-            <Button variant="secondary" size="lg" leading={<PencilLine className="size-4" />} onClick={() => nav.go('about')}>
-              Skip, I’ll fill in the form myself
-            </Button>
-          </div>
+          <Button variant="secondary" size="lg" className="self-start" leading={<PencilLine className="size-4" />} onClick={() => nav.go('about')}>
+            Skip to the form
+          </Button>
         </div>
       )}
       <AnimatePresence mode="wait" initial={false}>

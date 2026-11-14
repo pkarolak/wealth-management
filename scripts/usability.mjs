@@ -115,7 +115,7 @@ let token
   })
 
   await tryStep(P, 'Skip the voice intro', async () => {
-    const skip = page.getByRole('button', { name: /Skip, I’ll fill in the form myself/ })
+    const skip = page.getByRole('button', { name: /Skip to the form/ })
     const box = await skip.boundingBox()
     log(P, 'Skip the voice intro', `skip target ${Math.round(box.width)}×${Math.round(box.height)}px`)
     await skip.click()
