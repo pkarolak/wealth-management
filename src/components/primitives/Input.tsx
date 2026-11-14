@@ -1,4 +1,4 @@
-import { Calendar } from 'lucide-react'
+import { Calendar, Sparkles } from 'lucide-react'
 import { forwardRef, useEffect, useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { cn } from '../../lib/cn'
 
@@ -18,6 +18,9 @@ export const fieldTones: Record<FieldTone, string> = {
   error: 'border-danger/70 bg-surface hover:border-danger',
 }
 
+/** Marks an auto-filled value. Sits right after the text, so it reads as part of the answer rather than the label. */
+export const AiMark = () => <Sparkles aria-hidden strokeWidth={1.5} className="size-3 shrink-0 text-ai/50" />
+
 /** Floating label: placeholder-sized when empty, shrinks to the top-left on focus or value. */
 const floatLabel = (always: boolean, hasLeading: boolean) =>
   cn(
@@ -33,7 +36,7 @@ type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> & {
   trailing?: ReactNode
   tone?: FieldTone
   /** Floating label inside the field. Without it the field is a compact 44px input. */
-  label?: string
+  label?: ReactNode
   /** Keep the label at the top even when empty (used when a format hint is the placeholder). */
   floatAlways?: boolean
 }
@@ -63,6 +66,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         {...rest}
       />
       {leading && <span className="pointer-events-none absolute bottom-[9px] left-4 flex text-[15px] text-ink">{leading}</span>}
+      {tone === 'ai' && rest.value ? (
+        <span aria-hidden className={cn('pointer-events-none absolute right-11 bottom-[9px] flex items-center gap-1.5 overflow-hidden text-[15px] peer-focus:hidden', leading ? 'left-7' : 'left-4')}>
+          <span className="invisible whitespace-pre">{String(rest.value)}</span>
+          <AiMark />
+        </span>
+      ) : null}
       <label htmlFor={inputId} className={floatLabel(floatAlways, !!leading)}>
         {label}
       </label>
@@ -71,7 +80,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   )
 })
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { tone?: FieldTone; label?: string }>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement> & { tone?: FieldTone; label?: ReactNode }>(
   function Textarea({ className, tone = 'default', label, id, placeholder, ...rest }, ref) {
     const auto = useId()
     const tid = id ?? auto
@@ -113,7 +122,7 @@ const toDisplayDate = (iso?: string) => {
 }
 
 /** Masked MM / DD / YYYY input. Emits ISO (YYYY-MM-DD) once complete, '' otherwise. */
-export function DateInput({ value, onChange, tone = 'default', id, label }: { value?: string; onChange: (iso: string) => void; tone?: FieldTone; id?: string; label?: string }) {
+export function DateInput({ value, onChange, tone = 'default', id, label }: { value?: string; onChange: (iso: string) => void; tone?: FieldTone; id?: string; label?: ReactNode }) {
   const [text, setText] = useState(toDisplayDate(value))
   const [focused, setFocused] = useState(false)
   useEffect(() => setText(toDisplayDate(value)), [value])
@@ -148,7 +157,7 @@ export function DateInput({ value, onChange, tone = 'default', id, label }: { va
 const fmt = new Intl.NumberFormat('en-US')
 
 /** Currency input with live thousands separators. */
-export function MoneyInput({ value, onChange, tone = 'default', id, label, placeholder = '0', suffix }: { value?: number; onChange: (n: number | undefined) => void; tone?: FieldTone; id?: string; label?: string; placeholder?: string; suffix?: ReactNode }) {
+export function MoneyInput({ value, onChange, tone = 'default', id, label, placeholder = '0', suffix }: { value?: number; onChange: (n: number | undefined) => void; tone?: FieldTone; id?: string; label?: ReactNode; placeholder?: string; suffix?: ReactNode }) {
   return (
     <Input
       id={id}
@@ -170,7 +179,7 @@ export function MoneyInput({ value, onChange, tone = 'default', id, label, place
 }
 
 /** Percent input for rates. */
-export function PercentInput({ value, onChange, id, label }: { value?: number; onChange: (n: number | undefined) => void; id?: string; label?: string }) {
+export function PercentInput({ value, onChange, id, label }: { value?: number; onChange: (n: number | undefined) => void; id?: string; label?: ReactNode }) {
   const [text, setText] = useState(value === undefined ? '' : String(value))
   useEffect(() => setText(value === undefined ? '' : String(value)), [value])
   return (

@@ -35,15 +35,25 @@ export function FieldControl(props: Props) {
 /** Most fields are required, so only the exceptions are marked. A whole optional step isn't. */
 const isOptional = (def: FieldDef) => !def.required && def.type !== 'checkbox' && !sectionById[def.sectionId]?.optional
 
-function Control({ def: raw, value, onChange, tone = 'default', labelAside }: Props) {
-  const def = isOptional(raw) && !hasOuterLabel(raw) ? { ...raw, label: `${raw.label} (optional)` } : raw
+function Control({ def, value, onChange, tone = 'default', labelAside }: Props) {
   const id = `f-${def.id}`
+  const optional = isOptional(def)
+  const suffix = optional && !hasOuterLabel(def) ? ' (optional)' : ''
+  const name =
+    tone === 'ai' ? (
+      <>
+        {def.label + suffix}
+        <span className="sr-only"> (auto-filled)</span>
+      </>
+    ) : (
+      def.label + suffix
+    )
   const str = typeof value === 'string' ? value : value === undefined || value === null ? '' : String(value)
 
   const outer = (control: ReactNode) => (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-1.5">
-        <Label hint={isOptional(def) ? '(optional)' : undefined}>{def.label}</Label>
+        <Label hint={optional ? '(optional)' : undefined}>{name}</Label>
         {labelAside}
       </div>
       {control}
@@ -52,13 +62,13 @@ function Control({ def: raw, value, onChange, tone = 'default', labelAside }: Pr
 
   switch (def.type) {
     case 'select':
-      return <Select id={id} label={def.label} value={str} onChange={onChange} options={def.options ?? []} tone={tone} />
+      return <Select id={id} label={name} value={str} onChange={onChange} options={def.options ?? []} tone={tone} />
     case 'date':
-      return <DateInput id={id} label={def.label} value={str} onChange={onChange} tone={tone} />
+      return <DateInput id={id} label={name} value={str} onChange={onChange} tone={tone} />
     case 'money':
-      return <MoneyInput id={id} label={def.label} value={typeof value === 'number' ? value : undefined} onChange={onChange} tone={tone} />
+      return <MoneyInput id={id} label={name} value={typeof value === 'number' ? value : undefined} onChange={onChange} tone={tone} />
     case 'textarea':
-      return <Textarea id={id} label={def.label} placeholder={def.placeholder} value={str} onChange={(e) => onChange(e.target.value)} tone={tone} />
+      return <Textarea id={id} label={name} placeholder={def.placeholder} value={str} onChange={(e) => onChange(e.target.value)} tone={tone} />
     case 'checkbox':
       return (
         <Checkbox
@@ -67,11 +77,11 @@ function Control({ def: raw, value, onChange, tone = 'default', labelAside }: Pr
           label={
             labelAside ? (
               <span className="inline-flex flex-wrap items-center gap-x-2">
-                {def.label}
+                {name}
                 {labelAside}
               </span>
             ) : (
-              def.label
+              name
             )
           }
         />
@@ -83,12 +93,12 @@ function Control({ def: raw, value, onChange, tone = 'default', labelAside }: Pr
     case 'chips':
       return outer(<ChipGroup value={Array.isArray(value) ? (value as string[]) : []} onChange={onChange} options={def.options ?? []} />)
     case 'sensitive':
-      return <SensitiveInput id={id} label={def.label} value={str} onChange={onChange} tone={tone} />
+      return <SensitiveInput id={id} label={name} value={str} onChange={onChange} tone={tone} />
     default:
       return (
         <Input
           id={id}
-          label={def.label}
+          label={name}
           type={def.type === 'email' ? 'email' : def.type === 'tel' ? 'tel' : 'text'}
           value={str}
           onChange={(e) => onChange(def.type === 'tel' ? formatPhone(e.target.value) : maskValue(def, e.target.value))}
@@ -108,7 +118,7 @@ const formatPhone = (raw: string) => {
 }
 
 /** SSN: masked to the last four unless revealed; formats as you type. */
-function SensitiveInput({ id, label, value, onChange, tone }: { id: string; label: string; value: string; onChange: (v: string) => void; tone: FieldTone }) {
+function SensitiveInput({ id, label, value, onChange, tone }: { id: string; label: ReactNode; value: string; onChange: (v: string) => void; tone: FieldTone }) {
   const [reveal, setReveal] = useState(false)
   const digits = value.replace(/\D/g, '')
   const formatted = [digits.slice(0, 3), digits.slice(3, 5), digits.slice(5, 9)].filter(Boolean).join('-')

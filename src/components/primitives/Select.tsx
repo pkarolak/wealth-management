@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react'
 import * as RSelect from '@radix-ui/react-select'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '../../lib/cn'
-import { fieldTones, type FieldTone } from './Input'
+import { AiMark, fieldTones, type FieldTone } from './Input'
 
 export type Option = { value: string; label: string; description?: string }
 
@@ -11,7 +12,7 @@ type SelectProps = {
   options: Option[]
   placeholder?: string
   /** Floating label inside the trigger (same behaviour as Input). */
-  label?: string
+  label?: ReactNode
   id?: string
   tone?: FieldTone
   className?: string
@@ -36,7 +37,12 @@ export function Select({ value, onChange, options, placeholder = 'Select…', la
         {label ? (
           <span className="flex min-w-0 flex-col">
             <span className={cn('text-ink-3 transition-all', selected ? 'text-[12px]' : 'text-[15px]')}>{label}</span>
-            {selected && <span className="truncate leading-tight">{selected.label}</span>}
+            {selected && (
+              <span className="flex min-w-0 items-center gap-1.5 leading-tight">
+                <span className="truncate">{selected.label}</span>
+                {tone === 'ai' && <AiMark />}
+              </span>
+            )}
             <span className="hidden">
               <RSelect.Value />
             </span>
