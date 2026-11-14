@@ -31,7 +31,7 @@ export function CommentsDrawer({
     <Drawer
       open={open}
       onOpenChange={onOpenChange}
-      title={`Messages with ${first}`}
+      title="Comments"
       aside={openCount > 0 && <span className="text-[13px] text-ink-4">{openCount} open</span>}
       footer={
         <CommentComposer
