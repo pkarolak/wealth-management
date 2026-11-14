@@ -203,7 +203,7 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
           aria-label={label ? undefined : askLabel}
           className={cn(
             floating
-              ? 'relative before:absolute before:-inset-x-1 before:-inset-y-2.5 inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-surface pr-2.5 pl-2 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong'
+              ? 'relative before:absolute before:-inset-x-1 before:-inset-y-2.5 inline-flex h-6 min-w-6 shrink-0 items-center justify-center gap-1 rounded-full bg-surface px-1.5 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong'
               : cn(
                   'inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-control text-[13px] whitespace-nowrap transition-colors',
                   compact && !has ? 'w-7' : 'px-2',
@@ -213,7 +213,7 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
           )}
         >
           <MessageCircle className={floating ? 'size-3' : 'size-3.5'} />
-          {label ?? (floating ? (has ? `${count}` : askLabel) : has ? `${count}` : compact ? null : askLabel)}
+          {label ?? (floating ? (has ? <span className="pr-0.5">{count}</span> : null) : has ? `${count}` : compact ? null : askLabel)}
           {unread > 0 && <CountDot count={unread} className="-mr-1" />}
         </button>
       }

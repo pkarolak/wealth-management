@@ -1,6 +1,6 @@
-import { ArrowRight, Wand2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { Button, Card, ChipGroup, Input, Label, Segmented, Switch, Textarea } from '../../components/primitives'
 import { accountEffects, accountTypeOptions, sectionById, type SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
@@ -19,10 +19,13 @@ export function CreateClient() {
   const updateCase = useStore((s) => s.updateCaseDetails)
   const { caseId } = useParams()
   const existing = useCase(caseId)
+  const [params] = useSearchParams()
   const [f, setF] = useState<Form>(() =>
     existing
       ? { firstName: existing.firstName, lastName: existing.lastName, email: existing.email, phone: existing.phone ?? '', household: existing.household, accountTypes: existing.accountTypes, optionalSections: existing.optionalSections, note: existing.note }
-      : empty,
+      : params.has('demo')
+        ? { ...demoNewClient }
+        : empty,
   )
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }))
   const effects = accountEffects(f.accountTypes, f.household)
@@ -42,13 +45,8 @@ export function CreateClient() {
       <PageHeader
         eyebrow={<NewClientSteps step={1} caseId={existing?.id} canAdvance={!!valid} />}
         title="Who are we onboarding?"
-        actions={
-          !existing && <Button variant="ghost" leading={<Wand2 className="size-4" />} onClick={() => setF({ ...demoNewClient })}>
-            Fill with demo client
-          </Button>
-        }
       />
-      <div className="grid gap-4 px-10 lg:grid-cols-[1fr_340px]">
+      <div className="grid max-w-4xl gap-4 px-10">
         <Card padding="lg" inner={10} className="flex flex-col gap-8">
           <section className="flex flex-col gap-3">
             <h3 className="text-[15px] font-medium text-ink">Contact</h3>
@@ -134,13 +132,6 @@ export function CreateClient() {
           </div>
         </Card>
 
-        <aside className="flex flex-col gap-3 text-[14px] text-ink-3">
-          <Card tone="muted" padding="lg" inner={0} className="flex flex-col gap-3 leading-relaxed">
-            <span className="font-medium text-ink">What happens next</span>
-            <p>We create a private link for the client. They can fill it in on their own time, by voice or by uploading statements.</p>
-            <p>You’ll see their progress live and answer questions right on a field. When they send it, you get a completed CIF for the paperwork and a brief for your strategy meeting.</p>
-          </Card>
-        </aside>
       </div>
     </div>
   )

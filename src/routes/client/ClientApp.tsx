@@ -3,7 +3,8 @@ import { Check, ChevronDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router'
 import { CaseProvider, ProgressRail, type RailItem } from '../../components/patterns'
-import { Avatar, Dialog, ProgressBar, toast } from '../../components/primitives'
+import { Dialog, ProgressBar, toast } from '../../components/primitives'
+import { relativeTime } from '../../lib/format'
 import { AdvisorCard } from './AdvisorCard'
 import { Wordmark } from '../../components/shell/Brand'
 import type { SectionId } from '../../schema/onboarding'
@@ -99,6 +100,7 @@ export function ClientApp() {
   }
 
   const visible = visibleSections(c)
+  const lastSaved = Math.max(0, ...Object.values(c.fields).filter((f) => f.updatedBy === c.clientId).map((f) => f.updatedAt ?? 0), ...c.items.map((i) => i.updatedAt ?? 0))
   const activeRail = sectionId ?? (step === 'requests' ? 'requests' : undefined)
   const rail = (onPick?: () => void) => (
     <ProgressRail
@@ -145,13 +147,14 @@ export function ClientApp() {
         <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6">
             <Wordmark />
-            <span className="ml-auto hidden items-center gap-1.5 text-[13px] text-ink-4 sm:inline-flex">
-              <Check className="size-3.5" /> Saved
+            <span className="ml-auto text-[13px] text-ink-3">
+              {c.firstName} {c.lastName}
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full p-0.5 pr-3 text-[13px] text-ink-2">
-              <Avatar name={`${c.firstName} ${c.lastName}`} src={people[c.clientId]?.avatar} size="sm" />
-              {c.firstName}
-            </span>
+            {lastSaved > 0 && (
+              <span className="hidden items-center gap-1.5 text-[13px] text-ink-3 sm:inline-flex">
+                <Check className="size-3.5" /> Saved {relativeTime(lastSaved)}
+              </span>
+            )}
           </div>
           {inSections && (
             <button type="button" onClick={() => setSheet(true)} className="flex h-12 w-full items-center gap-3 border-t border-line/70 px-6 text-left text-[13px] text-ink-2 lg:hidden">

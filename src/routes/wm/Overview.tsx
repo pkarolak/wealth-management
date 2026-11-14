@@ -1,4 +1,5 @@
 import { ArrowRight, BellRing, CalendarClock, Check, FileText, Hourglass, MessageCircle, PencilLine, Plus, Send } from 'lucide-react'
+import { clock } from '../../lib/time'
 import { useMemo, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Avatar, Button, Card, CardHeader, toast } from '../../components/primitives'
@@ -144,7 +145,7 @@ function Onboarding({ cases }: { cases: ClientCase[] }) {
           </span>
         )}
       </div>
-      <div className="hidden grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_220px] gap-x-6 px-3 pb-1 text-[11px] tracking-wide text-ink-4 uppercase md:grid">
+      <div className={cn('hidden grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1.2fr)_220px] gap-x-6 px-3 pb-1 text-[11px] tracking-wide text-ink-3 uppercase', cases.length > 0 && 'md:grid')}>
         <span>Client</span>
         <span>Progress</span>
         <span>Latest from client</span>
@@ -167,7 +168,7 @@ type Todo = { id: string; c: ClientCase; icon: ReactNode; tone: keyof typeof ton
 const toneClass = { advisor: 'bg-advisor-soft text-advisor', progress: 'bg-progress-soft text-progress-ink', ai: 'bg-ai-soft text-ai', ink: 'bg-muted text-ink-2', waiting: 'bg-waiting-soft text-waiting' }
 
 const meetingLabel = (at: number) =>
-  `${new Date(at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}, ${new Date(at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+  `${new Date(at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}, ${clock(at)}`
 
 function collectTodos(cases: ClientCase[]) {
   const mine: Todo[] = []
@@ -221,7 +222,7 @@ function TodoRow({ t }: { t: Todo }) {
 function Attention({ cases }: { cases: ClientCase[] }) {
   const { mine, waiting } = collectTodos(cases)
   return (
-    <Card padding="sm" inner={18} className="flex max-h-[420px] flex-col">
+    <Card padding="sm" inner={18} className={cn('flex max-h-[420px] flex-col', !mine.length && !waiting.length && 'self-start')}>
       <div className="flex items-baseline justify-between px-3 pt-2 pb-2">
         <h3 className="text-[15px] font-medium text-ink">Needs your attention</h3>
         <span className="text-[13px] text-ink-4">{mine.length ? `${mine.length} to do` : 'All caught up'}</span>
@@ -273,6 +274,12 @@ export function Overview() {
 
         <Card padding="sm" inner={16} className="lg:col-span-2">
           <div className="px-3 pt-2 pb-3 text-[15px] font-medium text-ink">Households</div>
+          <div className="hidden grid-cols-[minmax(0,1.4fr)_140px_120px_100px] gap-4 px-3 pb-1 text-[11px] tracking-wide text-ink-3 uppercase md:grid">
+            <span>Household</span>
+            <span>Stage</span>
+            <span>Assets</span>
+            <span className="text-right">Last activity</span>
+          </div>
           <div className="flex flex-col">
             {pipeline.map((p) => (
               <div key={p.id} className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-[16px] p-3 md:grid-cols-[minmax(0,1.4fr)_140px_120px_100px]">

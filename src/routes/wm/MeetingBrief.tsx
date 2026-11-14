@@ -113,8 +113,8 @@ export function MeetingBrief() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-[20px] font-medium text-ink">Snapshot</h2>
-            <NetWorthSummary totals={totals} items={c.items} />
+            <h2 className="text-[20px] font-medium text-ink">Where the money is</h2>
+            <NetWorthSummary totals={totals} items={c.items} breakdownOnly />
             {c.goals.length > 0 && (
               <div className="grid gap-3 sm:grid-cols-3">
                 {c.goals.map((g) => (
@@ -155,10 +155,13 @@ function TopicCard({ t, on, onToggle, compact }: { t: Topic; on: boolean; onTogg
         <p className="text-[14px] leading-relaxed text-ink-3">{t.why}</p>
       </div>
       <div className={cn('mt-auto flex gap-3', compact ? 'flex-col items-stretch [&>button]:self-end' : 'flex-wrap items-end')}>
-        <p className="flex min-w-0 flex-1 gap-2 rounded-[14px] bg-muted/70 px-3 py-2.5 text-[13px] leading-relaxed text-ink-2">
-          <MessageCircle className="mt-[3px] size-3.5 shrink-0 text-ink-4" />
-          <span>{t.ask}</span>
-        </p>
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <p className="flex gap-2 rounded-[14px] bg-muted/70 px-3 py-2.5 text-[13px] leading-relaxed text-ink-2">
+            <MessageCircle className="mt-[3px] size-3.5 shrink-0 text-ink-3" />
+            <span>“{t.ask}”</span>
+          </p>
+          {t.note && <p className="px-1 text-[12px] leading-relaxed text-ink-3">Note: {t.note}</p>}
+        </div>
         <Button size="md" variant={on ? 'ghost' : 'secondary'} leading={on ? <Check className="size-4" /> : <Plus className="size-4" />} onClick={onToggle}>
           {on ? 'On agenda' : 'Add to agenda'}
         </Button>

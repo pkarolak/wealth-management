@@ -12,6 +12,7 @@ import { StepFooter, StepHeader } from './StepChrome'
 export function RiskStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const { setRisk, confirmRisk, setSectionProgress } = useStore.getState()
   const score = scoreRisk(c.risk)
+  const advisorFirst = useStore((s) => s.people[c.advisorId]?.name.split(' ')[0] ?? 'your Wealth Manager')
   const level = score ? riskProfiles.findIndex((p) => p.label === score.label) : -1
 
   return (
@@ -72,7 +73,7 @@ export function RiskStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
                       <Button size="sm" leading={<Check className="size-3.5" />} onClick={() => confirmRisk(c.id, c.clientId)}>
                         Sounds like me
                       </Button>
-                      <AskAdvisorButton anchor={{ sectionId: 'risk' }} title="Risk profile" label="Not quite" />
+                      <AskAdvisorButton anchor={{ sectionId: 'risk' }} title="Risk profile" label={`Talk it through with ${advisorFirst}`} />
                     </div>
                   ))}
               </>

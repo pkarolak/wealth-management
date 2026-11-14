@@ -117,7 +117,11 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
               <div className="flex h-10 items-center gap-3 pl-3">
                 <StatusIcon status={state === 'done' ? 'done' : state === 'progress' ? 'progress' : 'idle'} />
                 <span className="min-w-0 truncate text-[15px] font-medium text-ink">{s.title}</span>
-                {open.length > 0 && <span className="text-[13px] whitespace-nowrap text-progress-ink">{open.join(' · ')}</span>}
+                {open.length > 0 && (
+                  <button type="button" onClick={() => nav.go(s.id as Step)} className="text-[13px] whitespace-nowrap text-progress-ink underline decoration-progress/40 underline-offset-[3px] hover:decoration-progress-ink">
+                    {open.join(' · ')}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => nav.go(s.id as Step)}
@@ -147,6 +151,11 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <div className="flex flex-col gap-1">
           <h2 className="text-[17px] text-ink">Confirm and send</h2>
           <p className="text-[14px] text-ink-3">{first} and her team use this to open your accounts and prepare your plan. You can still change answers after sending.</p>
+          {(pending > 0 || missing > 0) && (
+            <p className="text-[14px] text-progress-ink">
+              {[pending > 0 && `${pending} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. Fine to send now; {first} will cover them with you.
+            </p>
+          )}
         </div>
         <Checkbox checked={accurate} onChange={setAccurate} label="The information I’ve provided is accurate to the best of my knowledge." />
         <div className="flex max-w-md flex-col gap-1.5">

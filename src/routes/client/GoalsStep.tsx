@@ -1,6 +1,6 @@
 import { Plus, Sparkles } from 'lucide-react'
 import { useState } from 'react'
-import { AskAdvisorButton, GoalCard, goalMeta } from '../../components/patterns'
+import { GoalCard, goalMeta } from '../../components/patterns'
 import { Button, Chip, Dialog, Input, Label, MoneyInput, Segmented, Textarea } from '../../components/primitives'
 import { useStore } from '../../store/caseStore'
 import type { ClientCase, Goal, GoalKind } from '../../store/types'
@@ -26,23 +26,23 @@ export function GoalsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
   return (
     <div>
-      <StepHeader c={c} sectionId="goals" aside={<AskAdvisorButton anchor={{ sectionId: 'goals' }} title="Your goals" floating />} />
+      <StepHeader c={c} sectionId="goals" />
 
       {drafts > 0 && (
         <div className="mb-6 inline-flex items-center gap-2 text-[14px] text-ai">
-          <Sparkles className="size-4" /> {drafts} goals drafted from your intro. Approve, edit or remove them.
+          <Sparkles className="size-4" /> {drafts} {drafts === 1 ? 'goal' : 'goals'} from your intro, outlined in blue. Edit or remove any; Continue saves the rest.
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {c.goals.map((g) => (
-          <GoalCard key={g.id} goal={g} onClick={() => setEdit({ ...g })} onAccept={() => updateGoal(c.id, g.id, { draft: false })} onRemove={() => removeGoal(c.id, g.id)} />
+          <GoalCard key={g.id} goal={g} onClick={() => setEdit({ ...g })} onRemove={() => removeGoal(c.id, g.id)} />
         ))}
-        <button type="button" onClick={() => setEdit(blank())} className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-[26px] border border-dashed border-line-strong text-[14px] text-ink-3 transition-colors hover:border-ink-4 hover:text-ink">
-          <Plus className="size-5" />
-          Add a goal
-        </button>
       </div>
+      <button type="button" onClick={() => setEdit(blank())} className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-line-strong text-[14px] text-ink-3 transition-colors hover:border-ink-4 hover:text-ink">
+        <Plus className="size-4" />
+        Add a goal
+      </button>
 
       <Dialog
         open={!!edit}
@@ -114,20 +114,12 @@ export function GoalsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
       <StepFooter
         onBack={nav.back}
-        hint={drafts ? 'Skipped drafts stay here as suggestions.' : c.goals.length ? undefined : 'Add at least one goal, or skip and talk about it in the meeting.'}
-        nextLabel={drafts ? `Approve ${drafts} and continue` : 'Continue'}
+        hint={c.goals.length ? undefined : 'Add at least one goal, or skip and talk about it in the meeting.'}
         onNext={() => {
           if (drafts) c.goals.filter((g) => g.draft).forEach((g) => updateGoal(c.id, g.id, { draft: false }))
           setSectionProgress(c.id, 'goals', c.goals.length ? 'done' : 'progress', c.clientId)
           nav.next()
         }}
-        extra={
-          drafts > 0 && (
-            <Button variant="ghost" size="lg" onClick={() => (setSectionProgress(c.id, 'goals', 'progress', c.clientId), nav.next())}>
-              Skip for now
-            </Button>
-          )
-        }
       />
     </div>
   )

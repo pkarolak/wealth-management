@@ -62,7 +62,7 @@ export const sections: SectionDef[] = [
   { id: 'risk', title: 'How you feel about risk', short: 'Risk', wmTitle: 'Risk profile', wmShort: 'Risk', description: 'A few scenarios. There are no wrong answers.', minutes: 2, kind: 'risk' },
   { id: 'estate', title: 'Family & protection', short: 'Estate', wmTitle: 'Family & protection', wmShort: 'Estate', description: 'Wills, insurance and the people who help you.', minutes: 2, kind: 'form', optional: true },
   { id: 'required', title: 'A few required questions', short: 'Required', wmTitle: 'Regulatory questions', wmShort: 'Required', description: 'Every U.S. investment firm asks these before opening an account. Most people answer “no” and move on.', minutes: 2, kind: 'form' },
-  { id: 'review', title: 'Review & send', short: 'Review', wmTitle: 'Review & submit', wmShort: 'Review', description: 'Check everything once, then send it to your Wealth Manager.', minutes: 2, kind: 'review' },
+  { id: 'review', title: 'Check and send', short: 'Send', wmTitle: 'Client confirmation', wmShort: 'Confirmation', description: 'Check everything once, then send it to your Wealth Manager.', minutes: 2, kind: 'review' },
 ]
 
 export const sectionById = Object.fromEntries(sections.map((s) => [s.id, s])) as Record<SectionId, SectionDef>

@@ -5,7 +5,8 @@ import { AccountTile, CaseProvider, GoalCard, NetWorthSummary, PresenceStatus } 
 import { Badge, Button, Card, ProgressBar, StatusIcon, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { relativeTime } from '../../lib/format'
-import { fieldsFor, isVisible, type SectionDef, type SectionId } from '../../schema/onboarding'
+import { fieldsFor, isFilled, isVisible, type SectionDef, type SectionId } from '../../schema/onboarding'
+import { fieldError } from '../../schema/validation'
 import { riskQuestions, scoreRisk } from '../../schema/risk'
 import { useStore } from '../../store/caseStore'
 import { useCase, usePublishPresence } from '../../store/hooks'
@@ -114,7 +115,8 @@ function SectionReview({ c, s, onHover }: { c: ClientCase; s: SectionDef; onHove
   const state = sectionState(c, s.id)
   const stats = sectionStats(c, s.id)
   const reviewed = !!c.advisorReviewed[s.id]
-  const [open, setOpen] = useState((state === 'done' && !reviewed) || state === 'progress' || stats.needsReview > 0)
+  const [open, setOpen] = useState((state === 'done' && !reviewed) || stats.needsReview > 0)
+  const [showAll, setShowAll] = useState(false)
   useEffect(() => {
     const onOpen = (e: Event) => (e as CustomEvent<SectionId>).detail === s.id && setOpen(true)
     window.addEventListener(OPEN_SECTION, onOpen)
@@ -122,6 +124,25 @@ function SectionReview({ c, s, onHover }: { c: ClientCase; s: SectionDef; onHove
   }, [s.id])
   const values = caseValues(c)
   const defs = fieldsFor(s.id).filter((f) => isVisible(f, values))
+  const isException = (f: (typeof defs)[number]) => {
+    const st = c.fields[f.id]
+    return st?.status === 'needs_review' || !!st?.suggestion || !!st?.deferred || !!fieldError(f, st?.value) || (f.required && !isFilled(st?.value))
+  }
+  const exceptions = defs.filter(isException)
+  const rows = showAll || !exceptions.length ? defs : exceptions
+  const missing = defs.filter((f) => f.required && !c.fields[f.id]?.deferred && !isFilled(c.fields[f.id]?.value)).length
+  const fieldRows = (
+    <>
+      {rows.map((d) => (
+        <ReviewRow key={d.id} c={c} def={d} onHover={onHover} />
+      ))}
+      {exceptions.length > 0 && exceptions.length < defs.length && (
+        <button type="button" onClick={() => setShowAll((v) => !v)} className="mx-3 my-1 self-start text-[13px] text-ink-3 underline decoration-line-strong underline-offset-[3px] hover:text-ink">
+          {showAll ? `Show only the ${exceptions.length} that need attention` : `Show all ${defs.length} fields`}
+        </button>
+      )}
+    </>
+  )
 
   return (
     <Card id={`review-${s.id}`} padding="sm" inner={10} className="scroll-mt-6">
@@ -134,22 +155,22 @@ function SectionReview({ c, s, onHover }: { c: ClientCase; s: SectionDef; onHove
             {stats.suggestions} {stats.suggestions === 1 ? 'draft' : 'drafts'} pending
           </Badge>
         )}
-        <span className="tabular text-[13px] text-ink-4">
-          {stats.filled}/{stats.total}
-        </span>
+        {s.kind === 'form' || s.kind === 'risk' ? (
+          <span className="tabular text-[13px] text-ink-3">{state === 'idle' ? 'Not started' : missing ? `${missing} missing` : 'Complete'}</span>
+        ) : (
+          <span className="text-[13px] text-ink-3">{state === 'idle' ? 'Not started' : state === 'done' ? 'Complete' : 'In progress'}</span>
+        )}
         <ChevronDown className={cn('size-4 text-ink-4 transition-transform', open && 'rotate-180')} />
       </button>
       {open && (
         <div className="flex flex-col gap-1 pt-1">
-          {s.kind === 'form' && defs.map((d) => <ReviewRow key={d.id} c={c} def={d} onHover={onHover} />)}
+          {s.kind === 'form' && fieldRows}
           {s.kind === 'goals' && <GoalsReview c={c} />}
           {s.kind === 'networth' && <NetWorthReview c={c} />}
           {s.kind === 'risk' && (
             <>
               <RiskReview c={c} />
-              {defs.map((d) => (
-                <ReviewRow key={d.id} c={c} def={d} onHover={onHover} />
-              ))}
+              {fieldRows}
             </>
           )}
           {s.kind === 'review' && <p className="px-3 pb-2 text-[14px] text-ink-3">{c.signature ? `Confirmed by ${c.signature} on ${new Date(c.submittedAt ?? Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}.` : `${c.firstName} hasn’t confirmed yet.`}</p>}

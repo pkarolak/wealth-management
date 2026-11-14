@@ -11,7 +11,7 @@ export const fieldBase =
 /** Border and fill live only here so a tone never competes with base classes. */
 export const fieldTones: Record<FieldTone, string> = {
   default: 'border-line bg-surface hover:border-line-strong',
-  ai: 'border-ai/35 bg-ai-soft/60 hover:border-ai/55',
+  ai: 'border-ai/45 bg-surface hover:border-ai/70',
   advisor: 'border-advisor/35 bg-advisor-soft/50 hover:border-advisor/55',
   warning: 'border-progress/55 bg-progress-soft/60',
   error: 'border-danger/70 bg-surface hover:border-danger',

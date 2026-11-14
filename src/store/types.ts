@@ -152,7 +152,7 @@ export type ClientCase = {
   openedAt?: number
   submittedAt?: number
   signature?: string
-  meeting?: { at: number; mode: 'video' | 'office' }
+  meeting?: { at: number; mode: 'video' | 'office'; zone?: string }
   agenda?: { items: AgendaItem[]; sharedAt?: number; updatedAt: number }
   introDone?: boolean
   /** Client agreed to share their information with the firm. */

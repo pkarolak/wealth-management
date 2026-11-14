@@ -237,7 +237,8 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 export type TopicTag = 'Planning' | 'Open question' | 'To collect' | 'To verify'
 
 /** A conversation worth having: what we noticed, why it matters, and how to open it. */
-export type Topic = { id: string; tag: TopicTag; priority: 'high' | 'medium'; title: string; why: string; ask: string; minutes: number }
+/** `ask` is what the Wealth Manager could say out loud; `note` is internal guidance that stays off the script. */
+export type Topic = { id: string; tag: TopicTag; priority: 'high' | 'medium'; title: string; why: string; ask: string; note?: string; minutes: number }
 
 export type Brief = { headline: string; topics: Topic[]; suggestedAgenda: { title: string; minutes: number; topicId?: string }[] }
 
@@ -266,7 +267,8 @@ export function meetingBrief(
       priority: 'high',
       title: 'Employer stock, not valued yet',
       why: `${unvaluedEquity.name} came up in the intro but has no balance. Likely a large share of assets.`,
-      ask: 'How much is vested, what’s the next vest, and how do you feel about holding this much in one company?',
+      ask: 'How much of your company stock is vested, and when is the next vest? How do you feel about holding that much in one company?',
+      note: 'Ask for the stock plan statement before the meeting so you can size it.',
       minutes: 15,
     })
   if (conc >= 15)
@@ -286,7 +288,8 @@ export function meetingBrief(
       priority: 'high',
       title: 'Roll over the old 401(k)',
       why: oldPlan.value ? `${fmt(oldPlan.value)}${oldPlan.institution ? ` at ${oldPlan.institution}` : ''}, still with a previous employer.` : 'Still with a previous employer. Balance not known yet.',
-      ask: 'What do you like about the plan today? Compare fees, investment options and services before recommending a rollover, and document why.',
+      ask: 'What do you like about your old plan today?',
+      note: 'Compare fees, investment options and services before recommending a rollover, and document the reasons.',
       minutes: 10,
     })
   if (nearGoal && nearGoal.targetYear && nearGoal.targetYear - year <= 5 && nearGoal.amount)

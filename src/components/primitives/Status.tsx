@@ -11,7 +11,7 @@ export function StatusIcon({ status, size = 18, faded }: { status: StatusKind; s
   const style = { opacity: faded ? 0.5 : 1 }
   if (status === 'done') {
     return (
-      <svg width={size} height={size} viewBox="0 0 18 18" style={style} aria-label="Done">
+      <svg role="img" width={size} height={size} viewBox="0 0 18 18" style={style} aria-label="Done">
         <circle cx={c} cy={c} r={8} fill={color.ink} />
         <path d="M5.6 9.2l2.2 2.2 4.6-4.7" stroke="#fff" strokeWidth={1.8} fill="none" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -19,7 +19,7 @@ export function StatusIcon({ status, size = 18, faded }: { status: StatusKind; s
   }
   if (status === 'attention') {
     return (
-      <svg width={size} height={size} viewBox="0 0 18 18" style={style} aria-label="Needs attention">
+      <svg role="img" width={size} height={size} viewBox="0 0 18 18" style={style} aria-label="Needs attention">
         <circle cx={c} cy={c} r={8} fill={color.danger} />
         <path d="M9 5v5" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" />
         <circle cx={c} cy={12.6} r={1} fill="#fff" />
@@ -28,7 +28,7 @@ export function StatusIcon({ status, size = 18, faded }: { status: StatusKind; s
   }
   if (status === 'idle') {
     return (
-      <svg width={size} height={size} viewBox="0 0 18 18" style={style} aria-label="Not started">
+      <svg role="img" width={size} height={size} viewBox="0 0 18 18" style={style} aria-label="Not started">
         <circle cx={c} cy={c} r={r} fill="none" stroke={color.ink4} strokeWidth={1.6} strokeDasharray="2.4 2.4" />
       </svg>
     )
@@ -36,7 +36,7 @@ export function StatusIcon({ status, size = 18, faded }: { status: StatusKind; s
   const tint = status === 'waiting' ? color.waiting : color.progress
   const pie = status === 'waiting' ? `M${c} ${c} L${c} ${c - 4.6} A4.6 4.6 0 1 1 ${c - 4.6} ${c} Z` : `M${c} ${c - 4.6} A4.6 4.6 0 0 1 ${c} ${c + 4.6} Z`
   return (
-    <svg width={size} height={size} viewBox="0 0 18 18" style={style} aria-label={status === 'waiting' ? 'Waiting' : 'In progress'}>
+    <svg role="img" width={size} height={size} viewBox="0 0 18 18" style={style} aria-label={status === 'waiting' ? 'Waiting' : 'In progress'}>
       <circle cx={c} cy={c} r={r} fill="none" stroke={tint} strokeWidth={1.8} />
       <path d={pie} fill={tint} />
     </svg>

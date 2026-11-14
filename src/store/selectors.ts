@@ -44,6 +44,23 @@ export const visibleSections = (c: ClientCase): SectionDef[] => sections.filter(
 
 export type SectionStats = { total: number; filled: number; required: number; requiredFilled: number; suggestions: number; needsReview: number; deferred: number }
 
+/** Values with pending drafts filled in, so conditional fields follow the draft when there's no answer yet. */
+export function mergedValues(c: ClientCase) {
+  const values = caseValues(c)
+  return { ...values, ...Object.fromEntries(Object.entries(c.fields).filter(([k, f]) => f.suggestion && values[k] === undefined).map(([k, f]) => [k, f.suggestion?.value])) }
+}
+
+/** Drafts waiting in a form section: empty fields with a draft, and answered fields with a suggested change. The rail, banner and footer all count from here. */
+export function draftsIn(c: ClientCase, sectionId: SectionId) {
+  const values = caseValues(c)
+  const merged = mergedValues(c)
+  const visible = fieldsFor(sectionId).filter((f) => isVisible(f, merged) && c.fields[f.id]?.suggestion)
+  return {
+    fills: visible.filter((f) => !isFilled(values[f.id])).map((f) => f.id),
+    changes: visible.filter((f) => isFilled(values[f.id])).map((f) => f.id),
+  }
+}
+
 export function sectionStats(c: ClientCase, sectionId: SectionId): SectionStats {
   const values = caseValues(c)
   const s: SectionStats = { total: 0, filled: 0, required: 0, requiredFilled: 0, suggestions: 0, needsReview: 0, deferred: 0 }
@@ -83,10 +100,11 @@ export function sectionStats(c: ClientCase, sectionId: SectionId): SectionStats 
       s.required++
       if (filled) s.requiredFilled++
     }
-    if (st?.suggestion) s.suggestions++
     if (st?.status === 'needs_review') s.needsReview++
     if (st?.deferred) s.deferred++
   }
+  const d = draftsIn(c, sectionId)
+  s.suggestions = d.fills.length + d.changes.length
   return s
 }
 

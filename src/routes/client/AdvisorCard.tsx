@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AskAdvisorButton } from '../../components/patterns'
 import { Avatar, Dialog } from '../../components/primitives'
 import { cn } from '../../lib/cn'
+import { clock } from '../../lib/time'
 import { usePresenceOf } from '../../store/hooks'
 import { useStore } from '../../store/caseStore'
 import type { SectionId } from '../../schema/onboarding'
@@ -31,7 +32,7 @@ export function AdvisorCard({ c, sectionId, className }: { c: ClientCase; sectio
       </div>
       <p className="px-2 text-[12px] leading-[18px] text-ink-3">
         {c.meeting
-          ? `Meeting ${fmtDay(new Date(c.meeting.at))}, ${new Date(c.meeting.at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+          ? `Meeting ${fmtDay(new Date(c.meeting.at))}, ${clock(c.meeting.at, c.meeting.zone)}`
           : here
             ? `${first} is online now`
             : `Usually replies within a few hours`}

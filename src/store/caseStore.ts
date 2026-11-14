@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { uid } from '../lib/format'
+import { clock, OFFICE_ZONE } from '../lib/time'
 import { fieldById, sectionById, type SectionId } from '../schema/onboarding'
 import type { FieldDraft } from '../services/ai'
 import { ADVISOR_ID, staff } from './seed'
@@ -81,7 +82,7 @@ type Actions = {
   setSectionProgress: (caseId: string, sectionId: SectionId, progress: SectionProgress, actorId: string) => void
   markSectionReviewed: (caseId: string, sectionId: SectionId, reviewed: boolean) => void
   submit: (caseId: string, signature: string) => void
-  scheduleMeeting: (caseId: string, at: number, mode: 'video' | 'office') => void
+  scheduleMeeting: (caseId: string, at: number, mode: 'video' | 'office', zone?: string) => void
   setAgenda: (caseId: string, items: AgendaItem[]) => void
   shareAgenda: (caseId: string, actorId: string) => void
 
@@ -474,12 +475,13 @@ export const useStore = create<Store>()(
           })
         },
 
-        scheduleMeeting: (caseId, at, mode) => {
+        scheduleMeeting: (caseId, at, mode, zone = OFFICE_ZONE) => {
           const c = get().cases[caseId]
           if (!c) return
-          const when = new Date(at).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+          const day = new Date(at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: OFFICE_ZONE })
+          const when = `${day}, ${clock(at, OFFICE_ZONE)}${zone !== OFFICE_ZONE ? ` (${clock(at, zone)} for ${c.firstName})` : ''}`
           const where = mode === 'video' ? 'video call' : 'at the office'
-          patchCase(caseId, (x) => ({ ...x, meeting: { at, mode } }), {
+          patchCase(caseId, (x) => ({ ...x, meeting: { at, mode, zone } }), {
             actorId: c.clientId,
             kind: 'meeting',
             text: `${c.firstName} ${c.meeting ? 'moved' : 'booked'} the planning meeting: ${when}, ${where}`,

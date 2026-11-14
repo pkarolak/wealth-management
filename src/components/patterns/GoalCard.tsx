@@ -1,4 +1,4 @@
-import { Check, GraduationCap, Heart, Home, Landmark, ShoppingBag, Sparkles, Sunset, Target, X } from 'lucide-react'
+import { GraduationCap, Heart, Home, Landmark, ShoppingBag, Sparkles, Sunset, Target, X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { moneyCompact } from '../../lib/format'
@@ -27,6 +27,16 @@ function IconAction({ label, onClick, children }: { label: string; onClick: () =
   )
 }
 
+const estimateNote: Record<GoalKind, string> = {
+  retirement: 'About 25 times the yearly spending you mentioned, in today’s dollars. Emily will refine it with you.',
+  education: 'Four years at a public in-state university today, grown for tuition inflation.',
+  home: 'A typical down payment for the price range you mentioned.',
+  purchase: 'The figure you mentioned in your intro.',
+  legacy: 'The figure you mentioned in your intro.',
+  giving: 'The figure you mentioned in your intro.',
+  other: 'The figure you mentioned in your intro.',
+}
+
 /** Goal tile. 16px padding around a 10px icon tile → 26. Drafts: tinted, with actions on hover in place of the icon. */
 export function GoalCard({ goal, onClick, onAccept, onRemove, className }: { goal: Goal; onClick?: () => void; onAccept?: () => void; onRemove?: () => void; className?: string }) {
   const m = goalMeta[goal.kind]
@@ -37,7 +47,8 @@ export function GoalCard({ goal, onClick, onAccept, onRemove, className }: { goa
       onClick={onClick}
       className={cn(
         'group relative flex min-h-40 flex-col justify-between gap-4 rounded-[26px] p-4 text-left transition-colors',
-        goal.draft ? 'bg-ai-soft/70 hover:bg-ai-soft' : 'bg-muted hover:bg-sunken/70',
+        'bg-muted hover:bg-sunken/70',
+        goal.draft && 'ring-1 ring-ai/45 ring-inset',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -65,17 +76,21 @@ export function GoalCard({ goal, onClick, onAccept, onRemove, className }: { goa
                   <X className="size-4" />
                 </IconAction>
               )}
-              {onAccept && (
-                <IconAction label="Approve" onClick={onAccept}>
-                  <Check className="size-4" />
-                </IconAction>
-              )}
             </div>
           )}
         </div>
       </div>
       <div className="flex flex-col gap-0.5 pl-1">
-        <span className="tabular text-[17px] text-ink">{goal.amount ? moneyCompact(goal.amount) : 'Amount to discuss'}</span>
+        <span className="flex items-baseline gap-2">
+          <span className="tabular text-[17px] text-ink">{goal.amount ? moneyCompact(goal.amount) : 'Amount to discuss'}</span>
+          {goal.draft && goal.amount && (
+            <Tooltip content={estimateNote[goal.kind]}>
+              <button type="button" onClick={(e) => e.stopPropagation()} className="relative text-[12px] text-ai underline decoration-ai/40 underline-offset-[3px] before:absolute before:-inset-3">
+                How we estimated this
+              </button>
+            </Tooltip>
+          )}
+        </span>
         <span className="text-[13px] whitespace-nowrap text-ink-3">{goal.draft ? (goal.sourceLabel ?? 'Suggested') : priorityLabel[goal.priority]}</span>
       </div>
     </div>

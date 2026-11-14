@@ -84,8 +84,8 @@ export function AccountTile({ item, onClick, aside, className, variant = 'card' 
       onClick={onClick}
       className={cn(
         'group flex w-full items-center gap-3 text-left transition-colors',
-        row ? cn('rounded-[14px] px-2 py-2', item.draft ? 'bg-ai-soft/45 hover:bg-ai-soft/70' : 'hover:bg-muted/70') : 'rounded-[22px] p-3',
-        !row && (item.draft ? 'border border-dashed border-ai/35 bg-ai-soft/35 hover:bg-ai-soft/60' : 'bg-surface hover:bg-muted/60'),
+        row ? cn('rounded-[14px] px-2 py-2', item.draft ? 'ring-1 ring-ai/35 ring-inset hover:bg-muted/70' : 'hover:bg-muted/70') : 'rounded-[22px] p-3',
+        !row && (item.draft ? 'border border-ai/40 bg-surface hover:bg-muted/60' : 'bg-surface hover:bg-muted/60'),
         className,
       )}
     >
@@ -181,13 +181,15 @@ export function AssetLiabilityList({ items, side, onSelect, onAdd, renderAside, 
 type Totals = { assets: number; liabilities: number; total: number; exHome: number; liquid: number }
 
 /** Live net worth: serif headline, composition bar and the three numbers regulators look at. */
-export function NetWorthSummary({ totals, items, pending = 0, className }: { totals: Totals; items: NWItem[]; pending?: number; className?: string }) {
+/** `breakdownOnly` drops the headline and stat tiles where the page already shows them. */
+export function NetWorthSummary({ totals, items, pending = 0, breakdownOnly, className }: { totals: Totals; items: NWItem[]; pending?: number; breakdownOnly?: boolean; className?: string }) {
   const [focus, setFocus] = useState<NWCategory>()
   const byCat = assetCategories
     .map((c) => ({ id: c.id, label: c.label, value: items.filter((x) => x.side === 'asset' && x.category === c.id).reduce((a, x) => a + (x.value ?? 0), 0), color: categoryColor[c.id] }))
     .filter((c) => c.value > 0)
     .sort((a, b) => b.value - a.value)
   const sum = byCat.reduce((a, c) => a + c.value, 0)
+  const debtUnknown = totals.liabilities === 0 && items.some((x) => x.side === 'liability' && x.value === undefined)
   const dim = (id: NWCategory) => (focus && focus !== id ? 'opacity-30' : 'opacity-100')
   if (totals.assets === 0 && totals.liabilities === 0)
     return (
@@ -204,13 +206,12 @@ export function NetWorthSummary({ totals, items, pending = 0, className }: { tot
     )
   return (
     <div className={cn('@container flex flex-col gap-6 rounded-[24px] bg-surface p-6', className)}>
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] text-ink-3">Net worth</span>
+      <div className={cn('flex flex-col gap-1.5', breakdownOnly && 'hidden')}>
+        <span className="text-[13px] text-ink-3">{pending > 0 ? 'Net worth so far' : 'Net worth'}</span>
         <span className="display tabular text-[44px] leading-none text-ink">{money(totals.total)}</span>
         {pending > 0 && (
-          <span className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-ai">
-            <Sparkles className="size-3" />
-            {pending} from your intro still {pending === 1 ? 'needs' : 'need'} a balance
+          <span className="mt-1 text-[13px] text-ink-3">
+            Not counting {pending} {pending === 1 ? 'item' : 'items'} without a balance yet
           </span>
         )}
       </div>
@@ -242,9 +243,9 @@ export function NetWorthSummary({ totals, items, pending = 0, className }: { tot
           </ul>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2 @lg:grid-cols-4">
+      <div className={cn('grid grid-cols-2 gap-2 @lg:grid-cols-4', breakdownOnly && 'hidden')}>
         <Stat label="Assets" value={moneyCompact(totals.assets)} />
-        <Stat label="Debts" value={moneyCompact(totals.liabilities)} tone="danger" />
+        <Stat label="Debts" value={debtUnknown ? 'Balance needed' : moneyCompact(totals.liabilities)} tone={debtUnknown ? 'muted' : 'danger'} />
         <Stat label="Liquid" value={moneyCompact(totals.liquid)} />
         <Stat label="Without home" value={moneyCompact(totals.exHome)} />
       </div>
@@ -252,11 +253,11 @@ export function NetWorthSummary({ totals, items, pending = 0, className }: { tot
   )
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: 'danger' }) {
+function Stat({ label, value, tone }: { label: string; value: string; tone?: 'danger' | 'muted' }) {
   return (
     <div className="flex flex-col gap-0.5 rounded-[14px] bg-muted/60 px-3.5 py-3">
       <span className="text-[12px] text-ink-3">{label}</span>
-      <span className={cn('tabular text-[16px]', tone === 'danger' ? 'text-danger' : 'text-ink')}>{tone === 'danger' && value !== '$0' ? `−${value}` : value}</span>
+      <span className={cn('tabular text-[16px]', tone === 'danger' ? 'text-danger' : tone === 'muted' ? 'text-[14px] text-ink-3' : 'text-ink')}>{tone === 'danger' && value !== '$0' ? `−${value}` : value}</span>
     </div>
   )
 }

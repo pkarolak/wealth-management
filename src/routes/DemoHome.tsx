@@ -78,6 +78,9 @@ export function DemoHome() {
             <Tool primary icon={<ArrowUpRight className="size-3.5" />} onClick={() => window.open(wmUrl, 'wm')}>
               Open
             </Tool>
+            <Tool icon={<ArrowUpRight className="size-3.5" />} onClick={() => window.open('/wm/new?demo=1', 'wm')}>
+              New client, prefilled
+            </Tool>
           </Panel>
           <Panel label="Side B" title="Client" meta={c ? `${c.firstName} ${c.lastName} · /c/${c.token}` : 'No client yet. Create one as Emily first.'}>
             <Tool primary disabled={!clientUrl} icon={<ArrowUpRight className="size-3.5" />} onClick={() => clientUrl && window.open(clientUrl, 'client')}>

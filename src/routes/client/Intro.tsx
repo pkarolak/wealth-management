@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, Check, PencilLine, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, Mic, PencilLine, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { TaskStack, VoiceInput } from '../../components/patterns'
 import { Button } from '../../components/primitives'
@@ -46,12 +46,12 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
   return (
     <div>
       <StepHeader
-        eyebrow="Getting started · 1 minute"
+        eyebrow="Getting started · about a minute"
         title={phase === 'result' ? 'Here’s what we caught.' : 'Tell us about you, in your own words.'}
         description={
           phase === 'result'
             ? 'We’ve drafted these answers. Nothing is saved as final until you confirm it in each step.'
-            : 'Your family, your work, what you’re hoping for, and roughly what you have. Thirty seconds is plenty. We’ll turn it into answers you can check.'
+            : 'Your family, your work, what you’re hoping for, and roughly what you have. A minute is plenty. We’ll turn it into answers you can check.'
         }
       />
       {phase === 'input' && (
@@ -90,10 +90,10 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
               </span>
             </motion.div>
           ))}
-          <div className="mt-6 flex items-center justify-between gap-3">
-            <button type="button" onClick={() => setPhase('input')} className="text-[14px] text-ink-3 hover:text-ink">
-              Say more
-            </button>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <Button variant="secondary" size="lg" leading={<Mic className="size-4" />} onClick={() => setPhase('input')}>
+              Add more
+            </Button>
             <Button size="lg" trailing={<ArrowRight className="size-4" />} onClick={nav.next}>
               Continue
             </Button>

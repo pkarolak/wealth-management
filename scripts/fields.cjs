@@ -3,8 +3,8 @@ const { chromium } = require('playwright');
 const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('http://localhost:5199/',{waitUntil:'networkidle'});
 await p.evaluate(()=>localStorage.clear());await p.reload({waitUntil:'networkidle'});
-await p.goto('http://localhost:5199/wm/new',{waitUntil:'networkidle'});
-await p.getByRole('button',{name:'Fill with demo client'}).click();
+await p.goto('http://localhost:5199/wm/new?demo=1',{waitUntil:'networkidle'});
+
 await p.getByRole('button',{name:'Create and write invite'}).click();await p.waitForURL(/invite/);
 await p.getByRole('button',{name:'Send invite'}).click();await p.waitForTimeout(500);
 const t=await p.evaluate(()=>Object.values(JSON.parse(localStorage.getItem('nevis-onboarding-v1')).state.cases).find(c=>c.token!=='gallery').token);

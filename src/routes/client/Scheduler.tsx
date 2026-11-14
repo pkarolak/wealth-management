@@ -2,19 +2,19 @@ import { Building2, ChevronLeft, ChevronRight, Video } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { Button, Segmented, toast } from '../../components/primitives'
 import { cn } from '../../lib/cn'
+import { atInZone, clock, guessZone, OFFICE_ZONE, usZones } from '../../lib/time'
 import { useStore } from '../../store/caseStore'
 import type { ClientCase } from '../../store/types'
 
 const SLOTS = ['9:00', '9:30', '10:00', '11:00', '13:00', '14:00', '15:30', '16:30']
 const DAYS = 12
 
-const fmtTime = (h: number, m: number) => new Date(2000, 0, 1, h, m).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 export const fmtDay = (d: Date, long = false) => d.toLocaleDateString('en-US', long ? { weekday: 'long', month: 'long', day: 'numeric' } : { weekday: 'short', month: 'short', day: 'numeric' })
 
-/** Next weekdays starting tomorrow, with mock availability that stays stable per date. */
+/** Next weekdays starting tomorrow, with mock availability in office hours that stays stable per date. */
 function useCalendar() {
   return useMemo(() => {
-    const out: { date: Date; slots: { label: string; at: number; free: boolean }[] }[] = []
+    const out: { date: Date; slots: { at: number; free: boolean }[] }[] = []
     const d = new Date()
     d.setHours(0, 0, 0, 0)
     while (out.length < DAYS) {
@@ -27,8 +27,8 @@ function useCalendar() {
         date: new Date(d),
         slots: SLOTS.map((s, i) => {
           const [h, m] = s.split(':').map(Number)
-          const at = new Date(d).setHours(h, m)
-          return { label: fmtTime(h, m), at, free: !full && Math.abs(busy(i)) > 0.4 }
+          const at = atInZone(d, h, m, OFFICE_ZONE)
+          return { at, free: !full && Math.abs(busy(i)) > 0.4 }
         }),
       })
     }
@@ -45,6 +45,7 @@ export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: Cli
   const [dayIdx, setDayIdx] = useState(initialDay)
   const [at, setAt] = useState<number | undefined>(c.meeting?.at)
   const [mode, setMode] = useState<'video' | 'office'>(c.meeting?.mode ?? 'video')
+  const [zone, setZone] = useState(c.meeting?.zone ?? guessZone())
   const strip = useRef<HTMLDivElement>(null)
   const day = days[dayIdx]
   const scroll = (dir: number) => strip.current?.scrollBy({ left: dir * 280, behavior: 'smooth' })
@@ -95,7 +96,7 @@ export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: Cli
                 onClick={() => setDayIdx(i)}
                 className={cn(
                   'flex w-12 shrink-0 snap-start flex-col items-center gap-0.5 rounded-[14px] py-2 transition-colors',
-                  on ? 'bg-ink text-white' : open ? 'text-ink hover:bg-muted' : 'cursor-not-allowed text-ink-4/60',
+                  on ? 'bg-ink text-white' : open ? 'text-ink hover:bg-muted' : 'cursor-not-allowed text-ink-4 line-through',
                 )}
               >
                 <span className={cn('text-[11px]', on ? 'text-white/65' : 'text-ink-4')}>{d.date.toLocaleDateString('en-US', { weekday: 'narrow' })}</span>
@@ -114,9 +115,13 @@ export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: Cli
             onClick={() => setAt(s.at)}
             className={cn('tabular h-9 rounded-full px-4 text-[14px] ring-1 transition-colors ring-inset', at === s.at ? 'bg-ink text-white ring-ink' : 'text-ink ring-line hover:ring-line-strong')}
           >
-            {s.label}
+            {clock(s.at, zone, false)}
           </button>
         ))}
+      </div>
+      <div className="-mt-3 flex flex-wrap items-center gap-2 text-[13px] text-ink-3">
+        Times in
+        <Segmented size="sm" value={zone} onChange={setZone} options={usZones} />
       </div>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
@@ -124,11 +129,9 @@ export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: Cli
           {mode === 'video' ? <Video className="size-4 shrink-0" /> : <Building2 className="size-4 shrink-0" />}
           {at ? (
             <span className="truncate text-ink">
-              {fmtDay(new Date(at), true)} · {new Date(at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+              {fmtDay(new Date(at), true)} · {clock(at, zone)}
             </span>
-          ) : (
-            'Pick a time'
-          )}
+          ) : null}
         </span>
         {onCancel && (
           <Button variant="ghost" onClick={onCancel}>
@@ -139,7 +142,7 @@ export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: Cli
           disabled={!at}
           onClick={() => {
             if (!at) return
-            schedule(c.id, at, mode)
+            schedule(c.id, at, mode, zone)
             toast('Meeting booked', { description: `${first} gets an invite right away.`, tone: 'success' })
             onBooked()
           }}

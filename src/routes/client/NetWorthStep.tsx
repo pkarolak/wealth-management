@@ -1,4 +1,4 @@
-import { Check, FileUp, Link2, Loader2, PenLine, Sparkles } from 'lucide-react'
+import { Check, Link2, Loader2, PenLine, Sparkles } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { AskAdvisorButton, AssetLiabilityList, DocumentDropzone, InstitutionLogo, NetWorthSummary } from '../../components/patterns'
 import { Button, Checkbox, Dialog, Input, Label, MoneyInput, PercentInput, Segmented, Select, toast } from '../../components/primitives'
@@ -17,14 +17,9 @@ type ItemDraft = Partial<NWItem> & { side: 'asset' | 'liability'; category: NWCa
 
 const estimable: NWCategory[] = ['realEstate', 'collectible', 'crypto', 'business']
 
-function ActionButton({ icon, children, onClick, active }: { icon: ReactNode; children: ReactNode; onClick: () => void; active?: boolean }) {
+function ActionButton({ icon, children, onClick }: { icon: ReactNode; children: ReactNode; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn('inline-flex h-10 items-center gap-2 rounded-control border px-3.5 text-[14px] transition-colors', active ? 'border-ink bg-surface text-ink' : 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink')}
-    >
+    <button type="button" onClick={onClick} className="inline-flex h-10 items-center gap-2 rounded-control border border-line bg-surface px-3.5 text-[14px] text-ink-2 transition-colors hover:border-line-strong hover:text-ink">
       {icon}
       {children}
     </button>
@@ -36,12 +31,11 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const [linkOpen, setLinkOpen] = useState(false)
   const [linking, setLinking] = useState<string>()
   const [linked, setLinked] = useState<string[]>([])
-  const [upload, setUpload] = useState(c.documents.length > 0)
   const [item, setItem] = useState<ItemDraft>()
   const [est, setEst] = useState<Estimate>()
   const [estimating, setEstimating] = useState(false)
   const totals = netWorth(c)
-  const drafts = c.items.filter((i) => i.draft).length
+  const drafts = c.items.filter((i) => i.draft || i.value === undefined).length
   const advisorFirst = useStore((s) => s.people[c.advisorId]?.name.split(' ')[0] ?? 'your Wealth Manager')
 
   const openItem = (i: ItemDraft) => {
@@ -64,23 +58,20 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
   return (
     <div>
-      <StepHeader c={c} sectionId="networth" aside={<AskAdvisorButton anchor={{ sectionId: 'networth' }} title="What you own and owe" floating />} />
+      <StepHeader c={c} sectionId="networth" />
 
       <div className="grid items-start gap-8 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-8">
-          <div className="flex flex-wrap gap-2">
+          <DocumentDropzone onProcess={(kind, name) => processDocument(c.id, c.clientId, kind, name)} done={c.documents.map((d) => ({ name: d.name, extracted: d.extracted }))} />
+          <div className="-mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[13px] text-ink-3">Or</span>
             <ActionButton icon={<Link2 className="size-4" />} onClick={() => setLinkOpen(true)}>
               Link an account
-            </ActionButton>
-            <ActionButton icon={<FileUp className="size-4" />} onClick={() => setUpload((u) => !u)} active={upload}>
-              Upload statements
             </ActionButton>
             <ActionButton icon={<PenLine className="size-4" />} onClick={() => openItem({ side: 'asset', category: 'realEstate' })}>
               Add manually
             </ActionButton>
           </div>
-
-          {upload && <DocumentDropzone onProcess={(kind, name) => processDocument(c.id, c.clientId, kind, name)} done={c.documents.map((d) => ({ name: d.name, extracted: d.extracted }))} />}
 
           {(['asset', 'liability'] as const).map((side) => (
             <section key={side} className="flex flex-col gap-3">

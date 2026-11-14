@@ -104,7 +104,7 @@ export function VoiceInput({ transcript, onSubmit, placeholder = 'Tap the mic an
             <X className="size-[18px]" />
           </button>
         )}
-        <Waveform active={mode === 'listening'} className={cn(mode === 'typing' && 'invisible')} />
+        {mode === 'listening' ? <Waveform active /> : <span className="flex-1" />}
         {mode === 'idle' && (
           <button type="button" onClick={() => setMode('listening')} className="flex size-10 items-center justify-center rounded-control bg-ink text-white transition-transform hover:scale-[1.03]" aria-label="Start speaking">
             <Mic className="size-[18px]" />

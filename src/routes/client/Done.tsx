@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
+import { clock } from '../../lib/time'
 import { Building2, CalendarPlus, Check, Mail, Video } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
@@ -83,7 +84,7 @@ export function Done({ c }: { c: ClientCase }) {
             It includes your private link to view or change your answers any time. You can close this page now.
           </span>
           <Link to={`/c/${c.token}?step=review`} className="mt-1 self-start text-[13px] text-ink-3 underline underline-offset-4 hover:text-ink">
-            Review my answers
+            See or change my answers
           </Link>
         </div>
       </div>
@@ -91,10 +92,10 @@ export function Done({ c }: { c: ClientCase }) {
   )
 }
 
-function Booked({ meeting, first, onChange }: { meeting: { at: number; mode: 'video' | 'office' }; first: string; onChange: () => void }) {
+function Booked({ meeting, first, onChange }: { meeting: { at: number; mode: 'video' | 'office'; zone?: string }; first: string; onChange: () => void }) {
   const d = new Date(meeting.at)
   const end = new Date(meeting.at + 45 * 60000)
-  const t = (x: Date) => x.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const t = (x: Date) => clock(x.getTime(), meeting.zone, x.getTime() !== meeting.at)
   return (
     <section className="flex flex-wrap items-center gap-4 rounded-[28px] bg-surface p-3 pr-4">
       <div className="flex size-16 shrink-0 flex-col items-center justify-center rounded-[16px] bg-muted">

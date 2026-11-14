@@ -3,7 +3,7 @@ import { Check, FileText, Sparkles, UploadCloud } from 'lucide-react'
 import { useRef, useState, type DragEvent } from 'react'
 import { cn } from '../../lib/cn'
 import { documentKinds, type DocKind } from '../../services/ai'
-import { ProgressBar } from '../primitives'
+import { Dialog, ProgressBar } from '../primitives'
 
 type Job = { id: string; name: string; kind: DocKind; phase: 'uploading' | 'reading' | 'done'; extracted: string[] }
 
@@ -30,6 +30,7 @@ type Props = {
 export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retirement', 'equity', 'mortgage', 'tax'], done = [], className }: Props) {
   const [jobs, setJobs] = useState<Job[]>([])
   const [over, setOver] = useState(false)
+  const [picking, setPicking] = useState(false)
   const input = useRef<HTMLInputElement>(null)
 
   const run = async (name: string, kind: DocKind) => {
@@ -67,28 +68,44 @@ export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retiremen
             <span className="text-[14px] font-medium text-ink">Drop statements here</span>
             <span className="text-[13px] text-ink-3">We read the numbers for you. Files are encrypted and shared only with your Wealth Manager’s team.</span>
           </div>
-          <button type="button" onClick={() => input.current?.click()} className="h-10 shrink-0 rounded-control border border-line bg-surface px-4 text-[14px] font-medium text-ink hover:border-line-strong">
+          <button type="button" onClick={() => (remaining.length ? setPicking(true) : input.current?.click())} className="h-10 shrink-0 rounded-control border border-line bg-surface px-4 text-[14px] font-medium text-ink hover:border-line-strong">
             Browse
           </button>
           <input ref={input} type="file" multiple className="hidden" onChange={(e) => Array.from(e.target.files ?? []).forEach((f) => run(f.name, guessKind(f.name)))} />
         </div>
-        {remaining.length > 0 && (
-          <div className="flex flex-wrap gap-2 pb-1 pl-[52px]">
-            <span className="w-full text-[12px] text-ink-4">Try a sample</span>
-            {remaining.map((d) => (
-              <button
-                key={d.kind}
-                type="button"
-                onClick={() => run(d.file, d.kind)}
-                className="inline-flex h-9 items-center gap-1.5 rounded-control border border-line bg-surface px-3 text-[13px] text-ink-2 transition-colors hover:border-line-strong hover:text-ink"
-              >
-                <FileText className="size-3.5 text-ink-4" />
-                {d.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
+
+      <Dialog open={picking} onOpenChange={setPicking} title="Choose statements" description="Recent files on this device.">
+        <div className="flex flex-col gap-1">
+          {remaining.map((d) => (
+            <button
+              key={d.kind}
+              type="button"
+              onClick={() => {
+                setPicking(false)
+                run(d.file, d.kind)
+              }}
+              className="flex items-center gap-3 rounded-[14px] p-2 text-left transition-colors hover:bg-muted"
+            >
+              <FileText className="size-4 shrink-0 text-ink-3" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-[14px] text-ink">{d.file}</span>
+                <span className="text-[12px] text-ink-3">{d.label}</span>
+              </span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => {
+              setPicking(false)
+              input.current?.click()
+            }}
+            className="mt-2 self-start text-[13px] text-ink-3 underline decoration-line-strong underline-offset-[3px] hover:text-ink"
+          >
+            Another file…
+          </button>
+        </div>
+      </Dialog>
 
       <AnimatePresence initial={false}>
         {jobs.map((j) => (

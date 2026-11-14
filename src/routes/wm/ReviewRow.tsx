@@ -40,7 +40,7 @@ export function ReviewRow({ c, def, onHover }: { c: ClientCase; def: FieldDef; o
             <span className="text-ink-4">· waiting for {c.firstName}</span>
           </span>
         )}
-        {!s && source && filled && <SourceTag kind={st.status === 'confirmed' ? 'confirmed' : source} />}
+        {!s && source && filled && (st.status === 'confirmed' || !['client', 'advisor'].includes(source)) && <SourceTag kind={st.status === 'confirmed' ? 'confirmed' : source} />}
       </span>
       <span className="flex items-center gap-1">
         {st.status === 'needs_review' && <Badge tone="progress">Changed</Badge>}

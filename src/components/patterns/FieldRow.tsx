@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { CalendarClock, Check, Undo2 } from 'lucide-react'
+import { CalendarClock, Undo2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
 import { displayValue, isFilled, type FieldDef } from '../../schema/onboarding'
@@ -85,20 +85,14 @@ export function FieldRow({ def }: { def: FieldDef }) {
   )
 
   // Always visible: only what the client needs to act on or be reassured by.
-  const status = pendingFill ? (
-    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <SourceTag kind={s.by === 'advisor' ? 'advisor' : 'ai'} label={s.sourceLabel} />
-      {s.confidence === 'low' && <span className="text-[12px] whitespace-nowrap text-progress-ink">Please double-check</span>}
-      <button
-        type="button"
-        onClick={() => accept(caseId, def.id, viewerId)}
-        className="relative before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] -my-1 -ml-1 inline-flex h-6 items-center gap-1 rounded-full bg-surface pr-2.5 pl-2 text-[12px] whitespace-nowrap text-ink-2 shadow-soft ring-1 ring-line transition-colors ring-inset hover:text-ink hover:ring-line-strong"
-      >
-        <Check className="size-3.5" />
-        Approve
-      </button>
-    </span>
-  ) : null
+  // Drafts are accepted by Continue or replaced by typing, so only flag the ones worth a second look.
+  const status =
+    pendingFill && (s.by === 'advisor' || s.confidence === 'low') ? (
+      <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <SourceTag kind={s.by === 'advisor' ? 'advisor' : 'ai'} label={s.by === 'advisor' ? `Suggested by ${advisorFirst}` : s.sourceLabel} />
+        {s.confidence === 'low' && <span className="text-[12px] whitespace-nowrap text-progress-ink">Please double-check</span>}
+      </span>
+    ) : null
 
   // Revealed on focus, or while one of the field's popovers is open.
   const provenance = !status && filled ? sourceKind(st.source) : undefined

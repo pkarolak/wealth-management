@@ -93,12 +93,29 @@ export function Invite() {
         <aside className="flex flex-col gap-4">
           <Card padding="lg" inner={10} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <span className="text-[15px] font-medium text-ink">{c.firstName}’s private link</span>
+              <span className="text-[15px] font-medium text-ink">Send to {c.email}</span>
+              <span className="text-[13px] text-ink-3">From your address, with {c.firstName}’s private link.</span>
+            </div>
+            <Button
+              size="lg"
+              leading={<Send className="size-4" />}
+              onClick={() => {
+                sendInvite(c.id, { subject, body })
+                drafts.delete(c.id)
+                toast(`Sent to ${c.firstName}`, { description: c.email, tone: 'success' })
+                navigate(`/wm/c/${c.id}`)
+              }}
+            >
+              Send invite
+            </Button>
+            <div className="flex flex-col gap-1 border-t border-line pt-4">
+              <span className="text-[14px] text-ink-2">Or share the link yourself</span>
               <span className="text-[13px] text-ink-3">Works on any device. Saves as they go.</span>
             </div>
             <Input
-              value={link}
+              value={link.replace(/^https?:\/\//, '')}
               readOnly
+              title={link}
               onFocus={(e) => e.target.select()}
               trailing={
                 <Button
@@ -115,18 +132,6 @@ export function Invite() {
                 </Button>
               }
             />
-            <Button
-              size="lg"
-              leading={<Send className="size-4" />}
-              onClick={() => {
-                sendInvite(c.id, { subject, body })
-                drafts.delete(c.id)
-                toast(`Sent to ${c.firstName}`, { description: c.email, tone: 'success' })
-                navigate(`/wm/c/${c.id}`)
-              }}
-            >
-              Send invite
-            </Button>
             <Button variant="ghost" trailing={<ArrowUpRight className="size-4" />} onClick={() => window.open(`/c/${c.token}`, 'client')}>
               Preview as {c.firstName}
             </Button>

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowRight, Check, ChevronDown, CircleCheck, FileText, MessageCircle, PencilLine, Plus, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, CircleCheck, FileText, MessageCircle, PencilLine, Plus } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { ActivityFeed, CommentThread } from '../../components/patterns'
@@ -116,30 +116,10 @@ export function NeedsYou({ c, onOpenThread }: { c: ClientCase; onOpenThread: (id
         </ul>
       ) : (
         <p className="px-4 pb-2 text-[14px] text-ink-3">
-          Nothing to act on.{waiting.length ? ` Waiting on ${c.firstName} for ${waiting.join(', ')}.` : ''}
+          {waiting.length ? `Nothing to act on. Waiting on ${c.firstName} · ${waiting.length} ${waiting.length === 1 ? 'section' : 'sections'} left.` : 'Nothing to act on.'}
         </p>
       )}
 
-      <div className="mt-1 flex flex-wrap gap-1 rounded-[18px] bg-muted/50 p-1">
-        {secs.map((s) => {
-          const st = sectionState(c, s.id)
-          const reviewed = c.advisorReviewed[s.id]
-          const drafts = sectionStats(c, s.id).suggestions
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => scrollToSection(s.id)}
-              title={reviewed ? 'Reviewed' : st === 'done' ? 'Done, not reviewed' : st === 'progress' ? 'In progress' : `Waiting on ${c.firstName}`}
-              className="inline-flex h-8 items-center gap-1.5 rounded-[14px] px-2.5 text-[13px] text-ink-2 transition-colors hover:bg-surface"
-            >
-              <StatusIcon status={reviewed ? 'done' : st === 'done' ? 'waiting' : st === 'progress' ? 'progress' : 'idle'} size={14} />
-              {s.wmShort}
-              {drafts > 0 && <Sparkles className="size-3 text-ai" />}
-            </button>
-          )
-        })}
-      </div>
     </section>
   )
 }
