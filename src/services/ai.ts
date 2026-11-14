@@ -240,7 +240,7 @@ export type TopicTag = 'Planning' | 'Open question' | 'To collect' | 'To verify'
 /** `ask` is what the Wealth Manager could say out loud; `note` is internal guidance that stays off the script. */
 export type Topic = { id: string; tag: TopicTag; priority: 'high' | 'medium'; title: string; why: string; ask: string; note?: string; minutes: number }
 
-export type Brief = { headline: string; topics: Topic[]; suggestedAgenda: { title: string; minutes: number; topicId?: string }[] }
+export type Brief = { headline?: string; topics: Topic[]; suggestedAgenda: { title: string; minutes: number; topicId?: string }[] }
 
 export function meetingBrief(
   c: ClientCase,
@@ -266,9 +266,9 @@ export function meetingBrief(
       tag: 'Planning',
       priority: 'high',
       title: 'Employer stock, not valued yet',
-      why: `${unvaluedEquity.name} came up in the intro but has no balance. Likely a large share of assets.`,
-      ask: 'How much of your company stock is vested, and when is the next vest? How do you feel about holding that much in one company?',
-      note: 'Request the stock plan statement first to size it.',
+      why: `${unvaluedEquity.name}. No balance yet, likely a large share of assets.`,
+      ask: 'How much is vested, and when is the next vest? How do you feel about holding this much in one company?',
+      note: 'Get the stock plan statement first to size it.',
       minutes: 15,
     })
   if (conc >= 15)
@@ -277,7 +277,7 @@ export function meetingBrief(
       tag: 'Planning',
       priority: 'high',
       title: 'Concentration in employer stock',
-      why: `${equityItem?.name ?? 'Employer stock'} is ${conc}% of assets (${fmt(equity)}).${equityItem?.detail ? ` ${equityItem.detail}.` : ''}`,
+      why: `${conc}% of assets (${fmt(equity)}).${equityItem?.detail ? ` ${equityItem.detail}.` : ''}`,
       ask: 'How do you feel about holding this much in one company? Any plans for the next vest?',
       minutes: 15,
     })
@@ -287,9 +287,9 @@ export function meetingBrief(
       tag: 'Planning',
       priority: 'high',
       title: 'Roll over the old 401(k)',
-      why: oldPlan.value ? `${fmt(oldPlan.value)}${oldPlan.institution ? ` at ${oldPlan.institution}` : ''}, still with a previous employer.` : 'Still with a previous employer. Balance not known yet.',
+      why: oldPlan.value ? `${fmt(oldPlan.value)}${oldPlan.institution ? ` at ${oldPlan.institution}` : ''}, with a previous employer.` : 'With a previous employer. Balance unknown.',
       ask: 'What do you like about your old plan today?',
-      note: 'Compare fees, investment options and services before recommending a rollover, and document the reasons.',
+      note: 'Compare fees, options and services before recommending a rollover. Document why.',
       minutes: 10,
     })
   if (nearGoal && nearGoal.targetYear && nearGoal.targetYear - year <= 5 && nearGoal.amount)
@@ -298,7 +298,7 @@ export function meetingBrief(
       tag: 'Planning',
       priority: nearGoal.amount > netWorth.liquid * 0.5 ? 'high' : 'medium',
       title: `${nearGoal.title} in ${nearGoal.targetYear - year} years`,
-      why: `Needs about ${fmt(nearGoal.amount)}; ${fmt(netWorth.liquid)} is liquid today.${risk ? ` Risk profile reads “${risk.label}”.` : ''}`,
+      why: `Needs ${fmt(nearGoal.amount)}. ${fmt(netWorth.liquid)} liquid today.`,
       ask: 'Should money for this goal sit apart from long-term investments?',
       minutes: 10,
     })
@@ -317,8 +317,8 @@ export function meetingBrief(
       id: 'risk',
       tag: 'To collect',
       priority: 'medium',
-      title: 'Risk questionnaire not finished',
-      why: `${c.firstName} hasn’t answered the risk scenarios yet. Needed before recommending a portfolio.`,
+      title: 'Risk questions not answered',
+      why: 'Needed before recommending a portfolio.',
       ask: 'Walk through the scenarios together. About 5 minutes.',
       minutes: 5,
     })
@@ -328,7 +328,7 @@ export function meetingBrief(
       tag: 'To collect',
       priority: 'medium',
       title: `Collect ${deferred.length === 1 ? deferred[0] : `${deferred.length} answers`} in person`,
-      why: `${c.firstName} chose to give ${deferred.length === 1 ? 'this' : 'these'} in the meeting: ${deferred.join(', ')}.`,
+      why: deferred.join(', '),
       ask: 'Collect on a short call with the client associate, or at the start of the meeting.',
       minutes: 5,
     })
@@ -345,9 +345,7 @@ export function meetingBrief(
 
   const planning = topics.filter((t) => t.tag === 'Planning')
   return {
-    headline: !c.items.some((i) => i.value !== undefined)
-      ? `Not enough to go on yet. The brief fills in as ${c.firstName} adds accounts and goals.`
-      : `${lowConfidence.length ? 'Known balances put household net worth at about' : 'Household net worth is about'} ${fmt(netWorth.total)}${lowConfidence.length ? `, with ${plural(lowConfidence.length, 'holding')} still unvalued` : `, ${fmt(netWorth.liquid)} of it liquid`}.${planning[0] ? ` Biggest lever: ${planning[0].title.toLowerCase()}.` : ''}`,
+    headline: c.items.some((i) => i.value !== undefined) ? undefined : `Not enough to go on yet. The brief fills in as ${c.firstName} adds accounts and goals.`,
     topics,
     suggestedAgenda: [
       { title: 'Goals and priorities', minutes: 10 },
