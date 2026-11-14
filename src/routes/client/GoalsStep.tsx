@@ -29,9 +29,10 @@ export function GoalsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
       <StepHeader c={c} sectionId="goals" />
 
       {drafts > 0 && (
-        <div className="mb-6 inline-flex items-center gap-2 text-[14px] text-ai">
-          <Sparkles className="size-4" /> {drafts} {drafts === 1 ? 'goal' : 'goals'} from your intro, outlined in blue. Edit or remove any; Continue saves the rest.
-        </div>
+        <p className="mb-8 flex items-center gap-2 text-[14px] text-ink-2">
+          <Sparkles className="size-4 shrink-0 text-ai" />
+          Check {drafts} {drafts === 1 ? 'goal' : 'goals'} from your intro
+        </p>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

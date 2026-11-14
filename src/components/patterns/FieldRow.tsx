@@ -51,7 +51,7 @@ export function FieldRow({ def }: { def: FieldDef }) {
   const advisorFirst = advisor?.name.split(' ')[0] ?? 'your Wealth Manager'
   const hasThreads = threadsFor(c, { sectionId: def.sectionId, fieldId: def.id }).length > 0
 
-  const tone: FieldTone = pendingFill ? (s.by === 'ai' ? 'ai' : 'advisor') : st.status === 'needs_review' ? 'warning' : 'default'
+  const tone: FieldTone = pendingFill ? (s.by === 'ai' ? 'ai' : 'advisor') : st.status === 'needs_review' ? 'warning' : filled ? 'filled' : 'default'
   const value = pendingFill ? s.value : st.value
 
   if (st.deferred) {

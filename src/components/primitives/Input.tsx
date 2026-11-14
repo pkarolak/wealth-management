@@ -2,7 +2,7 @@ import { Calendar } from 'lucide-react'
 import { forwardRef, useEffect, useId, useState, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from 'react'
 import { cn } from '../../lib/cn'
 
-export type FieldTone = 'default' | 'ai' | 'advisor' | 'warning' | 'error'
+export type FieldTone = 'default' | 'filled' | 'ai' | 'advisor' | 'warning' | 'error'
 
 /** Nevis-style field: 1px line, ink border on focus, no halo. */
 export const fieldBase =
@@ -11,7 +11,8 @@ export const fieldBase =
 /** Border and fill live only here so a tone never competes with base classes. */
 export const fieldTones: Record<FieldTone, string> = {
   default: 'border-line bg-surface hover:border-line-strong',
-  ai: 'border-ai/45 bg-surface hover:border-ai/70',
+  filled: 'border-transparent bg-muted hover:border-line focus:bg-surface',
+  ai: 'border-transparent bg-ai-soft/60 hover:border-ai/30 focus:bg-surface',
   advisor: 'border-advisor/35 bg-advisor-soft/50 hover:border-advisor/55',
   warning: 'border-progress/55 bg-progress-soft/60',
   error: 'border-danger/70 bg-surface hover:border-danger',

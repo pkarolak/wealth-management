@@ -35,11 +35,6 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
     nav.next()
   }
 
-  const groupSource = (fs: typeof visibleFields) => {
-    const s = fs.filter((f) => drafts.includes(f.id)).map((f) => c.fields[f.id]?.suggestion).find((x) => x?.by === 'ai')
-    return s && (s.sourceLabel ? s.sourceLabel.replace(/^From /, 'Filled from ') : 'Filled in for you')
-  }
-
   const hint =
     invalid > 0
       ? `${invalid === 1 ? 'One answer needs' : `${invalid} answers need`} a quick fix above.`
@@ -67,22 +62,19 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
       )}
 
       {drafts.length > 0 && (
-        <p className="mb-8 flex items-center gap-2 text-[14px] text-ink-2">
+        <p className="mb-10 flex items-center gap-2 text-[14px] text-ink-2">
           <Sparkles className="size-4 shrink-0 text-ai" />
-          {drafts.length} {drafts.length === 1 ? 'answer' : 'answers'} filled in for you, outlined in blue. Change anything that’s off; Continue saves the rest.
+          Check {drafts.length} {drafts.length === 1 ? 'field that was' : 'fields that were'} auto-filled
         </p>
       )}
 
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-12">
         {groupsFor(sectionId).map((g) => {
           const visible = g.fields.filter((f) => isVisible(f, merged))
           if (!visible.length) return null
           return (
             <section key={g.group} className="flex flex-col gap-4">
-              <h2 className="flex flex-wrap items-baseline gap-x-2 text-[15px] font-medium text-ink">
-                {g.group}
-                {groupSource(visible) && <span className="text-[13px] font-normal text-ai">· {groupSource(visible)}</span>}
-              </h2>
+              <h2 className="text-[15px] font-medium text-ink">{g.group}</h2>
               <div className="grid grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-6">
                 {visible.map((f) => (
                   <div key={f.id} className={cn(span[f.width ?? 'full'])}>
