@@ -2,7 +2,7 @@ import { CommentComposer, ThreadList } from '../../components/patterns'
 import { Drawer } from '../../components/primitives'
 import { sectionById, type SectionId } from '../../schema/onboarding'
 import { useStore } from '../../store/caseStore'
-import type { ClientCase } from '../../store/types'
+import type { ClientCase, Thread } from '../../store/types'
 
 /** The client's side of the conversation: every comment with the Wealth Manager, plus a way to ask about the current step. */
 export function CommentsDrawer({
@@ -12,6 +12,7 @@ export function CommentsDrawer({
   onOpenChange,
   openThread,
   onOpenThread,
+  onPick,
 }: {
   c: ClientCase
   sectionId?: SectionId
@@ -19,6 +20,7 @@ export function CommentsDrawer({
   onOpenChange: (o: boolean) => void
   openThread?: string
   onOpenThread: (id?: string) => void
+  onPick: (t: Thread) => boolean | void
 }) {
   const people = useStore((s) => s.people)
   const startThread = useStore((s) => s.startThread)
@@ -42,7 +44,7 @@ export function CommentsDrawer({
         />
       }
     >
-      <ThreadList c={c} viewerId={c.clientId} openThread={openThread} onOpenThread={onOpenThread} empty={`Nothing yet. Ask ${first} below, or use the comment button next to any field.`} />
+      <ThreadList c={c} viewerId={c.clientId} openThread={openThread} onOpenThread={onOpenThread} onPick={onPick} empty={`Nothing yet. Ask ${first} below, or use the comment button next to any field.`} />
     </Drawer>
   )
 }

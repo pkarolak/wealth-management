@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { CalendarClock, Undo2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
 import { displayValue, fieldById, isFilled, type FieldDef } from '../../schema/onboarding'
 import { fieldError } from '../../schema/validation'
@@ -30,7 +30,7 @@ const sourceKind = (s?: FieldSource): SourceKind | undefined => (s === 'client' 
  * empty, AI-suggested, advisor-suggested, confirmed, needs review and deferred to the meeting.
  */
 export function FieldRow({ def }: { def: FieldDef }) {
-  const { c, caseId, viewerId, onFocus } = useCurrentCase()
+  const { c, caseId, viewerId, onFocus, spotlight } = useCurrentCase()
   const people = useStore((s) => s.people)
   const setField = useStore((s) => s.setField)
   const accept = useStore((s) => s.acceptSuggestion)
@@ -41,6 +41,21 @@ export function FieldRow({ def }: { def: FieldDef }) {
   // Touch screens have no hover, so the ask button only shows on the field being edited. The delay lets a tap on it land before blur hides it.
   const [active, setActive] = useState(false)
   const blurTimer = useRef<number>(undefined)
+  const rowRef = useRef<HTMLDivElement>(null)
+  const [flash, setFlash] = useState(false)
+  useEffect(() => {
+    if (spotlight?.fieldId !== def.id) return
+    // Wait for the step transition and its scroll-to-top before scrolling to the field.
+    const t1 = window.setTimeout(() => {
+      rowRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      setFlash(true)
+    }, 350)
+    const t2 = window.setTimeout(() => setFlash(false), 2200)
+    return () => {
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+  }, [spotlight?.at]) // eslint-disable-line react-hooks/exhaustive-deps
   if (!c) return null
 
   const st = c.fields[def.id] ?? {}
@@ -86,7 +101,7 @@ export function FieldRow({ def }: { def: FieldDef }) {
           'pointer-events-none opacity-0 group-focus-within/field:pointer-events-auto group-focus-within/field:opacity-100 group-hover/field:pointer-events-auto group-hover/field:opacity-100 has-[[data-state=open]]:pointer-events-auto has-[[data-state=open]]:opacity-100',
       )}
     >
-      <AskAdvisorButton anchor={{ sectionId: def.sectionId, fieldId: def.id }} title={def.label} floating />
+      <AskAdvisorButton anchor={{ sectionId: def.sectionId, fieldId: def.id }} title={def.label} floating openAt={spotlight?.fieldId === def.id ? spotlight.at : undefined} />
     </span>
   )
 
@@ -126,7 +141,8 @@ export function FieldRow({ def }: { def: FieldDef }) {
 
   return (
     <div
-      className="group/field relative flex flex-col gap-1"
+      ref={rowRef}
+      className={cn('group/field relative flex scroll-mt-24 flex-col gap-1 rounded-control transition-shadow duration-500', flash && 'ring-2 ring-advisor/40 ring-offset-4 ring-offset-canvas')}
       onFocusCapture={() => {
         window.clearTimeout(blurTimer.current)
         setActive(true)

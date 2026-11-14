@@ -10,6 +10,8 @@ type Ctx = {
   mode: ViewerMode
   /** Reports where the viewer is focused, for presence. */
   onFocus?: (target: { sectionId?: SectionId; fieldId?: string }) => void
+  /** A field to bring into view with its comments open, e.g. after picking a comment elsewhere. `at` makes repeat picks fire again. */
+  spotlight?: { fieldId: string; at: number }
 }
 
 const CaseCtx = createContext<Ctx | null>(null)

@@ -50,6 +50,7 @@ export function ClientApp() {
   const [focus, setFocus] = useState<{ sectionId?: SectionId; fieldId?: string }>({})
   const [sheet, setSheet] = useState(false)
   const [talk, setTalk] = useState<{ open: boolean; thread?: string }>({ open: false })
+  const [spotlight, setSpotlight] = useState<{ fieldId: string; at: number }>()
 
   const step = (params.get('step') as Step) || (c?.stage === 'submitted' ? 'done' : 'welcome')
   const sectionId = (nonSection.includes(step) ? undefined : step) as SectionId | undefined
@@ -145,7 +146,7 @@ export function ClientApp() {
   })()
 
   return (
-    <CaseProvider caseId={c.id} viewerId={c.clientId} mode="client" onFocus={setFocus}>
+    <CaseProvider caseId={c.id} viewerId={c.clientId} mode="client" onFocus={setFocus} spotlight={spotlight}>
       <div className="min-h-screen">
         <a href="#main" className="sr-only rounded-control bg-ink px-4 py-2 text-[14px] text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50">
           Skip to form
@@ -196,7 +197,17 @@ export function ClientApp() {
             {rail(() => setSheet(false))}
           </div>
         </Dialog>
-        <CommentsDrawer c={c} sectionId={sectionId} open={talk.open} onOpenChange={(open) => setTalk((t) => ({ ...t, open }))} openThread={talk.thread} onOpenThread={(thread) => setTalk({ open: true, thread })} />
+        <CommentsDrawer c={c} sectionId={sectionId} open={talk.open} onOpenChange={(open) => setTalk((t) => ({ ...t, open }))} openThread={talk.thread} onOpenThread={(thread) => setTalk({ open: true, thread })}
+          onPick={(t) => {
+            const target = t.anchor.sectionId as Step
+            if (order.includes(target) && target !== step) go(target)
+            // Field comments open next to their field; step-level ones stay readable here.
+            if (!t.anchor.fieldId) return false
+            setTalk({ open: false })
+            setSpotlight({ fieldId: t.anchor.fieldId, at: Date.now() })
+            return true
+          }}
+        />
 
         <div className={inSections ? 'mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[240px_minmax(0,1fr)]' : 'mx-auto max-w-3xl px-6 py-12'}>
           {inSections && (

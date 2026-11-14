@@ -21,6 +21,7 @@ export function ThreadList({
   canResolve,
   waitingLabel,
   empty,
+  onPick,
 }: {
   c: ClientCase
   viewerId: string
@@ -30,6 +31,8 @@ export function ThreadList({
   /** Shown on rows waiting on the viewer, e.g. "needs reply". */
   waitingLabel?: string
   empty: ReactNode
+  /** Return true when the pick was handled elsewhere (e.g. by jumping to the field), so the row doesn't expand. */
+  onPick?: (t: Thread) => boolean | void
 }) {
   const people = useStore((s) => s.people)
   const markRead = useStore((s) => s.markRead)
@@ -67,8 +70,9 @@ export function ThreadList({
               <button
                 type="button"
                 onClick={() => {
-                  onOpenThread(isOpen ? undefined : t.id)
                   markRead(c.id, viewerId, [t.id])
+                  if (!isOpen && onPick?.(t)) return
+                  onOpenThread(isOpen ? undefined : t.id)
                 }}
                 className={cn('flex w-full items-start gap-3 p-3 text-left', canResolve ? 'pr-[72px]' : 'pr-10', t.resolved && 'opacity-60')}
               >

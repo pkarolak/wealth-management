@@ -1,5 +1,5 @@
 import { ArrowUp, Check, CheckCircle2, MessageCircle, RotateCcw, Sparkles, Undo2 } from 'lucide-react'
-import { Fragment, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { relativeTime } from '../../lib/format'
 import { polishReply } from '../../services/ai'
@@ -167,12 +167,17 @@ export function CommentThread({ thread, showTitle = true, compact }: { thread: T
 }
 
 /** Inline "Ask Emily" affordance anchored to a field, item or section. Shows existing threads first. */
-export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact, floating, align = 'end' }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean; floating?: boolean; align?: 'start' | 'end' }) {
+export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, className, compact, floating, align = 'end', openAt }: { anchor: Anchor; title?: string; open?: boolean; onOpenChange?: (o: boolean) => void; label?: ReactNode; className?: string; compact?: boolean; floating?: boolean; align?: 'start' | 'end'; /** Opens the popover whenever this changes. */ openAt?: number }) {
   const { c, caseId, viewerId, mode } = useCurrentCase()
   const peopleMap = useStore((s) => s.people)
   const startThread = useStore((s) => s.startThread)
   const markRead = useStore((s) => s.markRead)
   const [innerOpen, setInnerOpen] = useState(false)
+  useEffect(() => {
+    if (!openAt) return
+    const t = window.setTimeout(() => setInnerOpen(true), 700)
+    return () => window.clearTimeout(t)
+  }, [openAt])
   const isOpen = open ?? innerOpen
   const setOpen = (o: boolean) => {
     onOpenChange?.(o)
