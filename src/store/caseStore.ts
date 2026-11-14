@@ -208,7 +208,7 @@ export const useStore = create<Store>()(
         setIntroDone: (caseId) => {
           const c = get().cases[caseId]
           if (!c) return
-          patchCase(caseId, (x) => ({ ...x, introDone: true }), { actorId: c.clientId, kind: 'intro', text: `${c.firstName} told us about themselves — AI drafted answers to confirm` })
+          patchCase(caseId, (x) => ({ ...x, introDone: true }), { actorId: c.clientId, kind: 'intro', text: `${c.firstName} recorded an intro · AI drafted answers to confirm` })
         },
 
         giveConsent: (caseId) => {
@@ -439,7 +439,7 @@ export const useStore = create<Store>()(
             actorId: advisorId,
             kind: 'request',
             text: `Requested: ${req.title}`,
-            email: { fromId: advisorId, to: [clientEmail(c)], subject: `Quick request: ${req.title}`, body: `Hi ${c.firstName},\n\n${req.detail || `Could you add “${req.title}” in the form when you get a moment?`}\n\nThank you!` },
+            email: { fromId: advisorId, to: [clientEmail(c)], subject: `Quick request: ${req.title}`, body: `Hi ${c.firstName},\n\n${req.detail || `Could you add “${req.title}” in the form?`}\n\nThank you.` },
           })
         },
 
@@ -475,8 +475,8 @@ export const useStore = create<Store>()(
             email: {
               fromId: c.advisorId,
               to: [clientEmail(c)],
-              subject: 'You’re all set — a copy of your answers',
-              body: `Hi ${c.firstName},\n\nThanks for completing your onboarding. ${advisor?.name.split(' ')[0] ?? 'Your Wealth Manager'} has everything she needs to prepare.\n\nYou can view or change your answers any time with your private link:\n${window.location.origin}/c/${c.token}\n\nSee you soon.`,
+              subject: 'You’re all set: a copy of your answers',
+              body: `Hi ${c.firstName},\n\nThanks for completing your onboarding. ${advisor?.name.split(' ')[0] ?? 'Your Wealth Manager'} has everything she needs to prepare.\n\nChange your answers anytime with your private link:\n${window.location.origin}/c/${c.token}\n\nSee you soon.`,
             },
           })
         },

@@ -28,7 +28,7 @@ export function IdScan({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
   return (
     <div>
-      <StepHeader eyebrow="Getting started · 30 seconds" title="Scan your driver’s license." description="Your name, date of birth and address come straight from it, exactly as they need to appear on your accounts." />
+      <StepHeader eyebrow="Getting started · 30 seconds" title="Scan your driver’s license" description="We read your name, date of birth and address exactly as your accounts need them." />
       <div className="flex flex-col gap-4">
         <div className="relative flex min-h-64 w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-[22px] bg-surface p-3 shadow-float">
           {phase === 'scanning' && <motion.span className="absolute inset-x-6 h-0.5 rounded-full bg-ai/60 shadow-[0_0_16px_var(--color-ai)]" initial={{ top: '12%' }} animate={{ top: ['12%', '88%', '12%'] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} />}
@@ -59,7 +59,7 @@ export function IdScan({ c, nav }: { c: ClientCase; nav: StepNav }) {
                   <span className="text-ink">{displayValue(fieldById[k], d.value)}</span>
                 </div>
               ))}
-              <SourceTag kind="id" label="Read from your license · you’ll confirm on the next step" className="mt-2" />
+              <SourceTag kind="id" label="From your license · confirm on the next step" className="mt-2" />
             </div>
           )}
         </div>

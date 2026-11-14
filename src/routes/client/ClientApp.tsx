@@ -195,7 +195,7 @@ export function ClientApp() {
             </button>
           )}
         </header>
-        <Dialog open={sheet} onOpenChange={setSheet} title="Your progress" description="Jump to any step. Everything you’ve entered is saved.">
+        <Dialog open={sheet} onOpenChange={setSheet} title="Your progress" description="Jump to any step. Your answers are saved.">
           <div className="flex flex-col gap-4">
             <AdvisorCard c={c} sectionId={sectionId} className="order-first border-t-0 border-b pt-0 pb-4" />
             {rail(() => setSheet(false))}

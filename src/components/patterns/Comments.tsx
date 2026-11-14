@@ -233,7 +233,7 @@ export function AskAdvisorButton({ anchor, title, open, onOpenChange, label, cla
               <Avatar name={counterpart?.name ?? 'Wealth Manager'} src={counterpart?.avatar} size="md" />
               <div className="flex flex-col">
                 <span className="text-[14px] font-medium text-ink">{mode === 'client' ? `Ask ${firstName}` : `Comment for ${firstName}`}</span>
-                <span className="text-[12px] text-ink-3">{mode === 'client' ? 'She’ll reply here and by email. Keep going in the meantime.' : `${firstName} gets an email and sees it on this question.`}</span>
+                <span className="text-[12px] text-ink-3">{mode === 'client' ? 'She replies here and by email.' : `${firstName} gets an email and sees it here.`}</span>
               </div>
             </div>
             <CommentComposer

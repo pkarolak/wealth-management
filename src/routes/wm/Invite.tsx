@@ -23,7 +23,7 @@ export function Invite() {
   const saved = caseId ? drafts.get(caseId) : undefined
   const [body, setBody] = useState(saved?.body ?? draft?.rough ?? '')
   const [phase, setPhase] = useState<Draft['phase']>(saved?.phase === 'polishing' ? 'rough' : (saved?.phase ?? 'rough'))
-  const [subject, setSubject] = useState(saved?.subject ?? 'Before we meet — a few questions')
+  const [subject, setSubject] = useState(saved?.subject ?? 'Before we meet: a few questions')
   useEffect(() => {
     if (caseId) drafts.set(caseId, { subject, body, phase })
   }, [caseId, subject, body, phase])

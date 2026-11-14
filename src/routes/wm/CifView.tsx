@@ -113,7 +113,7 @@ export function CifView() {
                 variant="secondary"
                 onClick={() => {
                   assign(c.id, mike.id, gaps.map((r) => r.def.id), c.advisorId)
-                  toast(`Assigned to ${mike.name.split(' ')[0]}`, { description: 'He’ll follow up with the client and update the form.', tone: 'success' })
+                  toast(`Assigned to ${mike.name.split(' ')[0]}`, { description: 'He’ll follow up and update the form.', tone: 'success' })
                 }}
               >
                 Ask {mike.name.split(' ')[0]} to chase these
@@ -153,7 +153,7 @@ export function CifView() {
           </section>
         ))}
         {!shown.length && <p className="text-[15px] text-ink-3">Every field is filled in and checked.</p>}
-        <p className="text-[13px] text-ink-3">* Required to open accounts. Verified means it matched an ID, a statement or a linked account, or the client confirmed it.</p>
+        <p className="text-[13px] text-ink-3">* Required to open accounts. Verified: matched an ID, statement or linked account, or confirmed by the client.</p>
       </div>
     </div>
   )

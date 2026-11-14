@@ -44,7 +44,7 @@ export function CommentsDrawer({
         />
       }
     >
-      <ThreadList c={c} viewerId={c.clientId} openThread={openThread} onOpenThread={onOpenThread} onPick={onPick} canResolve empty={`Nothing yet. Ask ${first} below, or use the comment button next to any field.`} />
+      <ThreadList c={c} viewerId={c.clientId} openThread={openThread} onOpenThread={onOpenThread} onPick={onPick} canResolve empty={`No comments yet. Ask ${first} below or on any field.`} />
     </Drawer>
   )
 }

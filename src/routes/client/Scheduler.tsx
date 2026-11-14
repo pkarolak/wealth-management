@@ -143,7 +143,7 @@ export function Scheduler({ c, advisorName, onBooked, onCancel, bare }: { c: Cli
           onClick={() => {
             if (!at) return
             schedule(c.id, at, mode, zone)
-            toast('Meeting booked', { description: `${first} gets an invite right away.`, tone: 'success' })
+            toast('Meeting booked', { description: `${first} gets an invite.`, tone: 'success' })
             onBooked()
           }}
         >

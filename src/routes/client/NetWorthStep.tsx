@@ -90,7 +90,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         </aside>
       </div>
 
-      <Dialog open={linkOpen} onOpenChange={setLinkOpen} title="Link an account" description="A secure, read-only connection. We can see balances, never move money." width="md">
+      <Dialog open={linkOpen} onOpenChange={setLinkOpen} title="Link an account" description="Secure and read-only. We see balances, never move money." width="md">
         <div className="grid gap-2 sm:grid-cols-2">
           {institutions.map((inst) => {
             const done = linked.includes(inst.id)
@@ -121,7 +121,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-1 border-t border-line pt-4 pl-1">
           <span className="text-[13px] text-ink-4">Don’t see yours?</span>
-          <AskAdvisorButton anchor={{ sectionId: 'networth' }} title="Connecting other accounts" label={`Ask ${advisorFirst} if you need to connect different accounts`} />
+          <AskAdvisorButton anchor={{ sectionId: 'networth' }} title="Connecting other accounts" label={`Ask ${advisorFirst} to connect other accounts`} />
         </div>
       </Dialog>
 
@@ -231,7 +231,7 @@ export function NetWorthStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
 
       <StepFooter
         onBack={nav.back}
-        hint={drafts ? `${drafts} still without a balance. You can leave them for the meeting.` : undefined}
+        hint={drafts ? `${drafts} still need a balance, or leave them for the meeting.` : undefined}
         onNext={() => {
           setSectionProgress(c.id, 'networth', c.items.some((i) => !i.draft) ? 'done' : 'progress', c.clientId)
           nav.next()

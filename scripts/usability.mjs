@@ -108,10 +108,10 @@ let token
   await page.goto(`${BASE}/c/${token}`, { waitUntil: 'networkidle' })
 
   await tryStep(P, 'Welcome fits first screen', async () => {
-    const box = await page.getByRole('button', { name: /Let’s begin/ }).boundingBox()
+    const box = await page.getByRole('button', { name: 'Start', exact: true }).boundingBox()
     log(P, 'Welcome fits first screen', `CTA y=${Math.round(box.y)} of viewport 664 → ${box.y > 664 ? 'below the fold' : 'visible'}`)
     await page.getByText('I agree to share my information').click()
-    await page.getByRole('button', { name: /Let’s begin/ }).click()
+    await page.getByRole('button', { name: 'Start', exact: true }).click()
   })
 
   await tryStep(P, 'Skip the voice intro', async () => {
@@ -292,7 +292,7 @@ let token
     await page.getByLabel(/Type your full name/).fill('Linda Moreau')
     const btn = page.getByRole('button', { name: /Confirm and send/ })
     log(P, 'Find how to change answers after sending', `wrong name accepted? confirm disabled=${await btn.isDisabled()} (accuracy box unticked)`)
-    await page.getByText('The information I’ve provided').click()
+    await page.getByText('My answers are accurate').click()
     log(P, 'Find how to change answers after sending', `after tick with name "Linda Moreau" for Daniel Tan → disabled=${await btn.isDisabled()}`)
   })
   await ctx.close()

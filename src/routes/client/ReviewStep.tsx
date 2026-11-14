@@ -49,7 +49,7 @@ function Summary({ c, s }: { c: ClientCase; s: SectionDef }) {
     return r ? <Rows rows={[['Your profile', r.label]]} /> : empty('Not answered yet')
   }
   const filled = fieldsFor(s.id).filter((f) => isVisible(f, values) && isFilled(values[f.id]) && f.type !== 'checkbox')
-  if (!filled.length) return empty(s.optional ? 'Skipped — optional' : 'Nothing answered yet')
+  if (!filled.length) return empty(s.optional ? 'Skipped (optional)' : 'Nothing answered yet')
   return (
     <Rows
       rows={filled.slice(0, MAX_ROWS).map((f) => [summaryLabel(f), displayValue(f, values[f.id])] as [string, string])}
@@ -99,7 +99,7 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         <div className="mb-6 flex items-start gap-3 rounded-[18px] bg-progress-soft p-4 text-[14px] text-ink-2">
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-progress-ink" />
           <span>
-            {[pending > 0 && `${pending} ${pending === 1 ? 'answer' : 'answers'} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. You can still send — {first} will go through them with you.
+            {[pending > 0 && `${pending} ${pending === 1 ? 'answer' : 'answers'} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. You can still send. {first} will cover them with you.
           </span>
         </div>
       )}
@@ -150,14 +150,14 @@ export function ReviewStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
       <section className="mt-10 flex flex-col gap-4 border-t border-line pt-8">
         <div className="flex flex-col gap-1">
           <h2 className="text-[17px] text-ink">Confirm and send</h2>
-          <p className="text-[14px] text-ink-3">{first} and her team use this to open your accounts and prepare your plan. You can still change answers after sending.</p>
+          <p className="text-[14px] text-ink-3">{first}’s team uses this to open your accounts and prepare your plan. You can change answers after sending.</p>
           {(pending > 0 || missing > 0) && (
             <p className="text-[14px] text-progress-ink">
-              {[pending > 0 && `${pending} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. Fine to send now; {first} will cover them with you.
+              {[pending > 0 && `${pending} to check`, missing > 0 && `${missing} missing`].filter(Boolean).join(', ')}. You can still send.
             </p>
           )}
         </div>
-        <Checkbox checked={accurate} onChange={setAccurate} label="The information I’ve provided is accurate to the best of my knowledge." />
+        <Checkbox checked={accurate} onChange={setAccurate} label="My answers are accurate to the best of my knowledge." />
         <div className="flex max-w-md flex-col gap-1.5">
           <Input label="Type your full name to confirm" value={sig} tone={sig.trim() && !nameOk ? 'error' : 'default'} onChange={(e) => setSig(e.target.value)} />
           {sig.trim().split(/\s+/).length > 1 && !nameOk && <span className="pl-1 text-[13px] text-danger">Use the name on your account: {legalName}.</span>}

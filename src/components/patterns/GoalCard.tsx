@@ -28,7 +28,7 @@ function IconAction({ label, onClick, children }: { label: string; onClick: () =
 }
 
 const estimateNote: Record<GoalKind, string> = {
-  retirement: 'About 25 times the yearly spending you mentioned, in today’s dollars. Emily will refine it with you.',
+  retirement: 'About 25 times the yearly spending you mentioned, in today’s dollars. Emily will refine it.',
   education: 'Four years at a public in-state university today, grown for tuition inflation.',
   home: 'A typical down payment for the price range you mentioned.',
   purchase: 'The figure you mentioned in your intro.',

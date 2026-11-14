@@ -34,7 +34,7 @@ function heardIn(c: ClientCase): Record<string, string[]> {
   }
 }
 
-const work = ['Listening back to what you said', 'Picking out your family and work details', 'Spotting your goals', 'Listing the accounts you mentioned', 'Drafting answers for you to confirm']
+const work = ['Listening back', 'Finding family and work details', 'Finding your goals', 'Listing your accounts', 'Drafting your answers']
 
 export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const [phase, setPhase] = useState<'input' | 'working' | 'result'>(c.introDone ? 'result' : 'input')
@@ -67,7 +67,7 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
     { label: 'details about you and your family', count: aiIn('about'), sectionId: 'about' as const },
     { label: 'work details', count: aiIn('work'), sectionId: 'work' as const },
     { label: 'goals', count: c.goals.length, sectionId: 'goals' as const },
-    { label: 'accounts and debts to fill in', count: c.items.length, sectionId: 'networth' as const },
+    { label: 'accounts and debts', count: c.items.length, sectionId: 'networth' as const },
   ]
   const heard = heardIn(c)
 
@@ -75,11 +75,11 @@ export function Intro({ c, nav }: { c: ClientCase; nav: StepNav }) {
     <div>
       <StepHeader
         eyebrow="Getting started · about a minute"
-        title={phase === 'result' ? 'Here’s what we caught.' : 'Tell us about you, in your own words.'}
+        title={phase === 'result' ? 'Here’s what we heard' : 'Tell us about you, in your own words'}
         description={
           phase === 'result'
-            ? 'We’ve drafted these answers. Nothing is saved as final until you confirm it in each step.'
-            : 'Your family, your work, what you’re hoping for, and roughly what you have. A minute is plenty. We’ll turn it into answers you can check.'
+            ? 'We drafted your answers. Nothing is final until you confirm it.'
+            : 'Your family, work, goals and roughly what you have. A minute is plenty. We turn it into answers you can check.'
         }
       />
       {phase === 'input' && (

@@ -81,7 +81,7 @@ export function VoiceInput({ transcript, onSubmit, placeholder = 'Tap the mic an
             autoFocus={mode === 'typing'}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Type a few sentences about you, your family, your work and what you’re hoping for…"
+            placeholder="A few sentences about you, your family, work and goals…"
             className="field-sizing-content min-h-24 w-full resize-none bg-transparent text-[16px] leading-relaxed text-ink outline-none placeholder:text-ink-4"
           />
         ) : (

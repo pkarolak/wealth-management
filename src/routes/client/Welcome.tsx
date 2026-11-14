@@ -21,7 +21,7 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
   const advisor = useStore((s) => s.people[c.advisorId])
   const first = advisor.name.split(' ')[0]
   const invite = c.activity.find((a) => a.kind === 'invited')?.email?.body
-  const note = invite?.split(/\n{2,}/).slice(1, 2).join(' ') || `Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.`
+  const note = invite?.split(/\n{2,}/).slice(1, 2).join(' ') || `Before we talk about your plan, I’d like to learn about you and your finances.`
   const resuming = c.introDone || c.idScanned || Object.values(c.sectionProgress ?? {}).some(Boolean)
   const giveConsent = useStore((s) => s.giveConsent)
   const [agreed, setAgreed] = useState(!!c.consentAt)
@@ -29,7 +29,7 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
       <div className="flex flex-col gap-5">
-        <h1 className="display text-[44px] text-ink sm:text-[68px]">{resuming ? `Welcome back, ${c.firstName}.` : `Hi ${c.firstName},`}</h1>
+        <h1 className="display text-[44px] text-ink sm:text-[68px]">{resuming ? `Welcome back, ${c.firstName}` : `Hi ${c.firstName},`}</h1>
         <div className="flex gap-4 rounded-[22px] bg-surface p-3 pr-6">
           <Avatar name={advisor.name} src={advisor.avatar} size="lg" />
           <div className="flex flex-col gap-1 py-1">
@@ -42,13 +42,13 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
       </div>
 
       <p className="text-[15px] leading-relaxed text-ink-2 sm:hidden">
-        About 20 minutes. It saves as you go, you can talk instead of typing, and you can skip anything and do it in the meeting.
+        About 20 minutes. Saves as you go. Talk instead of typing, or skip anything for the meeting.
       </p>
       <div className="hidden gap-5 sm:grid sm:grid-cols-2">
-        <Point icon={<Clock className="size-[18px]" />} title="About 20 minutes" body="It saves as you go. Stop anytime and pick up from this link." />
-        <Point icon={<Mic className="size-[18px]" />} title="Talk instead of typing" body="Tell us about yourself and we’ll fill in what we can. You confirm everything." />
-        <Point icon={<FileText className="size-[18px]" />} title="Statements beat typing" body="Drop in a brokerage or 401(k) statement and we read the numbers for you." />
-        <Point icon={<MessageCircle className="size-[18px]" />} title={`Ask ${first} anywhere`} body="Unsure about a question? Leave a comment on it. Skip anything and do it in the meeting." />
+        <Point icon={<Clock className="size-[18px]" />} title="About 20 minutes" body="Saves as you go. Pick up anytime from this link." />
+        <Point icon={<Mic className="size-[18px]" />} title="Talk instead of typing" body="Tell us about yourself. We draft the answers, you confirm them." />
+        <Point icon={<FileText className="size-[18px]" />} title="Statements beat typing" body="Upload a brokerage or 401(k) statement. We read the numbers." />
+        <Point icon={<MessageCircle className="size-[18px]" />} title={`Ask ${first} anywhere`} body="Comment on any question. Skip anything and cover it in the meeting." />
       </div>
 
       {!c.consentAt && (
@@ -56,7 +56,7 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
           <span className="flex items-start gap-3 text-[14px] leading-snug text-ink-2">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink-3" />
             <span>
-              Only {first} and her team at Parker & Lane see your answers. They’re encrypted, linked accounts are read-only, and we never sell your data.{' '}
+              Only {first}’s team at Parker & Lane sees your answers. They’re encrypted and never sold. Linked accounts are read-only.{' '}
               <button type="button" onClick={() => toast('Privacy notice downloaded', { tone: 'success' })} className="text-ink underline underline-offset-2">
                 Privacy notice
               </button>
@@ -68,7 +68,7 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
       <div className="sticky bottom-0 z-20 -mx-6 flex flex-wrap items-center gap-4 border-t border-line bg-canvas/95 px-6 py-4 backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pt-6 sm:pb-0 sm:backdrop-blur-none">
         {!c.consentAt && <Checkbox className="w-full" checked={agreed} onChange={setAgreed} label="I agree to share my information with Parker & Lane Wealth." />}
         <span className="hidden items-center gap-2 text-[13px] text-ink-3 sm:inline-flex">
-          <IdCard className="size-4" /> Helpful to have nearby: your driver’s license and recent statements
+          <IdCard className="size-4" /> Have nearby: your driver’s license and recent statements
         </span>
         <Button
           size="lg"
@@ -80,7 +80,7 @@ export function Welcome({ c, nav }: { c: ClientCase; nav: StepNav }) {
             nav.go(c.introDone ? 'about' : 'intro')
           }}
         >
-          {resuming ? 'Continue where I left off' : 'Let’s begin'}
+          {resuming ? 'Pick up where I left off' : 'Start'}
         </Button>
       </div>
     </div>

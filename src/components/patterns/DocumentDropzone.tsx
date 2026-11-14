@@ -66,7 +66,7 @@ export function DocumentDropzone({ onProcess, samples = ['brokerage', 'retiremen
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
             <span className="text-[14px] font-medium text-ink">Drop statements here</span>
-            <span className="text-[13px] text-ink-3">We read the numbers for you. Files are encrypted and shared only with your Wealth Manager’s team.</span>
+            <span className="text-[13px] text-ink-3">We read the numbers. Files are encrypted and shared only with your Wealth Manager’s team.</span>
           </div>
           <button type="button" onClick={() => (remaining.length ? setPicking(true) : input.current?.click())} className="h-10 shrink-0 rounded-control border border-line bg-surface px-4 text-[14px] font-medium text-ink hover:border-line-strong">
             Browse

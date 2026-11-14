@@ -77,11 +77,11 @@ export function MeetingBrief() {
             <section className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
                 <h2 className="text-[20px] font-medium text-ink">Before the meeting</h2>
-                <span className="text-[14px] text-ink-3">Close these first, so the meeting can be about strategy.</span>
+                <span className="text-[14px] text-ink-3">Close these first so the meeting is about strategy.</span>
               </div>
               <div className="flex flex-col divide-y divide-line rounded-[22px] bg-surface px-5">
                 {acctLeft > 0 && (
-                  <BeforeRow tag="To collect" title={`${acctLeft} ${acctLeft === 1 ? 'answer' : 'answers'} still needed to open accounts`} why={acct.open.slice(0, 4).map((r) => r.def.label).join(', ') + (acct.open.length > 4 ? '…' : '')} action="Open CIF" icon={<ClipboardList className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/cif`)} />
+                  <BeforeRow tag="To collect" title={`${acctLeft} ${acctLeft === 1 ? 'answer' : 'answers'} left to open accounts`} why={acct.open.slice(0, 4).map((r) => r.def.label).join(', ') + (acct.open.length > 4 ? '…' : '')} action="Open CIF" icon={<ClipboardList className="size-4" />} onClick={() => navigate(`/wm/c/${c.id}/cif`)} />
                 )}
                 {before.map((t) => (
                   <BeforeRow

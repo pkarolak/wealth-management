@@ -34,7 +34,7 @@ export async function extractIntro(_text: string): Promise<IntroResult> {
     incomeSources: { value: ['salary', 'equity'], sourceLabel: INTRO, confidence: 'medium' },
   }
   const goals: Omit<Goal, 'id'>[] = [
-    { kind: 'retirement', title: 'Retire at 60', targetYear: year + 19, amount: 4_500_000, priority: 'high', draft: true, sourceLabel: INTRO, note: 'Amount is a starting estimate — adjust freely.' },
+    { kind: 'retirement', title: 'Retire at 60', targetYear: year + 19, amount: 4_500_000, priority: 'high', draft: true, sourceLabel: INTRO, note: 'A starting estimate. Adjust freely.' },
     { kind: 'education', title: 'College for two kids', targetYear: year + 9, amount: 420_000, priority: 'high', draft: true, sourceLabel: INTRO },
     { kind: 'home', title: 'Lake house', targetYear: year + 5, amount: 650_000, priority: 'medium', draft: true, sourceLabel: INTRO },
   ]
@@ -54,7 +54,7 @@ export async function extractIntro(_text: string): Promise<IntroResult> {
       { label: 'details about you and your family', count: 4, sectionId: 'about' },
       { label: 'work details', count: 5, sectionId: 'work' },
       { label: 'goals', count: goals.length, sectionId: 'goals' },
-      { label: 'accounts and debts to fill in', count: items.length, sectionId: 'networth' },
+      { label: 'accounts and debts', count: items.length, sectionId: 'networth' },
     ],
   }
 }
@@ -187,33 +187,33 @@ export async function estimateValue(category: NWCategory, input: string): Promis
 }
 
 export const glossary: Record<string, { title: string; body: string }> = {
-  ssn: { title: 'Why we need your SSN', body: 'Federal law requires every financial firm to verify who you are, and the IRS needs it for your tax forms. It’s encrypted and only the last four digits are ever shown. If you’d rather, Emily can collect it on a call.' },
-  residency: { title: 'Citizenship', body: 'This decides which tax form applies to you — a W-9 for U.S. persons, a W-8BEN for everyone else.' },
-  ranges: { title: 'Why a range is fine', body: 'We need a sense of your income to make sure our advice fits your situation, and a range is enough for that. If you upload a tax return, we’ll use the exact numbers for planning.' },
+  ssn: { title: 'Why we need your SSN', body: 'Federal law requires us to verify who you are, and the IRS needs it for your tax forms. It’s encrypted and only the last four digits are shown. Prefer a call? Emily can collect it then.' },
+  residency: { title: 'Citizenship', body: 'This decides your tax form: a W-9 for U.S. persons, a W-8BEN for everyone else.' },
+  ranges: { title: 'Why a range is fine', body: 'A range is enough to make sure our advice fits. Upload a tax return and we’ll plan with the exact numbers.' },
   liquidity: { title: 'What counts as liquid', body: 'Money you could get to within a few days without a big penalty: cash, brokerage accounts, most crypto. Retirement accounts, property and private companies usually aren’t.' },
   trust: { title: 'Living trust', body: 'A legal document that holds your assets and passes them on without going through probate court. Not everyone needs one.' },
   poa: { title: 'Power of attorney', body: 'Names someone who can make financial (or medical) decisions for you if you can’t.' },
   finra: { title: 'Why we ask', body: 'If you work in the securities industry, your employer has to approve this account in writing and may ask for copies of your statements (FINRA Rule 3210).' },
-  insider: { title: 'Why we ask', body: 'Company insiders face extra SEC rules on selling their company’s stock (Rule 144) and can usually trade only in open windows. Knowing this helps us plan sales around them.' },
-  pep: { title: 'Senior foreign political figure', body: 'A senior official in a foreign government, military, political party or state-owned company — or their close family and associates. Anti-money-laundering rules require extra checks. Almost everyone answers no.' },
+  insider: { title: 'Why we ask', body: 'Insiders face extra SEC rules when selling company stock (Rule 144) and can usually trade only in open windows. We plan sales around them.' },
+  pep: { title: 'Senior foreign political figure', body: 'A senior official in a foreign government, military, political party or state-owned company, or their close family and associates. Anti-money-laundering rules require extra checks. Almost everyone answers no.' },
   sourceOfFunds: { title: 'Source of funds', body: 'Anti-money-laundering rules ask where the money originally came from. Pick everything that applies.' },
-  trustedContact: { title: 'Trusted contact', body: 'Someone 18 or older we may call if we can’t reach you, or if we’re worried about your health or possible financial exploitation. They can’t see your accounts or make decisions for you. It’s optional, but we recommend it.' },
-  w9: { title: 'Tax certification (W-9)', body: 'The IRS requires you to confirm your taxpayer ID and U.S. status. Checking this replaces filling in a separate Form W-9.' },
-  backupWithholding: { title: 'Backup withholding', body: 'Rare. Only check this if the IRS sent you a letter saying they’ll withhold tax from your investment income.' },
+  trustedContact: { title: 'Trusted contact', body: 'Someone 18 or older we can call if we can’t reach you, or if we’re worried about your health or financial exploitation. They can’t see your accounts or act for you. Optional, but recommended.' },
+  w9: { title: 'Tax certification (W-9)', body: 'The IRS requires you to confirm your taxpayer ID and U.S. status. This replaces a separate Form W-9.' },
+  backupWithholding: { title: 'Backup withholding', body: 'Rare. Check only if the IRS wrote to say they’ll withhold tax from your investment income.' },
   netWorth: { title: 'Net worth', body: 'Everything you own minus everything you owe. Some rules, like accredited-investor status, count it without your primary home.' },
-  rsu: { title: 'RSUs', body: 'Restricted stock units — shares your employer grants you that become yours on a schedule (vesting). They’re taxed as income when they vest.' },
-  objective: { title: 'Investment objective', body: 'The overall aim for your money — from protecting it to growing it as much as possible. Your answers above suggest one; you can change it.' },
+  rsu: { title: 'RSUs', body: 'Restricted stock units: shares your employer grants that become yours on a schedule (vesting). Taxed as income when they vest.' },
+  objective: { title: 'Investment objective', body: 'The overall aim for your money, from protecting it to growing it. Your answers suggest one. You can change it.' },
 }
 
 export async function explain(key: string) {
   await wait(450)
-  return glossary[key] ?? { title: 'Explanation', body: 'Ask Emily — she’ll explain it in your meeting.' }
+  return glossary[key] ?? { title: 'Explanation', body: 'Ask Emily. She’ll explain it in your meeting.' }
 }
 
 export function inviteDraft(clientFirst: string, advisorFirst: string) {
   return {
     rough: `Hi ${clientFirst},\n\nAs discussed, here is a secure link to share your information before our meeting. It takes about 20 minutes and saves as you go.\n\nThank you,\n${advisorFirst}`,
-    polished: `Hi ${clientFirst},\n\nIt was great meeting you. Before we sit down to talk about your plan, I’d love to learn a bit more about you and your finances.\n\nThis link takes about 20 minutes, saves as you go, and you can come back anytime. If anything is unclear, leave me a comment right in the form and I’ll get back to you.\n\nOnce you send it, my team will use your answers to get your account paperwork ready, so our meeting can be about your plan.\n\nLooking forward to it,\n${advisorFirst}`,
+    polished: `Hi ${clientFirst},\n\nGreat to meet you. Before we talk about your plan, I’d like to learn about you and your finances.\n\nThe form takes about 20 minutes and saves as you go. If anything is unclear, comment in the form and I’ll reply.\n\nOnce you send it, my team prepares your account paperwork, so our meeting can focus on your plan.\n\nLooking forward to it,\n${advisorFirst}`,
   }
 }
 
@@ -268,7 +268,7 @@ export function meetingBrief(
       title: 'Employer stock, not valued yet',
       why: `${unvaluedEquity.name} came up in the intro but has no balance. Likely a large share of assets.`,
       ask: 'How much of your company stock is vested, and when is the next vest? How do you feel about holding that much in one company?',
-      note: 'Ask for the stock plan statement before the meeting so you can size it.',
+      note: 'Request the stock plan statement first to size it.',
       minutes: 15,
     })
   if (conc >= 15)
@@ -309,7 +309,7 @@ export function meetingBrief(
       priority: 'medium',
       title: t.title,
       why: `“${t.messages[0]?.body ?? ''}”`,
-      ask: 'Reply before the meeting so it doesn’t take meeting time.',
+      ask: 'Reply before the meeting to save time.',
       minutes: 5,
     })
   if (!risk)
@@ -319,7 +319,7 @@ export function meetingBrief(
       priority: 'medium',
       title: 'Risk questionnaire not finished',
       why: `${c.firstName} hasn’t answered the risk scenarios yet. Needed before recommending a portfolio.`,
-      ask: 'Walk through the scenarios together; it takes about five minutes.',
+      ask: 'Walk through the scenarios together. About 5 minutes.',
       minutes: 5,
     })
   if (deferred.length)

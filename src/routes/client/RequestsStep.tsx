@@ -30,7 +30,7 @@ export function RequestsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
       <StepHeader
         eyebrow={open.length ? `${open.length} open · from ${first}` : `From ${first}`}
         title="Additional requests"
-        description={`Things ${first} asked for after reviewing your answers. Each one takes a minute.`}
+        description={`${first} asked for these after reviewing your answers. Each takes a minute.`}
       />
 
       {open.length === 0 && (
@@ -67,7 +67,7 @@ export function RequestsStep({ c, nav }: { c: ClientCase; nav: StepNav }) {
         </section>
       )}
 
-      <StepFooter onBack={nav.back} onNext={nav.next} hint={open.length ? 'You can answer these later too.' : undefined} />
+      <StepFooter onBack={nav.back} onNext={nav.next} hint={open.length ? 'You can answer these later.' : undefined} />
     </div>
   )
 }

@@ -9,7 +9,7 @@ export async function seedHalfway() {
   const c = s().createCase(demoNewClient)
   const id = c.id
   const draft = inviteDraft(c.firstName, 'Emily')
-  s().sendInvite(id, { subject: 'Before we meet — a few questions', body: draft.polished })
+  s().sendInvite(id, { subject: 'Before we meet: a few questions', body: draft.polished })
   s().markOpened(id)
   s().giveConsent(id)
 

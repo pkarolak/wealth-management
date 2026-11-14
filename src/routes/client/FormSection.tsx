@@ -37,11 +37,11 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
 
   const hint =
     invalid > 0
-      ? `${invalid === 1 ? 'One answer needs' : `${invalid} answers need`} a quick fix above.`
+      ? `${invalid === 1 ? 'One answer needs' : `${invalid} answers need`} a fix.`
       : changes > 0
-      ? `${advisorFirst} suggested ${changes === 1 ? 'a change' : `${changes} changes`} above. Approve or keep yours.`
+      ? `${advisorFirst} suggested ${changes === 1 ? 'a change' : `${changes} changes`}. Approve it or keep yours.`
       : remaining > 0
-          ? `${remaining} required ${remaining === 1 ? 'answer' : 'answers'} left. You can come back to ${remaining === 1 ? 'it' : 'them'}.`
+          ? `${remaining} required ${remaining === 1 ? 'answer' : 'answers'} left. Come back to ${remaining === 1 ? 'it' : 'them'} anytime.`
           : stats.total
             ? 'All required answers done.'
             : undefined
@@ -55,7 +55,7 @@ export function FormSection({ c, sectionId, nav }: { c: ClientCase; sectionId: S
           <IdCard className="size-5 shrink-0 text-ink-2" />
           <span className="flex min-w-0 flex-1 flex-col">
             <span className="text-[15px] text-ink">Fill this in from your driver’s license</span>
-            <span className="text-[13px] text-ink-3">Take or choose a photo. You check everything before it’s saved.</span>
+            <span className="text-[13px] text-ink-3">Take or choose a photo. You check everything first.</span>
           </span>
           <ArrowRight className="size-4 shrink-0 text-ink-3" />
         </button>

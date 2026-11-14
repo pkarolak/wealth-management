@@ -29,11 +29,11 @@ export function Done({ c }: { c: ClientCase }) {
           Sent to {first}
           {submitted && <span className="text-ink-4">· {submitted}</span>}
         </motion.span>
-        <h1 className="display text-[44px] leading-[1.05] text-ink">Thank you, {c.firstName}.</h1>
+        <h1 className="display text-[44px] leading-[1.05] text-ink">Thank you, {c.firstName}</h1>
         <p className="max-w-lg text-[16px] leading-relaxed text-ink-3">
           {c.meeting
-            ? `${first} is reviewing your answers and will prepare ideas for your meeting.`
-            : `${first} is reviewing your answers. Pick a time to go through them together — anything you skipped is on the agenda.`}
+            ? `${first} is reviewing your answers and preparing ideas for your meeting.`
+            : `${first} is reviewing your answers. Pick a time to go through them. Anything you skipped is on the agenda.`}
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export function Done({ c }: { c: ClientCase }) {
             We’ve sent a confirmation to <span className="font-medium">{c.email}</span>
           </span>
           <span className="text-ink-3">
-            It includes your private link to view or change your answers any time. You can close this page now.
+            It has your private link to change your answers anytime. You can close this page.
           </span>
           <Link to={`/c/${c.token}?step=review`} className="mt-1 self-start text-[13px] text-ink-3 underline underline-offset-4 hover:text-ink">
             See or change my answers
