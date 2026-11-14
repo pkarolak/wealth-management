@@ -19,7 +19,7 @@ import { IdScan } from './IdScan'
 import { Intro } from './Intro'
 import { NetWorthStep } from './NetWorthStep'
 import { Inbox } from './Inbox'
-import { CommentsPanel } from './CommentsPanel'
+import { CommentsDrawer } from './CommentsDrawer'
 import { RequestsStep } from './RequestsStep'
 import { ReviewStep } from './ReviewStep'
 import { RiskStep } from './RiskStep'
@@ -43,10 +43,12 @@ export function ClientApp() {
   const { token } = useParams()
   const c = useCaseByToken(token)
   const markOpened = useStore((s) => s.markOpened)
+  const markRead = useStore((s) => s.markRead)
   const people = useStore((s) => s.people)
   const [params, setParams] = useSearchParams()
   const [focus, setFocus] = useState<{ sectionId?: SectionId; fieldId?: string }>({})
   const [sheet, setSheet] = useState(false)
+  const [talk, setTalk] = useState<{ open: boolean; thread?: string }>({ open: false })
 
   const step = (params.get('step') as Step) || (c?.stage === 'submitted' ? 'done' : 'welcome')
   const sectionId = (nonSection.includes(step) ? undefined : step) as SectionId | undefined
@@ -173,42 +175,49 @@ export function ClientApp() {
         </header>
         <Dialog open={sheet} onOpenChange={setSheet} title="Your progress" description="Jump to any step. Everything you’ve entered is saved.">
           <div className="flex flex-col gap-4">
-            <AdvisorCard c={c} sectionId={sectionId} className="order-first border-t-0 border-b pt-0 pb-4" />
+            <AdvisorCard
+              c={c}
+              onMessage={() => {
+                setSheet(false)
+                setTalk({ open: true })
+              }}
+              className="order-first border-t-0 border-b pt-0 pb-4"
+            />
             {rail(() => setSheet(false))}
           </div>
         </Dialog>
+        <CommentsDrawer c={c} sectionId={sectionId} open={talk.open} onOpenChange={(open) => setTalk((t) => ({ ...t, open }))} openThread={talk.thread} onOpenThread={(thread) => setTalk({ open: true, thread })} />
 
-        <div className={inSections ? 'mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[240px_minmax(0,1fr)] xl:max-w-[1360px] xl:grid-cols-[240px_minmax(0,1fr)_320px]' : 'mx-auto max-w-3xl px-6 py-12'}>
+        <div className={inSections ? 'mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[240px_minmax(0,1fr)]' : 'mx-auto max-w-3xl px-6 py-12'}>
           {inSections && (
             <aside className="hidden lg:block">
               <div className="sticky top-24 flex h-[calc(100vh-8.5rem)] flex-col gap-4">
                 <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
                   {rail()}
-                  {unreadCount(c, c.clientId) > 0 && <p className="px-3 text-[12px] text-advisor xl:hidden">{advisor.name.split(' ')[0]} replied to you</p>}
+                  {unreadCount(c, c.clientId) > 0 && (
+                    <button type="button" onClick={() => setTalk({ open: true })} className="self-start px-3 text-[12px] text-advisor hover:underline">
+                      {advisor.name.split(' ')[0]} replied to you
+                    </button>
+                  )}
                 </div>
-                <AdvisorCard c={c} sectionId={sectionId} className="mt-auto" />
+                <AdvisorCard c={c} onMessage={() => setTalk({ open: true })} className="mt-auto" />
               </div>
             </aside>
           )}
           <main id="main" tabIndex={-1} className="min-w-0 outline-none">
-            {inSections && (
-              <div className="xl:hidden">
-                <Inbox c={c} />
-              </div>
-            )}
+            {inSections && <Inbox
+                c={c}
+                onOpen={(thread) => {
+                  markRead(c.id, c.clientId, [thread])
+                  setTalk({ open: true, thread })
+                }}
+              />}
             <AnimatePresence mode="wait">
               <motion.div key={step} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
                 {view}
               </motion.div>
             </AnimatePresence>
           </main>
-          {inSections && (
-            <aside className="hidden xl:block">
-              <div className="sticky top-24">
-                <CommentsPanel c={c} sectionId={sectionId} />
-              </div>
-            </aside>
-          )}
         </div>
       </div>
     </CaseProvider>

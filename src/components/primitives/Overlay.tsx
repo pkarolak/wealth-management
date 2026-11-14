@@ -98,3 +98,28 @@ export function Dialog({ open, onOpenChange, title, description, children, foote
     </RDialog.Root>
   )
 }
+
+/** Side sheet for secondary work that shouldn't take a column from the page. */
+export function Drawer({ open, onOpenChange, title, aside, children, footer }: { open: boolean; onOpenChange: (o: boolean) => void; title: ReactNode; aside?: ReactNode; children: ReactNode; footer?: ReactNode }) {
+  return (
+    <RDialog.Root open={open} onOpenChange={onOpenChange}>
+      <RDialog.Portal>
+        <RDialog.Overlay className="fixed inset-0 z-40 bg-ink/15 animate-[fade-in_200ms_ease-out]" />
+        <RDialog.Content
+          aria-describedby={undefined}
+          className="fixed inset-y-3 right-3 z-50 flex w-[min(420px,calc(100vw-24px))] flex-col overflow-hidden rounded-[26px] bg-surface p-2 shadow-float outline-none animate-[drawer-in_260ms_cubic-bezier(0.22,1,0.36,1)]"
+        >
+          <div className="flex items-center gap-2 px-3 pt-2.5 pb-1.5">
+            <RDialog.Title className="text-[15px] font-medium text-ink">{title}</RDialog.Title>
+            {aside}
+            <RDialog.Close className="ml-auto rounded-full p-2 text-ink-3 hover:bg-muted hover:text-ink" aria-label="Close">
+              <X className="size-4" />
+            </RDialog.Close>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+          {footer && <div className="border-t border-line p-2 pt-3">{footer}</div>}
+        </RDialog.Content>
+      </RDialog.Portal>
+    </RDialog.Root>
+  )
+}

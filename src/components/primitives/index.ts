@@ -5,5 +5,5 @@ export { Segmented, radioKeys, rovingTab, Chip, ChipGroup, Checkbox, CheckboxBox
 export { Card, CardHeader, cardPadding, type CardPadding } from './Card'
 export { Avatar, AvatarStack, PersonChip } from './Avatar'
 export { StatusIcon, Badge, CountDot, ProgressBar, type StatusKind } from './Status'
-export { Tooltip, TooltipProvider, Popover, Dialog } from './Overlay'
+export { Tooltip, TooltipProvider, Popover, Dialog, Drawer } from './Overlay'
 export { Toaster, toast } from './Toast'

@@ -1,12 +1,11 @@
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, MessageCircle } from 'lucide-react'
 import { useState } from 'react'
-import { AskAdvisorButton } from '../../components/patterns'
 import { Avatar, Dialog } from '../../components/primitives'
 import { cn } from '../../lib/cn'
 import { clock } from '../../lib/time'
 import { usePresenceOf } from '../../store/hooks'
 import { useStore } from '../../store/caseStore'
-import type { SectionId } from '../../schema/onboarding'
+import { unreadCount } from '../../store/selectors'
 import type { ClientCase } from '../../store/types'
 import { fmtDay, Scheduler } from './Scheduler'
 
@@ -14,7 +13,7 @@ const action =
   'inline-flex h-8 flex-1 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[13px] whitespace-nowrap text-ink-2 ring-1 ring-line transition-colors ring-inset hover:bg-surface hover:text-ink hover:ring-line-strong'
 
 /** The client's reminder of who they're working with, and the two ways to reach her. */
-export function AdvisorCard({ c, sectionId, className }: { c: ClientCase; sectionId?: SectionId; className?: string }) {
+export function AdvisorCard({ c, onMessage, className }: { c: ClientCase; onMessage: () => void; className?: string }) {
   const advisor = useStore((s) => s.people[c.advisorId])
   const here = usePresenceOf(c.advisorId, c.id)
   const [scheduling, setScheduling] = useState(false)
@@ -38,7 +37,11 @@ export function AdvisorCard({ c, sectionId, className }: { c: ClientCase; sectio
             : `Usually replies within a few hours`}
       </p>
       <div className="flex gap-1">
-        <AskAdvisorButton anchor={{ sectionId: sectionId ?? 'about' }} title={`Message to ${first}`} label="Message" align="start" className={cn(action, 'h-8! text-ink-2!')} />
+        <button type="button" className={action} onClick={onMessage}>
+          <MessageCircle className="size-3.5" />
+          Message
+          {unreadCount(c, c.clientId) > 0 && <span className="size-1.5 rounded-full bg-advisor" aria-label="New reply" />}
+        </button>
         <button type="button" className={action} onClick={() => setScheduling(true)}>
           <CalendarDays className="size-3.5" />
           {c.meeting ? 'Reschedule' : 'Schedule'}
