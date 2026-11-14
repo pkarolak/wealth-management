@@ -130,7 +130,7 @@ let token
     const cam = await page.getByRole('button', { name: /Use camera|Take photo/ }).count()
     const upload = await page.getByRole('button', { name: /upload|choose|photo library/i }).count()
     log(P, 'ID scan on phone', `camera button=${cam > 0}; upload alternative=${upload > 0}`)
-    await page.getByRole('button', { name: /Skip, I’ll type it/ }).click()
+    await page.getByRole('button', { name: /Skip to the form/ }).click()
     await page.waitForTimeout(400)
     log(P, 'ID scan on phone', `after skip step=${new URL(page.url()).searchParams.get('step')}`)
   })
