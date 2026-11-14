@@ -52,7 +52,7 @@ export function ThreadList({
           <Switch checked={hideResolved} onChange={setHideResolved} label={<span className="text-[13px] text-ink-3">Hide resolved</span>} />
         </div>
       )}
-      {shown.length === 0 && <p className="px-3 py-4 text-[14px] text-ink-4">{empty}</p>}
+      {shown.length === 0 && <p className="px-3 py-4 text-[14px] text-ink-4">{resolvedCount > 0 ? 'No open comments. Everything’s resolved.' : empty}</p>}
       <AnimatePresence initial={false}>
         {shown.map((t) => {
           const last = t.messages[t.messages.length - 1]
