@@ -1,6 +1,6 @@
 import { Eye, EyeOff, Lock } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import type { FieldDef } from '../../schema/onboarding'
+import { sectionById, type FieldDef } from '../../schema/onboarding'
 import { fieldError, maskValue } from '../../schema/validation'
 import { Checkbox, ChipGroup, DateInput, Input, Label, MoneyInput, Segmented, Select, Textarea, YesNo, type FieldTone } from '../primitives'
 
@@ -32,14 +32,18 @@ export function FieldControl(props: Props) {
   )
 }
 
-function Control({ def, value, onChange, tone = 'default', labelAside }: Props) {
+/** Most fields are required, so only the exceptions are marked. A whole optional step isn't. */
+const isOptional = (def: FieldDef) => !def.required && def.type !== 'checkbox' && !sectionById[def.sectionId]?.optional
+
+function Control({ def: raw, value, onChange, tone = 'default', labelAside }: Props) {
+  const def = isOptional(raw) && !hasOuterLabel(raw) ? { ...raw, label: `${raw.label} (optional)` } : raw
   const id = `f-${def.id}`
   const str = typeof value === 'string' ? value : value === undefined || value === null ? '' : String(value)
 
   const outer = (control: ReactNode) => (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-1.5">
-        <Label>{def.label}</Label>
+        <Label hint={isOptional(def) ? '(optional)' : undefined}>{def.label}</Label>
         {labelAside}
       </div>
       {control}

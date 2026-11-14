@@ -89,7 +89,7 @@ export const fields: FieldDef[] = [
   { id: 'firstName', sectionId: 'about', group: 'Your legal name', label: 'First name', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'third' },
   { id: 'middleName', sectionId: 'about', group: 'Your legal name', label: 'Middle name', type: 'text', tier: 1, requiredBy: ['custodian'], width: 'third' },
   { id: 'lastName', sectionId: 'about', group: 'Your legal name', label: 'Last name', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'third' },
-  { id: 'preferredName', sectionId: 'about', group: 'Your legal name', label: 'What should we call you?', type: 'text', tier: 3, requiredBy: ['advisor'], placeholder: 'Optional', width: 'half' },
+  { id: 'preferredName', sectionId: 'about', group: 'Your legal name', label: 'What should we call you?', type: 'text', tier: 3, requiredBy: ['advisor'], width: 'half' },
   { id: 'dob', sectionId: 'about', group: 'Birth & citizenship', label: 'Date of birth', type: 'date', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', why: 'Used to verify your identity.' },
   {
     id: 'citizenship', sectionId: 'about', group: 'Birth & citizenship', label: 'Citizenship', type: 'select', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', explain: 'residency',
@@ -241,7 +241,7 @@ export const fields: FieldDef[] = [
   { id: 'trustedDecline', sectionId: 'required', group: 'Trusted contact', label: 'I’d rather not name anyone right now', type: 'checkbox', tier: 1, requiredBy: ['custodian'] },
   { id: 'beneficiaryName', sectionId: 'required', group: 'Beneficiaries', label: 'Primary beneficiary', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra, why: 'An IRA passes straight to the people named here, outside your will.' },
   { id: 'beneficiaryRelationship', sectionId: 'required', group: 'Beneficiaries', label: 'Relationship', type: 'text', tier: 1, requiredBy: ['custodian'], required: true, width: 'half', showWhen: hasIra },
-  { id: 'contingentBeneficiary', sectionId: 'required', group: 'Beneficiaries', label: 'Contingent beneficiary (optional)', type: 'text', tier: 2, requiredBy: ['advisor'], showWhen: hasIra, canDefer: true, why: 'Receives the IRA if your primary beneficiary can’t.' },
+  { id: 'contingentBeneficiary', sectionId: 'required', group: 'Beneficiaries', label: 'Contingent beneficiary', type: 'text', tier: 2, requiredBy: ['advisor'], showWhen: hasIra, canDefer: true, why: 'Receives the IRA if your primary beneficiary can’t.' },
   { id: 'w9Certify', sectionId: 'required', group: 'Tax certification', label: 'Under penalties of perjury, I certify that my Social Security number is correct and that I’m a U.S. citizen or other U.S. person', type: 'checkbox', tier: 1, requiredBy: ['custodian'], required: true, explain: 'w9', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
   { id: 'backupWithholding', sectionId: 'required', group: 'Tax certification', label: 'The IRS has notified me that I’m subject to backup withholding', type: 'checkbox', tier: 1, requiredBy: ['custodian'], explain: 'backupWithholding', showWhen: (v) => !v.citizenship || oneOf('citizenship', ['us', 'pr'])(v) },
 ]

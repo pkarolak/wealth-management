@@ -12,7 +12,7 @@ export const fieldBase =
 export const fieldTones: Record<FieldTone, string> = {
   default: 'border-line bg-surface hover:border-line-strong',
   filled: 'border-transparent bg-muted hover:border-line focus:bg-surface',
-  ai: 'border-transparent bg-ai-soft/60 hover:border-ai/30 focus:bg-surface',
+  ai: 'border-transparent bg-muted hover:border-line focus:bg-surface',
   advisor: 'border-advisor/35 bg-advisor-soft/50 hover:border-advisor/55',
   warning: 'border-progress/55 bg-progress-soft/60',
   error: 'border-danger/70 bg-surface hover:border-danger',

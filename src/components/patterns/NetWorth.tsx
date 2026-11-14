@@ -84,8 +84,8 @@ export function AccountTile({ item, onClick, aside, className, variant = 'card' 
       onClick={onClick}
       className={cn(
         'group flex w-full items-center gap-3 text-left transition-colors',
-        row ? cn('rounded-[14px] px-2 py-2', item.draft ? 'bg-ai-soft/60 hover:bg-ai-soft' : 'hover:bg-muted/70') : 'rounded-[22px] p-3',
-        !row && (item.draft ? 'bg-ai-soft/60 hover:bg-ai-soft' : 'bg-surface hover:bg-muted/60'),
+        row ? cn('rounded-[14px] px-2 py-2', 'hover:bg-muted/70') : 'rounded-[22px] p-3',
+        !row && 'bg-surface hover:bg-muted/60',
         className,
       )}
     >

@@ -47,7 +47,7 @@ export function GoalCard({ goal, onClick, onAccept, onRemove, className }: { goa
       onClick={onClick}
       className={cn(
         'group relative flex min-h-40 flex-col justify-between gap-4 rounded-[26px] p-4 text-left transition-colors',
-        goal.draft ? 'bg-ai-soft/60 hover:bg-ai-soft' : 'bg-muted hover:bg-sunken/70',
+        'bg-muted hover:bg-sunken/70',
         onClick && 'cursor-pointer',
         className,
       )}
